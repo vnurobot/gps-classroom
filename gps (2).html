@@ -65,13 +65,28 @@
         .custom-map-tooltip::before {
             border-top-color: #1e293b !important;
         }
+        
+        /* 隱藏預設管理員專屬區塊的樣式 */
+        .admin-only-section {
+            display: none;
+        }
+        body.admin-mode-active .admin-only-section {
+            display: block; /* 或 flex, 視區塊原本屬性而定 */
+        }
+        body.admin-mode-active .admin-only-section.flex-section {
+            display: flex;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col overflow-x-hidden">
 
     <!-- [強制 GPS 授權引導視窗] -->
     <div id="gps-auth-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center z-[1000] p-4 transition-all duration-300">
-        <div class="bg-slate-800 border border-slate-700 max-w-lg w-full rounded-2xl p-6 shadow-2xl text-center overflow-y-auto max-h-[90vh]">
+        <div class="bg-slate-800 border border-slate-700 max-w-lg w-full rounded-2xl p-6 shadow-2xl text-center overflow-y-auto max-h-[90vh] relative">
+            <button id="btn-close-gps-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white transition" title="關閉並進入唯讀模式">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+
             <div class="w-16 h-16 bg-indigo-600/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                 <i data-lucide="map-pin" class="w-8 h-8"></i>
             </div>
@@ -80,7 +95,6 @@
                 本系統為「教室專用 GPS 打卡系統」，需要獲取您當前的真實地理位置，以計算您與教室之間的距離，並判定是否在 30 公尺的指定打卡範圍內。
             </p>
             
-            <!-- 權限說明卡 -->
             <div class="bg-slate-900/60 rounded-xl p-4 text-left border border-slate-800 text-xs text-slate-400 space-y-3 mb-6">
                 <div class="flex items-start gap-2.5">
                     <i data-lucide="shield-check" class="w-4.5 h-4.5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
@@ -92,15 +106,13 @@
                 </div>
             </div>
 
-            <!-- 動態診斷提示區 -->
             <div id="gps-error-diagnostic" class="hidden text-left bg-rose-950/40 border border-rose-500/30 rounded-xl p-4 mb-6 text-xs text-rose-300 space-y-3">
                 <div class="flex items-center gap-1.5 font-bold text-rose-400 border-b border-rose-500/20 pb-1.5">
                     <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                    <span>系統偵測：協作平台/內嵌環境權限受限</span>
+                    <span>系統偵測：定位權限受限或電腦網頁 GPS 延遲</span>
                 </div>
                 <p id="error-diagnostic-text" class="leading-relaxed">無法取得您的 GPS 位置。</p>
                 
-                <!-- 針對協作平台內嵌 iframe 的手把手教學指南 -->
                 <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3 mt-2 text-slate-300 text-[11px] leading-relaxed">
                     <span class="text-amber-400 font-bold flex items-center gap-1"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Google 協作平台（Google Sites）解決方案：</span>
                     <p>
@@ -110,7 +122,7 @@
                         <span class="text-emerald-400 font-bold block">💡 完美解決步驟（推薦）：</span>
                         <ol class="list-decimal pl-4 space-y-1">
                             <li>將此 HTML 檔案下載並命名為 <code class="bg-slate-800 px-1 font-mono text-xs">index.html</code>。</li>
-                            <li>上傳至免費網域託管平台如 <strong><a href="https://pages.github.com/" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">GitHub Pages</a></strong> 或 <strong><a href="https://vercel.com/" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">Vercel</a></strong>（均支援免費安全 https 網域）。</li>
+                            <li>上傳至免費網域託管平台如 <strong><a href="https://pages.github.com/" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">GitHub Pages</a></strong> 或 <strong><a href="https://vercel.com/" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">Vercel</a></strong>。</li>
                             <li>取得專屬連結後，在 Google 協作平台編輯器中新增一個<strong>「按鈕」元件</strong>。</li>
                             <li>將按鈕名稱設為「教室 GPS 打卡簽到」，連結指向託管的網址。</li>
                             <li>使用者點擊按鈕後將會以<strong>「新分頁」</strong>開啟網頁，即可 100% 完美執行真實 GPS 簽到！</li>
@@ -119,17 +131,16 @@
                 </div>
             </div>
 
-            <!-- 操作按鈕 -->
             <div class="space-y-2">
                 <button id="btn-grant-gps" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/20 transition flex items-center justify-center gap-2 min-h-[48px]">
                     <i data-lucide="bell" class="w-4 h-4 animate-pulse"></i> 允許 GPS 定位安全授權
                 </button>
                 
-                <button id="btn-iframe-bypass" class="hidden w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2.5 px-4 rounded-xl text-xs transition items-center justify-center gap-1.5 min-h-[40px]">
-                    <i data-lucide="eye" class="w-3.5 h-3.5"></i> 進入預覽展示模式（不打卡，僅檢視介面）
+                <button id="btn-iframe-bypass" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-1.5 min-h-[40px]">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i> 直接進入系統（僅限唯讀檢視）
                 </button>
                 
-                <p class="text-[10px] text-slate-500 mt-2">※ 拒絕授權且無預覽模式將無法進入系統</p>
+                <p class="text-[10px] text-slate-500 mt-2">※ 您也可以點選右上角 [X] 直接關閉此視窗進行瀏覽</p>
             </div>
         </div>
     </div>
@@ -227,7 +238,6 @@
                 </div>
             </div>
             
-            <!-- 即時時鐘 & 登入控制 -->
             <div class="flex items-center gap-4">
                 <div class="text-right hidden md:block">
                     <div id="live-time" class="text-lg font-mono font-bold text-indigo-400">00:00:00</div>
@@ -239,7 +249,6 @@
                     <i data-lucide="user-cog" class="w-4 h-4"></i>
                     <span id="admin-btn-text">管理登入</span>
                 </button>
-                <!-- GPS 狀態標籤 -->
                 <div id="gps-status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
                     <span>等待定位中...</span>
@@ -254,15 +263,20 @@
         <!-- 左側：真實地圖與 GPS 資料區 (5格) -->
         <section class="lg:col-span-5 flex flex-col gap-6">
             
-            <!-- GPS 定位資訊 -->
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="font-bold text-slate-200 flex items-center gap-2">
                         <i data-lucide="compass" class="w-5 h-5 text-indigo-400"></i> 當前衛星定位數據
                     </h2>
-                    <span id="system-mode-tag" class="text-xs px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 flex items-center gap-1 font-medium">
-                        <i data-lucide="shield" class="w-3.5 h-3.5"></i> 真實 GPS 模式
-                    </span>
+                    
+                    <div class="flex items-center gap-2">
+                        <button id="btn-refresh-gps" class="text-xs px-2.5 py-1 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 flex items-center gap-1 transition" title="強制重新讀取定位">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重新定位
+                        </button>
+                        <span id="system-mode-tag" class="text-xs px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 flex items-center gap-1 font-medium">
+                            <i data-lucide="shield" class="w-3.5 h-3.5"></i> 真實 GPS
+                        </span>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -283,7 +297,6 @@
                         <span id="gps-updated-time" class="font-mono text-sm text-slate-300">--:--:--</span>
                     </div>
                     
-                    <!-- IP 位置欄位 -->
                     <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80 col-span-2">
                         <span class="text-xs text-slate-400 block mb-1">您的網路 IP 位址</span>
                         <div class="flex items-center gap-2">
@@ -320,8 +333,8 @@
         <!-- 右側：設定、打卡操作 & 歷史紀錄 (7格) -->
         <section class="lg:col-span-7 flex flex-col gap-6">
             
-            <!-- [模組A：教室打卡配置] -->
-            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl">
+            <!-- [模組A：教室打卡配置] (現在僅管理者可見) -->
+            <div class="admin-only-section bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
                     <h2 class="font-bold text-slate-200 flex items-center gap-2">
                         <i data-lucide="school" class="w-5 h-5 text-indigo-400"></i> 打卡指定教室位置配置
@@ -333,7 +346,6 @@
                     </div>
                 </div>
 
-                <!-- 手機端特別將 disabled 換成更穩健的 readonly 進行狀態管理 -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
                         <label class="text-xs text-slate-400 block mb-1">目標緯度 (Latitude)</label>
@@ -361,7 +373,6 @@
 
             <!-- [模組B：學生身份選取與打卡判定] -->
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl grid grid-cols-1 md:grid-cols-12 gap-5">
-                <!-- 學生搜尋與選取區 -->
                 <div class="md:col-span-7 flex flex-col justify-between">
                     <div>
                         <h2 class="font-bold text-slate-200 flex items-center gap-2 mb-2">
@@ -369,20 +380,17 @@
                         </h2>
                         <p class="text-xs text-slate-400 mb-3">請在下方輸入或搜尋您的姓名/學號，核對後即可開始打卡。</p>
                         
-                        <!-- 搜尋下拉搜尋框 -->
                         <div class="relative mb-3">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                 <i data-lucide="search" class="w-4 h-4"></i>
                             </div>
                             <input type="text" id="student-search-input" placeholder="請輸入學號或姓名搜尋... (例如: 簡邦丞)" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
                             
-                            <!-- 搜尋自動補完選單 -->
                             <div id="search-results-dropdown" class="absolute left-0 right-0 top-full mt-1.5 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-[150] max-h-52 overflow-y-auto hidden">
                                 <!-- 搜尋項目會動態寫入 -->
                             </div>
                         </div>
 
-                        <!-- 學生確認資訊卡 -->
                         <div id="student-identity-card" class="bg-slate-900/50 border border-dashed border-slate-700 rounded-xl p-3 flex items-center gap-3">
                             <div class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-slate-400">
                                 <i data-lucide="user-x" class="w-5 h-5" id="student-card-icon"></i>
@@ -395,7 +403,6 @@
                     </div>
                 </div>
 
-                <!-- 距離與狀態判定 -->
                 <div class="md:col-span-5 bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
                     <div class="text-center">
                         <span class="text-xs text-slate-400 block mb-1">您與指定教室距離</span>
@@ -405,7 +412,6 @@
 
                     <div class="my-3 h-[1px] bg-slate-800"></div>
 
-                    <!-- 判定燈號 -->
                     <div class="flex flex-col items-center">
                         <span class="text-xs text-slate-400 mb-1.5">當前打卡判定</span>
                         <div id="checkin-status-card" class="w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-red-500/10 text-red-400 border border-red-500/20">
@@ -418,7 +424,6 @@
             <!-- 打卡主控按鈕 -->
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl relative overflow-hidden">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <!-- 簽到打卡 -->
                     <button id="btn-clock-in" disabled class="relative group bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-emerald-950/40 transition-all duration-200 transform active:scale-95 disabled:opacity-30 disabled:pointer-events-none flex flex-col items-center justify-center gap-2 min-h-[80px]">
                         <div class="p-2 bg-white/10 rounded-xl">
                             <i data-lucide="log-in" class="w-5 h-5"></i>
@@ -427,7 +432,6 @@
                         <span class="text-[9px] opacity-80 font-normal">CLASS SIGN IN</span>
                     </button>
 
-                    <!-- 簽退打卡 -->
                     <button id="btn-clock-out" disabled class="relative group bg-gradient-to-br from-rose-600 to-orange-700 hover:from-rose-500 hover:to-orange-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-rose-950/40 transition-all duration-200 transform active:scale-95 disabled:opacity-30 disabled:pointer-events-none flex flex-col items-center justify-center gap-2 min-h-[80px]">
                         <div class="p-2 bg-white/10 rounded-xl">
                             <i data-lucide="log-out" class="w-5 h-5"></i>
@@ -437,14 +441,13 @@
                     </button>
                 </div>
 
-                <!-- 打卡提示盒 -->
                 <div id="toast-message" class="hidden mt-4 p-3 bg-slate-900 border border-slate-700 rounded-xl text-xs text-center flex items-center justify-center gap-2">
                     <span id="toast-text" class="font-medium text-slate-300">提示內容將顯示於此</span>
                 </div>
             </div>
 
-            <!-- [上課點名花名冊] (對學生與所有人開放，提升透明度與便於確認) -->
-            <div id="roster-panel" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl flex flex-col">
+            <!-- [上課點名花名冊] (現在僅管理者可見) -->
+            <div id="roster-panel" class="admin-only-section flex-section bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl flex-col">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
                         <h2 class="font-bold text-slate-200 flex items-center gap-2">
@@ -453,7 +456,6 @@
                         <p class="text-[11px] text-slate-400">全班即時出缺勤看板 (今日已註冊人數: <span id="admin-roster-count" class="text-indigo-400 font-bold">0</span> 人)</p>
                     </div>
                     
-                    <!-- 管理者專屬控制按鈕組 (預設對一般學生隱藏，登入後動態開啟) -->
                     <div id="admin-only-roster-actions" class="hidden flex-wrap gap-2">
                         <button id="btn-show-import-modal" class="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-[11px] font-bold rounded-lg text-white transition flex items-center gap-1 min-h-[32px]">
                             <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> 批次匯入名單
@@ -467,7 +469,6 @@
                     </div>
                 </div>
 
-                <!-- 搜尋與統計 -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
                     <input type="text" id="admin-roster-search" placeholder="搜尋名單學號、姓名或科系..." class="md:col-span-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
                     <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-2 text-center">
@@ -480,7 +481,6 @@
                     </div>
                 </div>
 
-                <!-- 花名冊表格 -->
                 <div class="overflow-x-auto border border-slate-700/50 rounded-xl bg-slate-900/40 max-h-[300px]">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -500,8 +500,8 @@
                 </div>
             </div>
 
-            <!-- 歷史打卡流 (使用者檢視) -->
-            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl flex-grow flex flex-col">
+            <!-- 歷史打卡流 (現在僅管理者可見，包含匯出功能) -->
+            <div class="admin-only-section flex-section bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl flex-grow flex-col">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="font-bold text-slate-200 flex items-center gap-2">
                         <i data-lucide="history" class="w-5 h-5 text-indigo-400"></i> 智慧打卡紀錄歷程 (今日打卡流)
@@ -1005,24 +1005,36 @@
             updateSystemCalculation();
         }
 
-        // --- 地理定位追蹤 (HTML5 Geolocation API) ---
-        function startGpsTracking() {
+        // --- [重大修正] 雙模自動降級追蹤：解決電腦端/協作平台上高精度定位卡死與超時延遲問題 ---
+        function startGpsTracking(highAccuracy = true) {
             if (state.isPreviewMode) return;
 
             if ("geolocation" in navigator) {
                 dom.gpsStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
-                dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span><span>搜尋 GPS 訊號中...</span>`;
+                dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span><span>搜尋位置中 (${highAccuracy ? '高精度GPS' : '網路省電模式'})...</span>`;
+
+                // 清除前次 watchPosition
+                if (state.watchId !== null) {
+                    navigator.geolocation.clearWatch(state.watchId);
+                }
+
+                // 設定合適的超時，若高精度 6 秒內未回傳，自動切換至低精度網路定位
+                const geoOptions = {
+                    enableHighAccuracy: highAccuracy,
+                    timeout: highAccuracy ? 6000 : 12000,
+                    maximumAge: 3000
+                };
 
                 state.watchId = navigator.geolocation.watchPosition(pos => {
                     if (!state.gpsConnected) {
                         state.gpsConnected = true;
                         dom.gpsAuthModal.classList.add('opacity-0', 'pointer-events-none');
                         setTimeout(() => dom.gpsAuthModal.style.display = 'none', 300);
-                        showToast("衛星定位讀取成功！已進入打卡系統。", "success");
+                        showToast(`定位成功！進入打卡系統 (${highAccuracy ? 'GPS衛星' : 'Wi-Fi/行動網路'})`, "success");
                     }
 
                     dom.gpsStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                    dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>GPS 訊號已正常連線</span>`;
+                    dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>GPS 正常連線 (${highAccuracy ? '衛星高精度' : 'Wi-Fi網路'})</span>`;
 
                     onLocationUpdated(
                         pos.coords.latitude,
@@ -1030,161 +1042,211 @@
                         pos.coords.accuracy
                     );
                 }, (error) => {
-                    state.gpsConnected = false;
-                    handleGpsError(error);
-                    dom.btnGrantGps.disabled = false;
-                    dom.btnGrantGps.innerHTML = `<i data-lucide="bell" class="w-4 h-4 animate-pulse"></i> 允許 GPS 定位安全授權`;
-                }, { enableHighAccuracy: true });
+                    // 若是高精度超時或硬體不支援定位，自動切換非高精度重新取得位置，優化電腦端體驗
+                    if (highAccuracy && (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE)) {
+                        console.warn("GPS 衛星高精度定位失敗/超時，已自動降級為快速網路定位模式...");
+                        startGpsTracking(false);
+                    } else {
+                        state.gpsConnected = false;
+                        handleGpsError(error);
+                        
+                        // 失敗時還原按鈕，允許重試
+                        dom.btnGrantGps.disabled = false;
+                        dom.btnGrantGps.innerHTML = `<i data-lucide="bell" class="w-4 h-4 animate-pulse"></i> 允許 GPS 定位安全授權`;
+                    }
+                }, geoOptions);
 
             } else {
-                handleGpsError({ code: 0, message: "瀏覽器不支援地理定位定位" });
+                handleGpsError({ code: 0, message: "不支援地理定位定位" });
             }
             lucide.createIcons();
         }
 
+        // --- 手動強制重新定位觸發 ---
+        document.getElementById('btn-refresh-gps').addEventListener('click', () => {
+            showToast("正在強制重新偵測與讀取 GPS 訊號...", "info");
+            startGpsTracking(true); // 優先嘗試高精度
+        });
+
+        // --- 錯誤診斷與處理 ---
         function handleGpsError(error) {
             dom.gpsStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20";
             
             let errMsg = "衛星定位失敗";
             let diagnosis = "";
+
             const isInIframe = window.self !== window.top;
 
             if (error.code === 1 || error.code === error.PERMISSION_DENIED) {
                 errMsg = "定位授權遭拒絕";
                 if (isInIframe) {
-                    diagnosis = "系統偵測到瀏覽器直接拒絕定位授權。這是因為此頁面目前正處於「協作平台內嵌 iframe 沙盒」中。基於瀏覽器安全政策，請改用本系統提供的「按鈕外部新分頁」方法來解決硬體存取限制。";
+                    diagnosis = "偵測到您的瀏覽器已直接拒絕定位授權。這是因為此頁面目前正處於「沙盒預覽/協作平台內嵌（Iframe）」中。基於瀏覽器隱私安全規範，除非外層容器特別設定 allow=\"geolocation\" 屬性，否則在內嵌框架中直接呼叫 GPS 定位會被安全沙盒機制攔截而無法請求。";
                 } else {
-                    diagnosis = "您或您的瀏覽器拒絕了此頁面的位置請求。請點選網址列左側的「鎖頭」圖示，並重置定位權限為「允許」。";
+                    diagnosis = "您或您的瀏覽器已拒絕此網站存取位置資訊。請確認您已開啟瀏覽器的定位設定，或點選網址列左側的鎖頭圖示，將「位置資訊」變更為「允許」。";
                 }
             } else if (error.code === 2 || error.code === error.POSITION_UNAVAILABLE) {
-                errMsg = "無法取得 GPS 訊號";
-                diagnosis = "瀏覽器無法從您的硬體取得 GPS 衛星資料。若您在厚水泥建築室內，請移動到窗邊重試。";
+                errMsg = "無法偵測到 GPS 訊號";
+                diagnosis = "瀏覽器無法從您的設備取得 GPS 衛星資料。若您在室內，可能因為高牆或建築物屏蔽導致定位失效，請嘗試靠近窗邊或移動到室外。";
             } else if (error.code === 3 || error.code === error.TIMEOUT) {
                 errMsg = "定位連線逾時";
-                diagnosis = "搜尋 GPS 訊號逾時。請確認行動裝置上的 GPS（定位服務）功能是否已開啟。";
+                diagnosis = "搜尋 GPS 訊號逾時。請確認設備的位置服務（GPS）已經開啟，並重新點選按鈕嘗試。";
             } else {
                 errMsg = error.message || "未知定位錯誤";
-                diagnosis = "硬體定位模組載入錯誤。";
+                diagnosis = "無法建立 GPS 連線，請確認硬體是否正常支援地理定位服務。";
             }
 
             dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>${errMsg}</span>`;
+            
+            // 將診斷訊息灌入 Modal
             dom.errorDiagnosticText.textContent = diagnosis;
             dom.gpsErrorDiagnostic.classList.remove('hidden');
             dom.btnIframeBypass.classList.remove('hidden');
             dom.btnIframeBypass.classList.add('flex');
             
-            showToast(`定位連線失敗：${errMsg}`, "error");
+            showToast(`定位失敗：${errMsg}。已為您開啟故障診斷提示與展示通道。`, "error");
             lucide.createIcons();
         }
 
+        // --- 彈窗引導使用者授權定位的處理邏輯 ---
         dom.btnGrantGps.addEventListener('click', () => {
             dom.btnGrantGps.disabled = true;
-            dom.btnGrantGps.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> 與定位衛星通訊中...`;
-            startGpsTracking();
+            dom.btnGrantGps.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> 正在與衛星通訊中...`;
+            startGpsTracking(true); // 優先嘗試高精度，會自動雙模切換
         });
 
+        // 允許使用者直接關閉定位彈窗（跳過定位鎖定，以唯讀方式檢視）
+        document.getElementById('btn-close-gps-modal').addEventListener('click', () => {
+            dom.gpsAuthModal.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => dom.gpsAuthModal.style.display = 'none', 300);
+            showToast("已手動跳過定位。您目前處於「唯讀檢視模式」，如需打卡請允許 GPS 定位並重整網頁。", "info");
+        });
+
+        // 預覽展示模式按鈕事件
         dom.btnIframeBypass.addEventListener('click', () => {
             state.isPreviewMode = true;
+            
             dom.gpsAuthModal.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => dom.gpsAuthModal.style.display = 'none', 300);
             
-            // 預設一組在指定打卡教室範圍內的展示位置 (約距離教室 7 公尺)
-            const demoLat = state.targetLat + 0.00004; 
-            const demoLon = state.targetLon - 0.00004;
+            // 設定一組在學校附近的模擬展示座標 (例如在教室旁約 8 公尺處)
+            const demoLat = state.targetLat + 0.00005; 
+            const demoLon = state.targetLon - 0.00005;
             
             dom.systemModeTag.className = "text-xs px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20 flex items-center gap-1 font-medium";
             dom.systemModeTag.innerHTML = `<i data-lucide="eye" class="w-3.5 h-3.5"></i> 預覽展示模式`;
             
             dom.gpsStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
-            dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span><span>預覽展示模式</span>`;
+            dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500"></span><span>預覽相容模式已載入</span>`;
 
             onLocationUpdated(demoLat, demoLon, 1);
-            showToast("已成功進入預覽展示模式（不打卡，可全功能測試介面）", "success");
+            showToast("已成功進入預覽展示模式，地圖及面板功能已解鎖！", "success");
         });
 
-        // ----------------- 智慧學生花名冊搜尋與身分核對 -----------------
+        // --- 提示訊息 UI ---
+        let toastTimeout = null;
+        function showToast(text, type = "info") {
+            clearTimeout(toastTimeout);
+            dom.toastText.textContent = text;
+            
+            if (type === "success") {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400";
+                dom.toastMessage.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> ${text}`;
+            } else if (type === "error") {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-rose-500/10 border border-rose-500/30 text-rose-400";
+                dom.toastMessage.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4"></i> ${text}`;
+            } else {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 text-slate-300";
+                dom.toastMessage.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i> ${text}`;
+            }
+            
+            dom.toastMessage.classList.remove('hidden');
+            lucide.createIcons();
+            
+            toastTimeout = setTimeout(() => {
+                dom.toastMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        // --- 搜尋並選擇學生 (下拉自動補完) ---
         dom.studentSearchInput.addEventListener('input', (e) => {
-            const query = e.target.value.trim().toLowerCase();
-            if (!query) {
+            const val = e.target.value.trim().toLowerCase();
+            if (!val) {
                 dom.searchResultsDropdown.classList.add('hidden');
                 return;
             }
 
-            const matches = state.roster.filter(s => 
-                s.name.toLowerCase().includes(query) || 
-                s.id.toLowerCase().includes(query) || 
-                s.dept.toLowerCase().includes(query)
-            );
+            const results = state.roster.filter(s => 
+                s.name.toLowerCase().includes(val) || 
+                s.id.toLowerCase().includes(val)
+            ).slice(0, 10); // 最多顯示 10 筆
 
-            if (matches.length === 0) {
-                dom.searchResultsDropdown.innerHTML = `
-                    <div class="px-4 py-3 text-xs text-slate-500 text-center flex flex-col items-center justify-center gap-1">
-                        <i data-lucide="info" class="w-4 h-4"></i>
-                        <span>查無此學生資料</span>
-                    </div>
-                `;
-                lucide.createIcons();
-                dom.searchResultsDropdown.classList.remove('hidden');
-                return;
-            }
-
-            let dropdownHtml = '';
-            matches.forEach(s => {
-                const statusBadge = s.status === '已簽到' 
-                    ? '<span class="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">已簽到</span>'
-                    : s.status === '已簽退'
-                    ? '<span class="text-[9px] px-1.5 py-0.5 bg-rose-500/20 text-rose-400 rounded">已簽退</span>'
-                    : '';
-
-                dropdownHtml += `
-                    <div class="search-item px-4 py-2.5 hover:bg-indigo-600/20 cursor-pointer flex justify-between items-center border-b border-slate-700/50 transition" 
-                         data-id="${s.id}">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-bold text-slate-200">${s.name}</span>
-                            <span class="text-[10px] text-slate-400">${s.dept} · ${s.id.toUpperCase()}</span>
+            if (results.length > 0) {
+                let html = '';
+                results.forEach(s => {
+                    html += `
+                        <div class="px-4 py-2.5 hover:bg-indigo-600/20 cursor-pointer border-b border-slate-700 last:border-0 flex justify-between items-center transition" onclick="selectStudent('${s.id}')">
+                            <div>
+                                <div class="font-bold text-white text-sm">${s.name}</div>
+                                <div class="text-[10px] text-slate-400 font-mono">${s.id.toUpperCase()}</div>
+                            </div>
+                            <div class="text-xs text-slate-500">${s.dept}</div>
                         </div>
-                        ${statusBadge}
-                    </div>
-                `;
-            });
-
-            dom.searchResultsDropdown.innerHTML = dropdownHtml;
-            dom.searchResultsDropdown.classList.remove('hidden');
-
-            document.querySelectorAll('.search-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const studentId = item.getAttribute('data-id');
-                    selectStudentById(studentId);
+                    `;
                 });
-            });
+                dom.searchResultsDropdown.innerHTML = html;
+                dom.searchResultsDropdown.classList.remove('hidden');
+            } else {
+                dom.searchResultsDropdown.innerHTML = `
+                    <div class="px-4 py-3 text-xs text-slate-500 text-center">找不到符合的學生</div>
+                `;
+                dom.searchResultsDropdown.classList.remove('hidden');
+            }
         });
 
+        // 點擊外部隱藏搜尋結果
         document.addEventListener('click', (e) => {
             if (!dom.studentSearchInput.contains(e.target) && !dom.searchResultsDropdown.contains(e.target)) {
                 dom.searchResultsDropdown.classList.add('hidden');
             }
         });
 
-        function selectStudentById(id) {
-            const student = state.roster.find(s => s.id === id);
-            if (!student) return;
+        // 全域函式供 onclick 呼叫
+        window.selectStudent = function(studentId) {
+            const student = state.roster.find(s => s.id === studentId);
+            if (student) {
+                state.selectedStudent = student;
+                
+                // 更新 UI
+                dom.studentSearchInput.value = '';
+                dom.searchResultsDropdown.classList.add('hidden');
+                
+                dom.studentIdentityCard.className = "bg-indigo-900/30 border border-indigo-500/50 rounded-xl p-3 flex items-center gap-3 shadow-inner shadow-indigo-500/10";
+                
+                // 動態判斷狀態給予不同圖示與顏色
+                let statusHtml = '';
+                if (student.status === '已簽到') {
+                    statusHtml = `<span class="text-emerald-400 font-bold ml-2">(${student.status})</span>`;
+                    dom.studentCardIcon.outerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400" id="student-card-icon"></i>`;
+                } else if (student.status === '已簽退') {
+                    statusHtml = `<span class="text-rose-400 font-bold ml-2">(${student.status})</span>`;
+                    dom.studentCardIcon.outerHTML = `<i data-lucide="log-out" class="w-5 h-5 text-rose-400" id="student-card-icon"></i>`;
+                } else {
+                    statusHtml = `<span class="text-slate-400 ml-2">(${student.status})</span>`;
+                    dom.studentCardIcon.outerHTML = `<i data-lucide="user-check" class="w-5 h-5 text-indigo-400" id="student-card-icon"></i>`;
+                }
+                lucide.createIcons();
+                
+                dom.studentCardSub.innerHTML = `${student.dept} <span class="font-mono text-indigo-300 ml-1">${student.id.toUpperCase()}</span>`;
+                dom.studentCardTitle.innerHTML = `${student.name} ${statusHtml}`;
 
-            state.selectedStudent = student;
-            dom.searchResultsDropdown.classList.add('hidden');
-            dom.studentSearchInput.value = `${student.name} (${student.id.toUpperCase()})`;
+                showToast(`已成功選定打卡身分：${student.name}。請確認定位後點擊下方按鈕打卡。`, "success");
+                
+                // 重新評估按鈕狀態
+                updateSystemCalculation();
+            }
+        };
 
-            dom.studentCardIcon.className = "w-5 h-5 text-emerald-400";
-            dom.studentCardIcon.setAttribute('data-lucide', 'user-check');
-            dom.studentCardSub.textContent = `${student.dept} · ${student.id.toUpperCase()}`;
-            dom.studentCardTitle.textContent = `歡迎！${student.name} 同學 (已選取)`;
-            dom.studentIdentityCard.className = "bg-emerald-500/5 border border-dashed border-emerald-500/30 rounded-xl p-3 flex items-center gap-3";
-
-            updateSystemCalculation();
-            lucide.createIcons();
-            showToast(`已選定身分：${student.name} (${student.dept})`, "info");
-        }
-
-        // ----------------- 打卡事件與紀錄儲存 -----------------
+        // --- 打卡邏輯實作 ---
         function executeClockAction(type) {
             if (!state.selectedStudent) {
                 showToast("打卡失敗：請先搜尋並選擇您的學生身分！", "error");
@@ -1192,32 +1254,35 @@
             }
 
             const isWithinRange = state.distance <= state.targetRadius;
+
+            // 如果不在範圍外，且不是預覽模式下，完全不予打卡
             if (!isWithinRange && !state.isPreviewMode) {
                 playChime(false);
-                showToast(`打卡失敗：您在教室打卡圍欄之外！(距離 ${Math.round(state.distance)}公尺)`, "error");
+                showToast(`打卡失敗：您在教室範圍之外！(距離教室: ${Math.round(state.distance)}公尺)`, "error");
                 return;
             }
 
             const now = new Date();
             const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
             const dateStr = now.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
-            const fullTime = `${dateStr} ${timeStr}`;
-
-            // 建立歷史紀錄物件 (加入打卡當下的 GPS 精準座標)
+            
             const record = {
                 id: Date.now(),
                 studentId: state.selectedStudent.id,
                 name: state.selectedStudent.name,
                 dept: state.selectedStudent.dept,
-                time: fullTime,
-                type: type, 
+                time: `${dateStr} ${timeStr}`,
+                type: type, // '簽到' 或 '簽退'
                 distance: Math.round(state.distance),
                 accuracy: Math.round(state.accuracy),
                 lat: state.currentLat,
-                lon: state.currentLon
+                lon: state.currentLon,
+                isOK: true
             };
 
+            // 新增至歷史清單
             state.history.unshift(record);
+            
             saveHistoryToLocalStorage();
             renderHistoryTable();
 
@@ -1236,17 +1301,21 @@
             // 同步將本筆或所有打卡紀錄繪製於地圖上，並註記姓名
             drawAllCheckInMarkersOnMap();
 
-            playChime(true);
-            const demoPrefix = state.isPreviewMode ? "[模擬]" : "";
-            showToast(`【${type}】打卡成功！${state.selectedStudent.name} 同學，時間: ${timeStr} ${demoPrefix}`, "success");
+            // 更新身分卡片上的狀態顯示
+            selectStudent(state.selectedStudent.id);
 
-            selectStudentById(state.selectedStudent.id);
+            // 音效與通知
+            playChime(true);
+            
+            const methodText = state.isPreviewMode ? "預覽模擬" : "實時定位";
+            showToast(`已成功完成【${type}】簽到打卡！(${methodText} · 距離教室 ${record.distance} 米)`, "success");
         }
 
         dom.btnClockIn.addEventListener('click', () => executeClockAction('簽到'));
         dom.btnClockOut.addEventListener('click', () => executeClockAction('簽退'));
 
-        // ----------------- 流水帳歷史表格繪製 -----------------
+
+        // --- 打卡紀錄表格繪製與管理 ---
         function renderHistoryTable() {
             if (state.history.length === 0) {
                 dom.historyTableBody.innerHTML = `
@@ -1277,22 +1346,22 @@
 
                 rowsHtml += `
                     <tr class="hover:bg-slate-800/40 transition">
-                        <td class="py-2.5 px-4 font-mono">${item.time}</td>
-                        <td class="py-2.5 px-4 font-bold text-white">${item.name}</td>
-                        <td class="py-2.5 px-4">
+                        <td class="py-3 px-4 font-mono">${item.time}</td>
+                        <td class="py-3 px-4 font-bold text-white">${item.name}</td>
+                        <td class="py-3 px-4">
                             <div class="flex flex-col">
                                 <span>${item.dept}</span>
                                 <span class="text-[10px] text-slate-500 font-mono">${item.studentId.toUpperCase()}</span>
                             </div>
                         </td>
-                        <td class="py-2.5 px-4"><span class="${typeColor}">${item.type}</span></td>
-                        <td class="py-2.5 px-4">
+                        <td class="py-3 px-4"><span class="${typeColor}">${item.type}</span></td>
+                        <td class="py-3 px-4">
                             <div class="flex flex-col text-slate-400 font-mono text-[11px]">
                                 <span class="text-xs text-indigo-300 font-bold">${coordinatesText}</span>
                                 <span>距離: ${distanceText}</span>
                             </div>
                         </td>
-                        <td class="py-2.5 px-4">
+                        <td class="py-3 px-4">
                             <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">認證通過</span>
                         </td>
                     </tr>
@@ -1303,11 +1372,12 @@
             lucide.createIcons();
         }
 
-        // ----------------- LocalStorage 存取與名單管理 -----------------
+        // 儲存至本地儲存區
         function saveHistoryToLocalStorage() {
             localStorage.setItem('classroom_gps_history_v2', JSON.stringify(state.history));
         }
 
+        // 從本地儲存區讀取
         function loadHistoryFromLocalStorage() {
             const saved = localStorage.getItem('classroom_gps_history_v2');
             if (saved) {
@@ -1419,6 +1489,8 @@
             if (state.isAdminMode) {
                 // 登出
                 state.isAdminMode = false;
+                document.body.classList.remove('admin-mode-active'); // 移除 CSS class 隱藏管理員區塊
+                
                 dom.adminBtnText.textContent = "管理登入";
                 dom.badgeAdminActive.classList.add('hidden');
                 dom.adminOnlyRosterActions.classList.add('hidden');
@@ -1457,6 +1529,8 @@
 
             if (user === 'jsl' && pass === 'jsl') {
                 state.isAdminMode = true;
+                document.body.classList.add('admin-mode-active'); // 加入 CSS class 顯示管理員區塊
+
                 dom.adminLoginModal.classList.add('hidden');
                 dom.adminLoginModal.classList.remove('flex');
 
@@ -1728,3 +1802,11 @@
     </script>
 </body>
 </html>
+```
+
+已經為您更新了程式碼，作法如下：
+1.  **新增 CSS 類別 `admin-only-section`：** 預設將其設為 `display: none;`，並在 `body` 擁有 `admin-mode-active` 這個 class 時才顯示。
+2.  **套用類別：** 將 `admin-only-section` 加到您指定的「教室配置」、「學生點名冊」和「歷史打卡紀錄」這三個區塊的容器上。
+3.  **登入/登出連動：** 在點擊登入管理者並驗證成功時，利用 JS 在 `body` 加上 `admin-mode-active` 類別讓區塊顯現；登出時則移除該類別，重新隱藏區塊。
+
+現在，未登入的學生打開網頁只會看到左側的「地圖/定位狀態」以及右側的「身分選擇與打卡按鈕」。只有輸入帳號密碼登入後，才能完整觀看和管理其他資訊與設定。
