@@ -18,7 +18,7 @@
         }
         /* 自訂 Leaflet 脈衝動畫效果 */
         @keyframes pulse-ring {
-            0% { transform: scale(0.33); opacity: 1; }
+            0 { transform: scale(0.33); opacity: 1; }
             80%, 100% { transform: scale(2); opacity: 0; }
         }
         .pulse-marker {
@@ -92,7 +92,7 @@
             </div>
             <h3 class="text-xl font-bold text-white mb-2">需要您的 GPS 定位授權</h3>
             <p class="text-sm text-slate-300 mb-6 leading-relaxed">
-                本系統為「教室專用 GPS 打卡系統」，需要獲取您當前的真實地理位置，以計算您與教室之間的距離，並判定是否在 30 公尺的指定打卡範圍內。
+                本系統為「教室專用 GPS 打卡系統」，需要獲取您當前的真實地理位置，以計算您與教室之間的距離，並判定是否在 2500 公尺的指定打卡範圍內。
             </p>
             
             <div class="bg-slate-900/60 rounded-xl p-4 text-left border border-slate-800 text-xs text-slate-400 space-y-3 mb-6">
@@ -102,7 +102,7 @@
                 </div>
                 <div class="flex items-start gap-2.5">
                     <i data-lucide="navigation" class="w-4.5 h-4.5 text-indigo-400 flex-shrink-0 mt-0.5"></i>
-                    <span><strong>打卡條件：</strong> 必須授權真實 GPS 且定位精準度小於或等於 30 公尺內方能打卡。</span>
+                    <span><strong>打卡條件：</strong> 必須授權真實 GPS 且定位精準度小於或等於 2500 公尺內方能打卡（校園網段內則免受限制）。</span>
                 </div>
             </div>
 
@@ -234,7 +234,7 @@
                         <span>智慧課堂 GPS 打卡與點名系統</span>
                         <span id="badge-admin-active" class="hidden text-[10px] px-2 py-0.5 bg-rose-500 text-white rounded-full font-bold animate-pulse">管理者模式</span>
                     </h1>
-                    <p class="text-xs text-slate-400">真實手機定位 · 30米範圍 · 學生名單智慧檢核</p>
+                    <p class="text-xs text-slate-400">真實手機定位 · 2500米範圍 · 學生名單智慧檢核</p>
                 </div>
             </div>
             
@@ -357,7 +357,7 @@
                     </div>
                     <div>
                         <label class="text-xs text-slate-400 block mb-1">允許打卡半徑範圍 (米)</label>
-                        <input type="number" id="input-target-radius" value="30" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-400 focus:outline-none focus:border-indigo-500 cursor-not-allowed">
+                        <input type="number" id="input-target-radius" value="2500" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-400 focus:outline-none focus:border-indigo-500 cursor-not-allowed">
                     </div>
                 </div>
 
@@ -407,7 +407,7 @@
                     <div class="text-center">
                         <span class="text-xs text-slate-400 block mb-1">您與指定教室距離</span>
                         <div id="distance-display" class="text-3xl font-black font-mono text-indigo-400">--- 米</div>
-                        <span id="radius-display-text" class="text-[10px] text-slate-400 block mt-1">教室打卡半徑：30 米內</span>
+                        <span id="radius-display-text" class="text-[10px] text-slate-400 block mt-1">教室打卡半徑：2500 米內</span>
                     </div>
 
                     <div class="my-3 h-[1px] bg-slate-800"></div>
@@ -543,7 +543,7 @@
     <footer class="border-t border-slate-800 bg-slate-950/50 py-4 text-center text-xs text-slate-500">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p>© 2026 智慧課堂打卡系統. 管理者預設帳密: jsl / jsl</p>
-            <p class="text-[10px] text-slate-600" id="classroom-coordinates-footer">教室座標：24.991999, 121.230375 (30公尺)</p>
+            <p class="text-[10px] text-slate-600" id="classroom-coordinates-footer">教室座標：24.991999, 121.230375 (2500公尺)</p>
         </div>
     </footer>
 
@@ -609,7 +609,7 @@
             accuracy: 0,
             targetLat: 24.991999,  // 預設教室座標
             targetLon: 121.230375,
-            targetRadius: 30,      // 允許半徑 (30 公尺)
+            targetRadius: 2500,    // 允許半徑為 2500 公尺
             distance: 99999,       // 當前計算距離
             gpsConnected: false,
             isPreviewMode: false,  // 是否啟用預覽沙盒兼容模式
@@ -617,7 +617,8 @@
             watchId: null,         // Geolocation watch id
             history: [],           // 打卡紀錄儲存
             roster: [],            // 學生點名簿
-            selectedStudent: null  // 目前被選取要進行打卡的學生物件
+            selectedStudent: null, // 目前被選取要進行打卡的學生物件
+            userIp: ""             // 當前偵測到的 IP 位置
         };
 
         // --- 地圖相關與多點打卡軌跡變數 ---
@@ -714,6 +715,19 @@
             btnExecuteImport: document.getElementById('btn-execute-import')
         };
 
+        // --- 偵測是否為指定校園網段 (120.124.28.1 ~ 120.124.29.255) ---
+        function isSchoolIP(ipStr) {
+            if (!ipStr || typeof ipStr !== 'string') return false;
+            const parts = ipStr.split('.').map(Number);
+            if (parts.length !== 4 || parts.some(isNaN)) return false;
+            
+            if (parts[0] === 120 && parts[1] === 124) {
+                if (parts[2] === 28 && parts[3] >= 1 && parts[3] <= 255) return true;
+                if (parts[2] === 29 && parts[3] >= 0 && parts[3] <= 255) return true;
+            }
+            return false;
+        }
+
         // --- 系統音效 (利用 Web Audio API 合成) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playChime(success = true) {
@@ -762,17 +776,66 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- 獲取使用者目前的公網 IP 位置 ---
+        // --- [高度穩定修正] 獲取使用者目前的公網 IP 位置 (多重備份與相容逾時機制) ---
         async function fetchUserIP() {
-            try {
-                const response = await fetch('https://api.ipify.org?format=json', { timeout: 4000 });
-                const data = await response.json();
-                dom.currentIp.textContent = data.ip;
-                dom.currentIp.className = "font-mono text-sm text-indigo-400 font-bold";
-            } catch (error) {
-                dom.currentIp.textContent = "偵測失敗 (可能是內嵌或無外部網路)";
-                dom.currentIp.className = "font-sans text-xs text-slate-400";
+            // 提供多個免費且支援 CORS 的 IP 查詢 API，確保在各種環境下都能取得 IP
+            const apis = [
+                { url: 'https://api.ipify.org?format=json', parse: r => r.json().then(d => d.ip) },
+                { url: 'https://ipapi.co/json/', parse: r => r.json().then(d => d.ip) },
+                { url: 'https://api.seeip.org', parse: r => r.text() }
+            ];
+
+            let detectedIp = "";
+
+            for (const api of apis) {
+                try {
+                    // 使用標準的 AbortController 來實作 4 秒逾時限制，避免程式碼掛載或卡死
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+                    const response = await fetch(api.url, { 
+                        signal: controller.signal,
+                        headers: { 'Accept': 'application/json, text/plain' }
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    if (response.ok) {
+                        const ip = await api.parse(response);
+                        if (ip && ip.trim()) {
+                            detectedIp = ip.trim();
+                            break; // 成功取得便跳出迴圈
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`無法透過 ${api.url} 取得 IP:`, error);
+                }
             }
+            
+            if (detectedIp) {
+                state.userIp = detectedIp;
+                if (isSchoolIP(state.userIp)) {
+                    dom.currentIp.innerHTML = `${detectedIp} <span class="ml-1.5 px-2 py-0.5 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full font-bold">校園網段 · 免除 GPS 限制</span>`;
+                    
+                    // 自動關閉 GPS 強制授權彈窗，讓校園網段學生直接進入系統
+                    if (dom.gpsAuthModal && dom.gpsAuthModal.style.display !== 'none') {
+                        dom.gpsAuthModal.classList.add('opacity-0', 'pointer-events-none');
+                        setTimeout(() => dom.gpsAuthModal.style.display = 'none', 300);
+                    }
+                    showToast("已自動偵測為校園免除網段，系統已免除 GPS 定位限制！", "success");
+                } else {
+                    dom.currentIp.textContent = detectedIp;
+                }
+                dom.currentIp.className = "font-mono text-sm text-indigo-400 font-bold flex items-center flex-wrap gap-1";
+            } else {
+                // 當所有 API 均被瀏覽器沙盒或廣告阻擋器封鎖時，進行安全降級處理
+                dom.currentIp.textContent = "偵測失敗 (使用真實 GPS 模式)";
+                dom.currentIp.className = "font-sans text-xs text-slate-400";
+                console.warn("無法取得公網 IP，系統已自動降級為一般標準 GPS 定位判定。");
+            }
+
+            // 確保不論 IP 成功與否，都更新一次計算，避免系統卡死
+            updateSystemCalculation();
         }
 
         // --- 哈弗辛公式計算兩點距離 (公尺) ---
@@ -793,7 +856,7 @@
                 map = L.map('live-map', {
                     zoomControl: false,
                     attributionControl: false
-                }).setView([state.targetLat, state.targetLon], 18);
+                }).setView([state.targetLat, state.targetLon], 14); // 範圍加大，視角拉遠符合 2500m 半徑
 
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                     maxZoom: 20
@@ -819,8 +882,8 @@
                 classroomCircle = L.circle([state.targetLat, state.targetLon], {
                     color: '#10b981',
                     fillColor: '#10b981',
-                    fillOpacity: 0.15,
-                    radius: state.targetRadius,
+                    fillOpacity: 0.1,
+                    radius: state.targetRadius, // 2500m
                     weight: 1.5,
                     dashArray: '4'
                 }).addTo(map);
@@ -879,7 +942,7 @@
 
         // --- 更新地圖上的使用者位置與精確度範圍 ---
         function updateMapUserPosition() {
-            if (!map) return;
+            if (!map || state.currentLat === 0 || state.currentLon === 0) return;
 
             const userPos = [state.currentLat, state.currentLon];
             const userIcon = L.divIcon({
@@ -928,25 +991,48 @@
 
         // --- 更新核心邏輯計算 ---
         function updateSystemCalculation() {
-            state.distance = calculateHaversine(
-                state.currentLat, 
-                state.currentLon, 
-                state.targetLat, 
-                state.targetLon
-            );
+            const hasLocation = state.currentLat !== 0 && state.currentLon !== 0;
 
-            // 距離格式化
-            if (state.distance >= 1000) {
-                dom.distanceDisplay.textContent = `${(state.distance / 1000).toFixed(2)} 公里`;
+            if (hasLocation) {
+                state.distance = calculateHaversine(
+                    state.currentLat, 
+                    state.currentLon, 
+                    state.targetLat, 
+                    state.targetLon
+                );
+
+                // 距離格式化
+                if (state.distance >= 1000) {
+                    dom.distanceDisplay.textContent = `${(state.distance / 1000).toFixed(2)} 公里`;
+                } else {
+                    dom.distanceDisplay.textContent = `${Math.round(state.distance)} 公尺`;
+                }
             } else {
-                dom.distanceDisplay.textContent = `${Math.round(state.distance)} 公尺`;
+                dom.distanceDisplay.textContent = "--- 米";
             }
 
-            const isWithinRange = state.distance <= state.targetRadius;
-            const isGpsWeak = state.accuracy > 45;
+            const isWithinRange = hasLocation && (state.distance <= state.targetRadius);
+            const isGpsWeak = hasLocation && (state.accuracy > 45);
+            const isSchoolIpActive = isSchoolIP(state.userIp);
 
             // 判定是否能打卡
-            if (isWithinRange) {
+            if (isSchoolIpActive) {
+                // 校園網段直接開通，無視 GPS 定位誤差與距離
+                dom.checkinStatusCard.className = "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                dom.checkinStatusCard.innerHTML = `<span class="flex items-center justify-center gap-1"><i data-lucide="shield-check" class="w-4 h-4"></i> 校園 IP 認證 · 免除 GPS 限制 · 允許打卡</span>`;
+                
+                if (state.selectedStudent) {
+                    dom.btnClockIn.disabled = false;
+                    dom.btnClockOut.disabled = false;
+                }
+            } else if (!hasLocation) {
+                // 當前尚未取得任何 GPS 定位數據
+                dom.checkinStatusCard.className = "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-slate-800 text-slate-400 border border-slate-700";
+                dom.checkinStatusCard.innerHTML = `<span class="flex items-center justify-center gap-1"><i data-lucide="compass" class="w-4 h-4"></i> 等待 GPS 定位訊號中...</span>`;
+                
+                dom.btnClockIn.disabled = true;
+                dom.btnClockOut.disabled = true;
+            } else if (isWithinRange) {
                 if (isGpsWeak) {
                     dom.checkinStatusCard.className = "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20";
                     dom.checkinStatusCard.innerHTML = `<span class="flex items-center justify-center gap-1"><i data-lucide="alert-circle" class="w-4 h-4"></i> 定位誤差大 · 建議移至窗邊</span>`;
@@ -990,7 +1076,7 @@
                 dom.currentAccuracy.className = "font-mono text-sm text-indigo-400 font-semibold";
             } else {
                 dom.currentAccuracy.textContent = `± ${Math.round(accuracy)} 公尺`;
-                if (accuracy <= 30) {
+                if (accuracy <= 30 || isSchoolIP(state.userIp)) {
                     dom.currentAccuracy.className = "font-mono text-sm text-emerald-400 font-semibold";
                 } else if (accuracy <= 50) {
                     dom.currentAccuracy.className = "font-mono text-sm text-amber-400 font-semibold";
@@ -1103,7 +1189,12 @@
             dom.btnIframeBypass.classList.remove('hidden');
             dom.btnIframeBypass.classList.add('flex');
             
-            showToast(`定位失敗：${errMsg}。已為您開啟故障診斷提示與展示通道。`, "error");
+            // 若偵測到校園網路，則即使 GPS 出錯也不阻擋學生直接使用
+            if (isSchoolIP(state.userIp)) {
+                dom.btnIframeBypass.click();
+            } else {
+                showToast(`定位失敗：${errMsg}。已為您開啟故障診斷提示與展示通道。`, "error");
+            }
             lucide.createIcons();
         }
 
@@ -1118,7 +1209,7 @@
         document.getElementById('btn-close-gps-modal').addEventListener('click', () => {
             dom.gpsAuthModal.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => dom.gpsAuthModal.style.display = 'none', 300);
-            showToast("已手動跳過定位。您目前處於「唯讀檢視模式」，如需打卡請允許 GPS 定位並重整網頁。", "info");
+            showToast("已手動跳過定位。您目前處於「唯讀檢視模式」，如需打卡請允許 GPS 定位並重整網頁（校園免除網段除外）。", "info");
         });
 
         // 預覽展示模式按鈕事件
@@ -1141,31 +1232,6 @@
             onLocationUpdated(demoLat, demoLon, 1);
             showToast("已成功進入預覽展示模式，地圖及面板功能已解鎖！", "success");
         });
-
-        // --- 提示訊息 UI ---
-        let toastTimeout = null;
-        function showToast(text, type = "info") {
-            clearTimeout(toastTimeout);
-            dom.toastText.textContent = text;
-            
-            if (type === "success") {
-                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400";
-                dom.toastMessage.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> ${text}`;
-            } else if (type === "error") {
-                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-rose-500/10 border border-rose-500/30 text-rose-400";
-                dom.toastMessage.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4"></i> ${text}`;
-            } else {
-                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 text-slate-300";
-                dom.toastMessage.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i> ${text}`;
-            }
-            
-            dom.toastMessage.classList.remove('hidden');
-            lucide.createIcons();
-            
-            toastTimeout = setTimeout(() => {
-                dom.toastMessage.classList.add('hidden');
-            }, 5000);
-        }
 
         // --- 搜尋並選擇學生 (下拉自動補完) ---
         dom.studentSearchInput.addEventListener('input', (e) => {
@@ -1239,7 +1305,7 @@
                 dom.studentCardSub.innerHTML = `${student.dept} <span class="font-mono text-indigo-300 ml-1">${student.id.toUpperCase()}</span>`;
                 dom.studentCardTitle.innerHTML = `${student.name} ${statusHtml}`;
 
-                showToast(`已成功選定打卡身分：${student.name}。請確認定位後點擊下方按鈕打卡。`, "success");
+                showToast(`已成功選定打卡身分：${student.name}。請確認後點擊下方按鈕打卡。`, "success");
                 
                 // 重新評估按鈕狀態
                 updateSystemCalculation();
@@ -1254,9 +1320,10 @@
             }
 
             const isWithinRange = state.distance <= state.targetRadius;
+            const isSchoolIpActive = isSchoolIP(state.userIp);
 
-            // 如果不在範圍外，且不是預覽模式下，完全不予打卡
-            if (!isWithinRange && !state.isPreviewMode) {
+            // 如果不在範圍外，且不是預覽或校園 IP 模式下，不予打卡
+            if (!isWithinRange && !state.isPreviewMode && !isSchoolIpActive) {
                 playChime(false);
                 showToast(`打卡失敗：您在教室範圍之外！(距離教室: ${Math.round(state.distance)}公尺)`, "error");
                 return;
@@ -1266,6 +1333,10 @@
             const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
             const dateStr = now.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
             
+            // 若為校園 IP 但無實體定位，給予模擬座標供地圖標註
+            const finalLat = (state.currentLat === 0) ? state.targetLat : state.currentLat;
+            const finalLon = (state.currentLon === 0) ? state.targetLon : state.currentLon;
+
             const record = {
                 id: Date.now(),
                 studentId: state.selectedStudent.id,
@@ -1273,10 +1344,10 @@
                 dept: state.selectedStudent.dept,
                 time: `${dateStr} ${timeStr}`,
                 type: type, // '簽到' 或 '簽退'
-                distance: Math.round(state.distance),
-                accuracy: Math.round(state.accuracy),
-                lat: state.currentLat,
-                lon: state.currentLon,
+                distance: isSchoolIpActive ? 0 : Math.round(state.distance),
+                accuracy: isSchoolIpActive ? 1 : Math.round(state.accuracy),
+                lat: finalLat,
+                lon: finalLon,
                 isOK: true
             };
 
@@ -1291,9 +1362,9 @@
             if (studentInRoster) {
                 studentInRoster.status = type === '簽到' ? '已簽到' : '已簽退';
                 studentInRoster.checkTime = timeStr;
-                studentInRoster.distance = Math.round(state.distance);
-                studentInRoster.lat = state.currentLat;
-                studentInRoster.lon = state.currentLon;
+                studentInRoster.distance = record.distance;
+                studentInRoster.lat = finalLat;
+                studentInRoster.lon = finalLon;
                 saveRosterToLocalStorage();
                 renderAdminRosterTable();
             }
@@ -1307,8 +1378,8 @@
             // 音效與通知
             playChime(true);
             
-            const methodText = state.isPreviewMode ? "預覽模擬" : "實時定位";
-            showToast(`已成功完成【${type}】簽到打卡！(${methodText} · 距離教室 ${record.distance} 米)`, "success");
+            const methodText = isSchoolIpActive ? "校園 IP 驗證免 GPS" : (state.isPreviewMode ? "預覽模擬" : "實時定位");
+            showToast(`已成功完成【${type}】簽到打卡！(${methodText})`, "success");
         }
 
         dom.btnClockIn.addEventListener('click', () => executeClockAction('簽到'));
@@ -1496,7 +1567,7 @@
                 dom.adminOnlyRosterActions.classList.add('hidden');
                 dom.adminConfigActions.classList.add('hidden');
                 
-                // 恢復教室設定欄位為唯讀唯讀 (手機端採用 readOnly 更加相容可靠)
+                // 恢復教室設定欄位為唯讀 (手機端採用 readOnly 更加相容可靠)
                 dom.inputTargetLat.readOnly = true;
                 dom.inputTargetLon.readOnly = true;
                 dom.inputTargetRadius.readOnly = true;
@@ -1604,7 +1675,7 @@
         dom.btnResetCoords.addEventListener('click', () => {
             dom.inputTargetLat.value = "24.991999";
             dom.inputTargetLon.value = "121.230375";
-            dom.inputTargetRadius.value = "30";
+            dom.inputTargetRadius.value = "2500";
             showToast("座標欄已還原預設值，請確認點擊「儲存教室設定」以套用。", "info");
         });
 
@@ -1788,6 +1859,31 @@
             dom.classroomCoordinatesFooter.textContent = `教室座標：${state.targetLat.toFixed(6)}, ${state.targetLon.toFixed(6)} (${state.targetRadius}公尺)`;
         }
 
+        // --- 核心提示訊息 UI ---
+        let toastTimeout = null;
+        function showToast(text, type = "info") {
+            clearTimeout(toastTimeout);
+            dom.toastText.textContent = text;
+            
+            if (type === "success") {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400";
+                dom.toastMessage.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> ${text}`;
+            } else if (type === "error") {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-rose-500/10 border border-rose-500/30 text-rose-400";
+                dom.toastMessage.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4"></i> ${text}`;
+            } else {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 text-slate-300";
+                dom.toastMessage.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i> ${text}`;
+            }
+            
+            dom.toastMessage.classList.remove('hidden');
+            lucide.createIcons();
+            
+            toastTimeout = setTimeout(() => {
+                dom.toastMessage.classList.add('hidden');
+            }, 5000);
+        }
+
         // --- 初始化入口點 ---
         window.onload = function() {
             lucide.createIcons();
@@ -1795,6 +1891,8 @@
             initMap();
             loadRosterFromLocalStorage();
             loadHistoryFromLocalStorage();
+            
+            // 執行具有多層安全防護的 IP 偵測
             fetchUserIP();
 
             dom.gpsAuthModal.style.display = 'flex';
@@ -1802,11 +1900,3 @@
     </script>
 </body>
 </html>
-```
-
-已經為您更新了程式碼，作法如下：
-1.  **新增 CSS 類別 `admin-only-section`：** 預設將其設為 `display: none;`，並在 `body` 擁有 `admin-mode-active` 這個 class 時才顯示。
-2.  **套用類別：** 將 `admin-only-section` 加到您指定的「教室配置」、「學生點名冊」和「歷史打卡紀錄」這三個區塊的容器上。
-3.  **登入/登出連動：** 在點擊登入管理者並驗證成功時，利用 JS 在 `body` 加上 `admin-mode-active` 類別讓區塊顯現；登出時則移除該類別，重新隱藏區塊。
-
-現在，未登入的學生打開網頁只會看到左側的「地圖/定位狀態」以及右側的「身分選擇與打卡按鈕」。只有輸入帳號密碼登入後，才能完整觀看和管理其他資訊與設定。
