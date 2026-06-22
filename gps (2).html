@@ -121,8 +121,8 @@
                     <div class="border-t border-slate-800 pt-2 space-y-1.5">
                         <span class="text-emerald-400 font-bold block">💡 完美解決步驟（推薦）：</span>
                         <ol class="list-decimal pl-4 space-y-1">
-                            <li>將此 HTML 檔案下載並命名為 <code class="bg-slate-800 px-1 font-mono text-xs">index.html</code>。</li>
-                            <li>上傳至免費網域託管平台如 <strong><a href="https://pages.github.com/" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">GitHub Pages</a></strong> 或 <strong><a href="https://vercel.com/" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">Vercel</a></strong>。</li>
+                            <li>將此 HTML 檔案下載並命名為 <code class="bg-slate-800 px-1 font-mono text-xs">index.html</code>.</li>
+                            <li>上傳至免費網域託管平台如 <strong><a href="https://pages.github.com/" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">GitHub Pages</a></strong> 或 <strong><a href="https://vercel.com/" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">Vercel</a></strong>.</li>
                             <li>取得專屬連結後，在 Google 協作平台編輯器中新增一個<strong>「按鈕」元件</strong>。</li>
                             <li>將按鈕名稱設為「教室 GPS 打卡簽到」，連結指向託管的網址。</li>
                             <li>使用者點擊按鈕後將會以<strong>「新分頁」</strong>開啟網頁，即可 100% 完美執行真實 GPS 簽到！</li>
@@ -187,7 +187,7 @@
             <textarea id="import-textarea" rows="8" placeholder="化材四系,bc0252001,劉國駿&#10;企管四系,bd0209012,朱沛如" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
             
             <div class="flex justify-between items-center mt-4">
-                <span class="text-[10px] text-amber-400 font-medium">※ 匯入新名單將覆蓋目前記憶體中的學生資料</span>
+                <span class="text-[10px] text-amber-400 font-medium">※ 匯入新名單將覆蓋目前資料庫中的學生資料</span>
                 <div class="flex gap-2">
                     <button id="btn-cancel-import" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-xl text-xs transition">取消</button>
                     <button id="btn-execute-import" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition">確認匯入</button>
@@ -204,7 +204,7 @@
             </div>
             <h3 class="text-lg font-bold text-white mb-2">確定要清除紀錄嗎？</h3>
             <p class="text-xs text-slate-400 mb-6 leading-relaxed">
-                此動作將會永遠刪除您儲存在此瀏覽器中的所有數據，且此動作無法復原。
+                此動作將會永遠刪除您儲存在雲端資料庫中的所有打卡歷史數據，且此動作無法復原。
             </p>
             <div class="grid grid-cols-2 gap-3">
                 <button id="btn-confirm-cancel" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2 rounded-xl text-xs transition">
@@ -229,7 +229,7 @@
                         <span>智慧課堂 GPS 打卡與點名系統</span>
                         <span id="badge-admin-active" class="hidden text-[10px] px-2 py-0.5 bg-rose-500 text-white rounded-full font-bold animate-pulse">管理者模式</span>
                     </h1>
-                    <p class="text-xs text-slate-400">真實手機定位 · 2500米範圍 · 學生名單智慧檢核</p>
+                    <p class="text-xs text-slate-400">雲端即時同步 · 一機一識別碼防代點 · 管理端一鍵即時解鎖</p>
                 </div>
             </div>
             
@@ -244,9 +244,9 @@
                     <i data-lucide="user-cog" class="w-4 h-4"></i>
                     <span id="admin-btn-text">管理登入</span>
                 </button>
-                <div id="gps-status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                    <span>等待定位中...</span>
+                <div id="gps-status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>雲端系統已連線</span>
                 </div>
             </div>
         </div>
@@ -307,7 +307,7 @@
                 <div class="flex items-center justify-between mb-3 px-1">
                     <div>
                         <h3 class="text-sm font-bold text-slate-200">實時衛星定位地圖</h3>
-                        <p class="text-[10px] text-slate-400">綠圈：教室範圍 | 藍點：您的位置 | 橘/綠標籤：同儕已打卡位置</p>
+                        <p class="text-[10px] text-slate-400">綠圈：教室範圍 | 藍點：您的位置 | 紅/綠標記：全班已打卡位置</p>
                     </div>
                     <button id="btn-recenter-map" class="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 hover:text-white transition flex items-center justify-center min-h-[36px] min-w-[36px]" title="重新將地圖對齊我的位置">
                         <i data-lucide="focus" class="w-4 h-4"></i>
@@ -397,6 +397,11 @@
                                 </div>
                             </div>
                             
+                            <!-- 顯示當前學生的 local 識別碼 -->
+                            <div id="local-device-id-badge" class="text-[10px] text-slate-500 font-mono mt-1 text-right">
+                                我的硬體識別碼: --
+                            </div>
+                            
                             <!-- 管理者重置此裝置鎖定按鈕 -->
                             <button id="btn-admin-reset-device" class="hidden mt-2 w-full py-1.5 px-3 bg-rose-600/30 hover:bg-rose-600/50 text-rose-300 border border-rose-500/30 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1.5">
                                 <i data-lucide="unlocked" class="w-3.5 h-3.5"></i> 解除此裝置打卡綁定 (管理者權限)
@@ -455,7 +460,7 @@
                         <h2 class="font-bold text-slate-200 flex items-center gap-2">
                             <i data-lucide="users" class="w-5 h-5 text-indigo-400"></i> 上課學生點名冊與即時狀態
                         </h2>
-                        <p class="text-[11px] text-slate-400">全班即時出缺勤看板 (今日已註冊人數: <span id="admin-roster-count" class="text-indigo-400 font-bold">0</span> 人)</p>
+                        <p class="text-[11px] text-slate-400">全班即時出缺勤與硬體互鎖防代點看板 (今日已註冊人數: <span id="admin-roster-count" class="text-indigo-400 font-bold">0</span> 人)</p>
                     </div>
                     
                     <div id="admin-only-roster-actions" class="hidden flex-wrap gap-2">
@@ -483,7 +488,7 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto border border-slate-700/50 rounded-xl bg-slate-900/40 max-h-[300px]">
+                <div class="overflow-x-auto border border-slate-700/50 rounded-xl bg-slate-900/40 max-h-[350px]">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-800/80 text-[11px] text-slate-400 uppercase tracking-wider border-b border-slate-700 sticky top-0 z-10">
@@ -491,8 +496,9 @@
                                 <th class="py-2.5 px-4 font-medium">學號</th>
                                 <th class="py-2.5 px-4 font-medium">姓名</th>
                                 <th class="py-2.5 px-4 font-medium">出勤狀態</th>
-                                <th class="py-2.5 px-4 font-medium">簽到/簽退時間</th>
-                                <th class="py-2.5 px-4 font-medium">誤差距離與打卡GPS座標</th>
+                                <th class="py-2.5 px-4 font-medium">打卡GPS座標與距離</th>
+                                <th class="py-2.5 px-4 font-medium text-amber-400">已綁定硬體碼</th>
+                                <th class="py-2.5 px-4 font-medium text-rose-400">即時解鎖操作</th>
                             </tr>
                         </thead>
                         <tbody id="admin-roster-table-body" class="text-xs text-slate-300 divide-y divide-slate-800">
@@ -549,9 +555,30 @@
         </div>
     </footer>
 
-    <!-- JS 邏輯代碼 -->
-    <script>
-        // ----------------- 預設點名單 (匯入 image_54e46b.png 之數據) -----------------
+    <!-- Firebase SDK V11 Module 整合 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Firebase 設定 ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAdHOpHBelWzvUu6TsCN-Efxet5GpdZOQM",
+            authDomain: "gps-classroom-4f2e5.firebaseapp.com",
+            databaseURL: "https://gps-classroom-4f2e5-default-rtdb.firebaseio.com",
+            projectId: "gps-classroom-4f2e5",
+            storageBucket: "gps-classroom-4f2e5.firebasestorage.app",
+            messagingSenderId: "670468566302",
+            appId: "1:670468566302:web:f36f705ba9be2e2fb36d0f"
+        };
+        const appId = 'gps-classroom-prod-v2';
+
+        // 初始化 Firebase 服務
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ----------------- 預設點名單 -----------------
         const defaultRoster = [
             { dept: "精工四系", id: "bc0252001", name: "劉國駿" },
             { dept: "企管四系", id: "bd0209012", name: "朱沛如" },
@@ -609,29 +636,39 @@
             currentLat: 0,
             currentLon: 0,
             accuracy: 0,
-            targetLat: 24.991999,  // 預設教室座標
+            targetLat: 24.991999,
             targetLon: 121.230375,
-            targetRadius: 2500,    // 允許半徑為 2500 公尺
-            distance: 99999,       // 當前計算距離
+            targetRadius: 2500,
+            distance: 99999,
             gpsConnected: false,
-            isPreviewMode: false,  // 是否啟用預覽沙盒兼容模式
-            isAdminMode: false,    // 是否正處於管理者登入狀態
-            watchId: null,         // Geolocation watch id
-            history: [],           // 打卡紀錄儲存
-            roster: [],            // 學生點名簿
-            selectedStudent: null, // 目前被選取要進行打卡的學生物件
-            userIp: ""             // 當前偵測到的 IP 位置
+            isPreviewMode: false,
+            isAdminMode: false,
+            watchId: null,
+            history: [],
+            roster: [],
+            selectedStudent: null,
+            userIp: ""
         };
 
-        // --- 地圖相關與多點打卡軌跡變數 ---
+        let user = null; // 當前登入的 Firebase 使用者對象
+
+        // ----------------- Firestore 指定安全路徑生成器 -----------------
+        const getPublicCollectionRef = (collectionName) => {
+            return collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+        };
+        const getPublicDocRef = (collectionName, docId) => {
+            return doc(db, 'artifacts', appId, 'public', 'data', collectionName, docId);
+        };
+
+        // --- 地圖與標記群組 ---
         let map = null;
         let classroomMarker = null;
         let classroomCircle = null;
         let userMarker = null;
         let userAccuracyCircle = null;
-        let peerMarkersGroup = null; // 用於統一管理與重繪所有人的打卡座標
+        let peerMarkersGroup = null;
 
-        // --- DOM 節點宣告 ---
+        // --- DOM 節點對應 ---
         const dom = {
             liveTime: document.getElementById('live-time'),
             liveDate: document.getElementById('live-date'),
@@ -654,22 +691,20 @@
             radiusDisplayText: document.getElementById('radius-display-text'),
             classroomCoordinatesFooter: document.getElementById('classroom-coordinates-footer'),
             
-            // 地圖定位
             btnRecenterMap: document.getElementById('btn-recenter-map'),
             mapLoadingOverlay: document.getElementById('map-loading-overlay'),
 
-            // 授權彈窗 DOM
             gpsAuthModal: document.getElementById('gps-auth-modal'),
             btnGrantGps: document.getElementById('btn-grant-gps'),
             gpsErrorDiagnostic: document.getElementById('gps-error-diagnostic'),
             errorDiagnosticText: document.getElementById('error-diagnostic-text'),
+            btnRefreshGps: document.getElementById('btn-refresh-gps'), // 【已修正】：補上重新定位按鈕宣告
+            btnCloseGpsModal: document.getElementById('btn-close-gps-modal'), // 【已修正】：補上關閉定位視窗按鈕宣告
             
-            // 自訂確認彈窗 DOM
             confirmModal: document.getElementById('confirm-modal'),
             btnConfirmCancel: document.getElementById('btn-confirm-cancel'),
             btnConfirmExecute: document.getElementById('btn-confirm-execute'),
 
-            // 學生身分搜尋與選擇 DOM
             studentSearchInput: document.getElementById('student-search-input'),
             searchResultsDropdown: document.getElementById('search-results-dropdown'),
             studentIdentityCard: document.getElementById('student-identity-card'),
@@ -678,7 +713,6 @@
             studentCardTitle: document.getElementById('student-card-title'),
             btnAdminResetDevice: document.getElementById('btn-admin-reset-device'),
 
-            // 管理者登入 DOM
             btnToggleAdminMode: document.getElementById('btn-toggle-admin-mode'),
             adminBtnText: document.getElementById('admin-btn-text'),
             adminLoginModal: document.getElementById('admin-login-modal'),
@@ -689,7 +723,6 @@
             btnExecuteLogin: document.getElementById('btn-execute-login'),
             badgeAdminActive: document.getElementById('badge-admin-active'),
 
-            // 教室配置設定 DOM (管理端專屬)
             configStatusTag: document.getElementById('config-status-tag'),
             inputTargetLat: document.getElementById('input-target-lat'),
             inputTargetLon: document.getElementById('input-target-lon'),
@@ -698,7 +731,6 @@
             btnResetCoords: document.getElementById('btn-reset-coords'),
             btnSaveCoords: document.getElementById('btn-save-coords'),
 
-            // 點名冊 DOM
             adminRosterCount: document.getElementById('admin-roster-count'),
             adminRosterSearch: document.getElementById('admin-roster-search'),
             rosterStatChecked: document.getElementById('roster-stat-checked'),
@@ -709,7 +741,6 @@
             btnExportAttendance: document.getElementById('btn-export-attendance'),
             btnResetRoster: document.getElementById('btn-reset-roster'),
 
-            // 匯入名單彈窗 DOM
             rosterImportModal: document.getElementById('roster-import-modal'),
             btnCloseImport: document.getElementById('btn-close-import'),
             importTextarea: document.getElementById('import-textarea'),
@@ -717,7 +748,20 @@
             btnExecuteImport: document.getElementById('btn-execute-import')
         };
 
-        // --- 偵測是否為指定校園網段 (120.124.28.1 ~ 120.124.29.255) ---
+        // --- 獲取或產生手機專用的持久 Unique Device UUID (硬體編號) ---
+        function getOrCreateDeviceUUID() {
+            let uuid = localStorage.getItem('classroom_device_uuid');
+            if (!uuid) {
+                uuid = 'dev-' + Math.random().toString(36).substring(2, 10) + '-' + Math.random().toString(36).substring(2, 10);
+                localStorage.setItem('classroom_device_uuid', uuid);
+            }
+            return uuid;
+        }
+
+        const myDeviceUUID = getOrCreateDeviceUUID();
+        document.getElementById('local-device-id-badge').textContent = `本機硬體識別碼: ${myDeviceUUID}`;
+
+        // --- 偵測是否為指定校園網段 ---
         function isSchoolIP(ipStr) {
             if (!ipStr || typeof ipStr !== 'string') return false;
             const parts = ipStr.split('.').map(Number);
@@ -730,55 +774,7 @@
             return false;
         }
 
-        // --- 系統音效 (利用 Web Audio API 合成) ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playChime(success = true) {
-            try {
-                if (success) {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
-                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.4);
-                } else {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                    osc.frequency.setValueAtTime(100, audioCtx.currentTime + 0.15);
-                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.3);
-                }
-            } catch (e) {
-                console.log("Audio block:", e);
-            }
-        }
-
-        // --- 初始化時鐘 ---
-        function updateClock() {
-            const now = new Date();
-            const timeStr = now.toTimeString().split(' ')[0];
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-            const dateStr = now.toLocaleDateString('zh-TW', options);
-            
-            dom.liveTime.textContent = timeStr;
-            dom.liveDate.textContent = dateStr;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // --- [高度穩定修正] 獲取使用者目前的公網 IP 位置 (多重備份與相容逾時機制) ---
+        // --- 獲取使用者目前的公網 IP 位置 (與免定位綁定整合) ---
         async function fetchUserIP() {
             const apis = [
                 { url: 'https://api.ipify.org?format=json', parse: r => r.json().then(d => d.ip) },
@@ -817,11 +813,9 @@
                 if (isSchoolIP(state.userIp)) {
                     dom.currentIp.innerHTML = `${detectedIp} <span class="ml-1.5 px-2 py-0.5 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full font-bold">校園網段 · 免除 GPS 限制</span>`;
                     
-                    // 【重大修復】：偵測到校園網段後，立即為其對齊目標教室座標，完美避開等待訊號卡死
                     onLocationUpdated(state.targetLat, state.targetLon, 1);
                     state.gpsConnected = true;
 
-                    // 自動關閉強制授權彈窗
                     if (dom.gpsAuthModal && dom.gpsAuthModal.style.display !== 'none') {
                         dom.gpsAuthModal.classList.add('opacity-0', 'pointer-events-none');
                         setTimeout(() => dom.gpsAuthModal.style.display = 'none', 300);
@@ -839,7 +833,7 @@
             updateSystemCalculation();
         }
 
-        // --- 哈弗辛公式計算兩點距離 (公尺) ---
+        // --- 哈弗辛公式計算兩點距離 ---
         function calculateHaversine(lat1, lon1, lat2, lon2) {
             const R = 6371000; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -851,7 +845,7 @@
             return R * c;
         }
 
-        // --- 初始化真實地圖 (Leaflet) ---
+        // --- 初始化真實地圖 ---
         function initMap() {
             try {
                 map = L.map('live-map', {
@@ -894,7 +888,7 @@
             }
         }
 
-        // --- 將所有打卡歷史座標渲染於地圖中，並註記打卡者姓名與類型 ---
+        // --- 在地圖上繪製全班實時打卡分佈 ---
         function drawAllCheckInMarkersOnMap() {
             if (!map || !peerMarkersGroup) return;
 
@@ -983,7 +977,7 @@
             }
         });
 
-        // --- 更新核心邏輯與打卡限制計算（防重複打卡、防代打鎖定、IP驗證整合） ---
+        // --- 核心邏輯計算與打卡按鈕、裝置防呆判斷 ---
         function updateSystemCalculation() {
             const hasLocation = state.currentLat !== 0 && state.currentLon !== 0;
 
@@ -1011,7 +1005,6 @@
             let canIn = false;
             let canOut = false;
 
-            // 1. 決定基礎定位通過與否
             if (isSchoolIpActive) {
                 dom.checkinStatusCard.className = "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
                 dom.checkinStatusCard.innerHTML = `<span class="flex items-center justify-center gap-1"><i data-lucide="shield-check" class="w-4 h-4"></i> 校園 IP 認證 · 免除 GPS 限制 · 允許打卡</span>`;
@@ -1020,7 +1013,7 @@
                 dom.checkinStatusCard.innerHTML = `<span class="flex items-center justify-center gap-1"><i data-lucide="compass" class="w-4 h-4"></i> 等待 GPS 定位訊號中...</span>`;
             } else if (isWithinRange) {
                 if (isGpsWeak) {
-                    dom.checkinStatusCard.className = "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                    dom.checkinStatusCard.className = "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-amber-500/10 text-emerald-400 border border-amber-500/20";
                     dom.checkinStatusCard.innerHTML = `<span class="flex items-center justify-center gap-1"><i data-lucide="alert-circle" class="w-4 h-4"></i> 定位誤差大 · 建議移至窗邊</span>`;
                 } else {
                     dom.checkinStatusCard.className = "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
@@ -1031,32 +1024,28 @@
                 dom.checkinStatusCard.innerHTML = `<span class="flex items-center justify-center gap-1"><i data-lucide="alert-triangle" class="w-4 h-4"></i> 範圍外 (${Math.round(state.distance - state.targetRadius)}米) · 禁用</span>`;
             }
 
-            // 2. 當前選取學生時，進行「裝置綁定檢查」與「防重複打卡檢查」
             if (state.selectedStudent) {
                 const isLocationPassed = isWithinRange || isSchoolIpActive || state.isPreviewMode;
-                const boundStudentId = localStorage.getItem('classroom_device_student_id');
                 
-                // 本地裝置鎖定安全判定（代打卡阻攔）
-                const isDeviceMatch = !boundStudentId || (boundStudentId === state.selectedStudent.id);
+                // 雲端防作弊判定：如果該學生已有綁定 deviceId 且不是當前手機的 myDeviceUUID
+                const isDeviceMatch = !state.selectedStudent.deviceId || (state.selectedStudent.deviceId === myDeviceUUID);
 
-                if (isLocationPassed && isDeviceMatch) {
+                if (isLocationPassed && (isDeviceMatch || state.isAdminMode)) {
                     const currentStatus = state.selectedStudent.status;
                     
-                    // 【嚴格防重複打卡連動】
                     if (currentStatus === '未簽到') {
-                        canIn = true;   // 僅允許簽到
-                        canOut = false; // 尚未簽到不允許簽退
+                        canIn = true;
+                        canOut = false;
                     } else if (currentStatus === '已簽到') {
-                        canIn = false;  // 已簽到不允許重複簽到
-                        canOut = true;  // 僅允許下課簽退
+                        canIn = false;
+                        canOut = true;
                     } else if (currentStatus === '已簽退') {
-                        canIn = false;  // 已全部完成
+                        canIn = false;
                         canOut = false;
                     }
                 }
             }
 
-            // 3. 套用按鈕狀態
             dom.btnClockIn.disabled = !canIn;
             dom.btnClockOut.disabled = !canOut;
 
@@ -1093,7 +1082,7 @@
             updateSystemCalculation();
         }
 
-        // --- 雙模自動降級追蹤：解決電腦端/協作平台上高精度定位卡死與超時延遲問題 ---
+        // --- 雙模自動降級追蹤 ---
         function startGpsTracking(highAccuracy = true) {
             if (state.isPreviewMode) return;
 
@@ -1146,65 +1135,60 @@
             lucide.createIcons();
         }
 
-        // --- 手動強制重新定位觸發 ---
-        document.getElementById('btn-refresh-gps').addEventListener('click', () => {
+        // 綁定重新定位點擊事件 (修正後可直接存取 dom.btnRefreshGps)
+        dom.btnRefreshGps.addEventListener('click', () => {
             showToast("正在強制重新偵測與讀取 GPS 訊號...", "info");
             startGpsTracking(true);
         });
 
-        // --- 錯誤診斷與處理 ---
         function handleGpsError(error) {
             dom.gpsStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20";
-            
             let errMsg = "衛星定位失敗";
             let diagnosis = "";
-
             const isInIframe = window.self !== window.top;
 
             if (error.code === 1 || error.code === error.PERMISSION_DENIED) {
                 errMsg = "定位授權遭拒絕";
                 if (isInIframe) {
-                    diagnosis = "偵測到您的瀏覽器已直接拒絕定位授權。這是因為此頁面目前正處於「沙盒預覽/協作平台內嵌（Iframe）」中。基於瀏覽器隱私安全規範，除非外層容器特別設定 allow=\"geolocation\" 屬性，否則在內嵌框架中直接呼叫 GPS 定位會被安全沙盒機制攔截而無法請求。";
+                    diagnosis = "偵測到您的瀏覽器已直接拒絕定位授權。這是因為此頁面目前正處於協作平台嵌入框架中。請直接開啟下載的獨立頁面打卡。";
                 } else {
-                    diagnosis = "您或您的瀏覽器已拒絕此網站存取位置資訊。請確認您已開啟瀏覽器的定位設定，或點選網址列左側的鎖頭圖示，將「位置資訊」變更為「允許」。";
+                    diagnosis = "您已拒絕此網站存取位置資訊。請確認您已開啟瀏覽器的定位權限。";
                 }
             } else if (error.code === 2 || error.code === error.POSITION_UNAVAILABLE) {
                 errMsg = "無法偵測到 GPS 訊號";
-                diagnosis = "瀏覽器無法從您的設備取得 GPS 衛星資料。若您在室內，可能因為高牆或建築物屏蔽導致定位失效，請嘗試靠近窗邊或移動到室外。";
+                diagnosis = "無法取得 GPS 衛星資料，請移至靠近窗邊、室外或切換至校園免除網段。";
             } else if (error.code === 3 || error.code === error.TIMEOUT) {
                 errMsg = "定位連線逾時";
-                diagnosis = "搜尋 GPS 訊號逾時。請確認設備的位置服務（GPS）已經開啟，並重新點選按鈕嘗試。";
+                diagnosis = "搜尋 GPS 訊號逾時，請確認位置服務（GPS）已啟動並重試。";
             } else {
                 errMsg = error.message || "未知定位錯誤";
-                diagnosis = "無法建立 GPS 連線，請確認硬體是否正常支援地理定位服務。";
+                diagnosis = "無法建立 GPS 連線。";
             }
 
             dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>${errMsg}</span>`;
-            
             dom.errorDiagnosticText.textContent = diagnosis;
             dom.gpsErrorDiagnostic.classList.remove('hidden');
             
             if (!isSchoolIP(state.userIp)) {
-                showToast(`定位失敗：${errMsg}。已為您開啟故障診斷提示。`, "error");
+                showToast(`定位失敗：${errMsg}。`, "error");
             }
             lucide.createIcons();
         }
 
-        // --- 彈窗引導使用者授權定位的處理邏輯 ---
         dom.btnGrantGps.addEventListener('click', () => {
             dom.btnGrantGps.disabled = true;
             dom.btnGrantGps.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> 正在與衛星通訊中...`;
             startGpsTracking(true);
         });
 
-        // 允許使用者直接關閉定位彈窗（跳過定位鎖定，以唯讀方式檢視）
-        document.getElementById('btn-close-gps-modal').addEventListener('click', () => {
+        // 綁定關閉 GPS 視窗事件 (修正後可直接存取 dom.btnCloseGpsModal)
+        dom.btnCloseGpsModal.addEventListener('click', () => {
             dom.gpsAuthModal.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => dom.gpsAuthModal.style.display = 'none', 300);
-            showToast("已手動跳過定位。您目前處於「唯讀檢視模式」，如需打卡請允許 GPS 定位並重整網頁（校園免除網段除外）。", "info");
+            showToast("已手動跳過定位。您目前處於「唯讀檢視模式」，打卡功能未開通（校園免定位網段除外）。", "info");
         });
 
-        // --- 搜尋並選擇學生 (下拉自動補完 + 一機一號代點名防堵) ---
+        // --- 搜尋自動補完 ---
         dom.studentSearchInput.addEventListener('input', (e) => {
             const val = e.target.value.trim().toLowerCase();
             if (!val) {
@@ -1246,28 +1230,24 @@
             }
         });
 
-        // 全域函式：選取學生 (內建裝置特徵綁定審核)
+        // --- 選取學生身分（防代點裝置特徵綁定審核） ---
         window.selectStudent = function(studentId) {
             const student = state.roster.find(s => s.id === studentId);
             if (student) {
                 state.selectedStudent = student;
                 
-                // 讀取本地硬體綁定數據
-                const boundStudentId = localStorage.getItem('classroom_device_student_id');
-                
-                // 檢查管理者登入狀態，非管理者狀態且已被其他學號綁定時拒絕打卡並警告
-                if (boundStudentId && boundStudentId !== studentId && !state.isAdminMode) {
-                    showToast(`防作弊警報：此裝置已被系統綁定學號為 ${boundStudentId.toUpperCase()} 的學生！禁止幫其他同學代簽到。`, "error");
+                // 比對資料庫中已綁定的 deviceId 與本機 UUID
+                if (student.deviceId && student.deviceId !== myDeviceUUID && !state.isAdminMode) {
+                    showToast(`防作弊警報：此學號已被其他裝置(尾碼:${student.deviceId.slice(-6)})綁定！禁止跨裝置代打卡。`, "error");
                     playChime(false);
 
                     dom.studentIdentityCard.className = "bg-rose-950/40 border border-rose-500/50 rounded-xl p-3 flex flex-col gap-2 shadow-inner";
                     dom.studentCardIcon.outerHTML = `<i data-lucide="shield-alert" class="w-5 h-5 text-rose-400" id="student-card-icon"></i>`;
-                    dom.studentCardSub.innerHTML = `<span class="text-rose-400 font-bold">⚠️ 安全限制：此裝置已硬體綁定他人</span>`;
-                    dom.studentCardTitle.innerHTML = `<span class="text-rose-300 font-bold">${student.name} (${student.id.toUpperCase()}) - 禁止代簽</span>`;
+                    dom.studentCardSub.innerHTML = `<span class="text-rose-400 font-bold">⚠️ 硬體鎖定：已被其他手機綁定！</span>`;
+                    dom.studentCardTitle.innerHTML = `<span class="text-rose-300 font-bold">${student.name} (${student.id.toUpperCase()}) - 拒絕打卡</span>`;
                     
-                    dom.btnAdminResetDevice.classList.add('hidden'); // 一般學生禁顯解綁
+                    dom.btnAdminResetDevice.classList.add('hidden');
                 } else {
-                    // 通過檢測或處於管理者解鎖狀態下
                     dom.studentIdentityCard.className = "bg-indigo-900/30 border border-indigo-500/50 rounded-xl p-3 flex flex-col gap-2 shadow-inner";
                     
                     let statusHtml = '';
@@ -1278,17 +1258,18 @@
                         statusHtml = `<span class="text-rose-400 font-bold ml-2">(${student.status})</span>`;
                         dom.studentCardIcon.outerHTML = `<i data-lucide="x-circle" class="w-5 h-5 text-rose-400" id="student-card-icon"></i>`;
                     } else {
-                        statusHtml = `<span class="text-slate-400 font-medium ml-2">(${student.status})</span>`;
+                        const deviceBindStatus = student.deviceId ? `<span class="text-emerald-500 text-[10px] ml-2">(此手機已綁定)</span>` : `<span class="text-amber-500 text-[10px] ml-2">(打卡後自動綁定)</span>`;
+                        statusHtml = `${deviceBindStatus}`;
                         dom.studentCardIcon.outerHTML = `<i data-lucide="user-check" class="w-5 h-5 text-indigo-400" id="student-card-icon"></i>`;
                     }
 
                     dom.studentCardSub.innerHTML = `${student.dept} · 學號: ${student.id.toUpperCase()}`;
                     dom.studentCardTitle.innerHTML = `${student.name} ${statusHtml}`;
 
-                    // 管理者模式下解鎖，且該裝置已有綁定，顯示重置綁定按鈕
-                    if (state.isAdminMode && boundStudentId) {
+                    // 管理者模式下解鎖，且該學員已被硬體鎖定，顯示一鍵解鎖
+                    if (state.isAdminMode && student.deviceId) {
                         dom.btnAdminResetDevice.classList.remove('hidden');
-                        dom.btnAdminResetDevice.textContent = `解除此手機已綁定的學號: [${boundStudentId.toUpperCase()}]`;
+                        dom.btnAdminResetDevice.textContent = `解除此學號已鎖定的雲端硬體碼: [${student.deviceId}]`;
                     } else {
                         dom.btnAdminResetDevice.classList.add('hidden');
                     }
@@ -1302,43 +1283,145 @@
             }
         };
 
-        // 管理者解除此裝置鎖定點擊事件
-        dom.btnAdminResetDevice.addEventListener('click', () => {
-            if (!state.isAdminMode) return;
-            const previousId = localStorage.getItem('classroom_device_student_id');
-            localStorage.removeItem('classroom_device_student_id');
-            dom.btnAdminResetDevice.classList.add('hidden');
-            showToast(`已成功重設硬體綁定！學號 [${previousId ? previousId.toUpperCase() : ''}] 已被踢出鎖定，可重新綁定新裝置。`, "success");
-            if (state.selectedStudent) {
-                selectStudent(state.selectedStudent.id);
+        // 管理者本地解除選中學員之雲端綁定
+        dom.btnAdminResetDevice.addEventListener('click', async () => {
+            if (!state.isAdminMode || !state.selectedStudent) return;
+            try {
+                await unlockDevice(state.selectedStudent.id);
+                dom.btnAdminResetDevice.classList.add('hidden');
+            } catch (e) {
+                console.error(e);
             }
         });
 
-        // --- 打卡邏輯實作 ---
-        function executeClockAction(type) {
-            if (!state.selectedStudent) {
-                showToast("打卡失敗：請先搜尋並選擇您的學生身分！", "error");
-                return;
+        // ----------------- Real-time Firestore 同步控制 -----------------
+        function setupFirestoreListeners() {
+            if (!user) return; 
+
+            // 1. 同步打卡設定 (目標緯度、經度、半徑)
+            const settingsDocRef = getPublicDocRef('settings', 'classroom');
+            onSnapshot(settingsDocRef, (docSnap) => {
+                if (!user) return;
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    state.targetLat = data.targetLat;
+                    state.targetLon = data.targetLon;
+                    state.targetRadius = data.targetRadius;
+
+                    dom.inputTargetLat.value = state.targetLat;
+                    dom.inputTargetLon.value = state.targetLon;
+                    dom.inputTargetRadius.value = state.targetRadius;
+
+                    dom.radiusDisplayText.textContent = `教室打卡半徑：${state.targetRadius} 米內`;
+                    dom.classroomCoordinatesFooter.textContent = `教室座標：${state.targetLat.toFixed(6)}, ${state.targetLon.toFixed(6)} (${state.targetRadius}公尺)`;
+
+                    if (map && classroomMarker && classroomCircle) {
+                        const newPos = [state.targetLat, state.targetLon];
+                        classroomMarker.setLatLng(newPos);
+                        classroomCircle.setLatLng(newPos);
+                        classroomCircle.setRadius(state.targetRadius);
+                    }
+                    updateSystemCalculation();
+                } else {
+                    setDoc(settingsDocRef, {
+                        targetLat: 24.991999,
+                        targetLon: 121.230375,
+                        targetRadius: 2500
+                    });
+                }
+            }, (err) => console.error("Settings listener error:", err));
+
+            // 2. 同步上課學生花名冊
+            const rosterRef = getPublicCollectionRef('roster');
+            onSnapshot(rosterRef, (snapshot) => {
+                if (!user) return;
+                if (snapshot.empty) {
+                    prepopulateRoster();
+                    return;
+                }
+                const tempRoster = [];
+                snapshot.forEach(docSnap => {
+                    tempRoster.push(docSnap.data());
+                });
+                tempRoster.sort((a, b) => a.id.localeCompare(b.id));
+                state.roster = tempRoster;
+                renderAdminRosterTable();
+
+                // 刷新當前選定人狀態 (如果是當前打卡人被老師解鎖了，能即時釋放打卡鎖)
+                if (state.selectedStudent) {
+                    const updated = state.roster.find(s => s.id === state.selectedStudent.id);
+                    if (updated) {
+                        state.selectedStudent = updated;
+                        selectStudent(state.selectedStudent.id);
+                    }
+                }
+            }, (err) => console.error("Roster listener error:", err));
+
+            // 3. 同步智慧歷史打卡流
+            const historyRef = getPublicCollectionRef('history');
+            onSnapshot(historyRef, (snapshot) => {
+                if (!user) return;
+                const tempHistory = [];
+                snapshot.forEach(docSnap => {
+                    tempHistory.push({ dbId: docSnap.id, ...docSnap.data() });
+                });
+                tempHistory.sort((a, b) => b.timestamp - a.timestamp);
+                state.history = tempHistory;
+                renderHistoryTable();
+                drawAllCheckInMarkersOnMap();
+            }, (err) => console.error("History listener error:", err));
+        }
+
+        // 雲端點名單初始化
+        async function prepopulateRoster() {
+            try {
+                const batch = writeBatch(db);
+                defaultRoster.forEach(student => {
+                    const docRef = getPublicDocRef('roster', student.id.toLowerCase());
+                    batch.set(docRef, {
+                        dept: student.dept,
+                        id: student.id,
+                        name: student.name,
+                        status: '未簽到',
+                        checkTime: '--',
+                        distance: '--',
+                        lat: null,
+                        lon: null,
+                        deviceId: null // 預設裝置 ID 為空
+                    });
+                });
+                await batch.commit();
+                console.log("Prepopulated default roster into Firestore.");
+            } catch (e) {
+                console.error("Roster prepopulate failed:", e);
             }
+        }
+
+        // --- 核心全域解鎖功能：老師一鍵清除該生綁定的雲端硬體 UUID (即時派送通知學生端解開) ---
+        window.unlockDevice = async function(studentId) {
+            try {
+                const rosterDocRef = getPublicDocRef('roster', studentId.toLowerCase());
+                await updateDoc(rosterDocRef, {
+                    deviceId: null // 清除雲端硬體綁定，允許使用新設備
+                });
+                showToast(`已成功解鎖學號 [${studentId.toUpperCase()}] 的裝置綁定狀態！學生端已同步解鎖。`, "success");
+            } catch (e) {
+                console.error("Unlock device failed:", e);
+                showToast("解鎖雲端綁定失敗，請檢查網路連線", "error");
+            }
+        };
+
+        // --- 雲端打卡寫入與狀態連動邏輯 ---
+        async function executeClockAction(type) {
+            if (!state.selectedStudent || !user) return;
 
             const isWithinRange = state.distance <= state.targetRadius;
             const isSchoolIpActive = isSchoolIP(state.userIp);
 
-            if (!isWithinRange && !state.isPreviewMode && !isSchoolIpActive) {
+            // 安全互鎖雙重防護
+            if (state.selectedStudent.deviceId && state.selectedStudent.deviceId !== myDeviceUUID && !state.isAdminMode) {
                 playChime(false);
-                showToast(`打卡失敗：您在教室範圍之外！(距離教室: ${Math.round(state.distance)}公尺)`, "error");
-                return;
-            }
-
-            // 【硬體防作弊防線】：若裝置為空，於首次成功打卡時實施物理綁定
-            const boundId = localStorage.getItem('classroom_device_student_id');
-            if (!boundId) {
-                localStorage.setItem('classroom_device_student_id', state.selectedStudent.id);
-                showToast(`【防代打卡裝置保護】此手機已被系統鎖定為 [${state.selectedStudent.name}] 專屬打卡裝置。`, "info");
-            } else if (boundId !== state.selectedStudent.id && !state.isAdminMode) {
-                // 再次雙重防範（前端直行防護）
-                playChime(false);
-                showToast("打卡被拒絕：偵測到非您綁定的手機進行代打卡行為！", "error");
+                showToast("打卡被拒絕：此學號已被其他裝置鎖定！請聯絡老師即時進行解鎖操作。", "error");
                 return;
             }
 
@@ -1346,8 +1429,10 @@
             const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
             const dateStr = now.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
             
+            const finalLat = (state.currentLat === 0) ? state.targetLat : state.currentLat;
+            const finalLon = (state.currentLon === 0) ? state.targetLon : state.currentLon;
+
             const record = {
-                id: Date.now(),
                 studentId: state.selectedStudent.id,
                 name: state.selectedStudent.name,
                 dept: state.selectedStudent.dept,
@@ -1355,42 +1440,44 @@
                 type: type,
                 distance: isSchoolIpActive ? 0 : Math.round(state.distance),
                 accuracy: isSchoolIpActive ? 1 : Math.round(state.accuracy),
-                lat: state.currentLat,
-                lon: state.currentLon,
-                isOK: true
+                lat: finalLat,
+                lon: finalLon,
+                timestamp: Date.now()
             };
 
-            state.history.unshift(record);
-            
-            saveHistoryToLocalStorage();
-            renderHistoryTable();
+            try {
+                // 1. 寫入今日打卡流 (History)
+                await addDoc(getPublicCollectionRef('history'), record);
 
-            // 更新花名冊出勤
-            const studentInRoster = state.roster.find(s => s.id === state.selectedStudent.id);
-            if (studentInRoster) {
-                studentInRoster.status = type === '簽到' ? '已簽到' : '已簽退';
-                studentInRoster.checkTime = timeStr;
-                studentInRoster.distance = record.distance;
-                studentInRoster.lat = state.currentLat;
-                studentInRoster.lon = state.currentLon;
-                saveRosterToLocalStorage();
-                renderAdminRosterTable();
+                // 2. 寫入/更新點名單出勤狀態 (若本來沒綁定硬體識別碼，則自動將該識別碼寫入，鎖定該裝置)
+                const rosterDocRef = getPublicDocRef('roster', state.selectedStudent.id.toLowerCase());
+                const updateData = {
+                    status: type === '簽到' ? '已簽到' : '已簽退',
+                    checkTime: timeStr,
+                    distance: record.distance,
+                    lat: finalLat,
+                    lon: finalLon
+                };
+                
+                if (!state.selectedStudent.deviceId) {
+                    updateData.deviceId = myDeviceUUID; // 自動鎖死第一次打卡的手機
+                }
+
+                await updateDoc(rosterDocRef, updateData);
+
+                playChime(true);
+                const methodText = isSchoolIpActive ? "校園 IP 驗證免 GPS" : (state.isPreviewMode ? "預覽模擬" : "實時定位");
+                showToast(`已成功完成【${type}】打卡簽到！且本裝置已成功與雲端安全鎖定。`, "success");
+            } catch (e) {
+                console.error("Upload check-in failed:", e);
+                showToast("打卡上傳失敗，請重試", "error");
             }
-
-            drawAllCheckInMarkersOnMap();
-            playChime(true);
-            
-            const methodText = isSchoolIpActive ? "校園 IP 驗證免 GPS" : (state.isPreviewMode ? "預覽模擬" : "實時定位");
-            showToast(`已成功完成【${type}】簽到打卡！(${methodText} · 距離教室 ${record.distance} 米)`, "success");
-
-            // 打卡成功後重新刷新當前學生卡片的打卡判定按鈕，實現一鍵自動鎖死
-            selectStudent(state.selectedStudent.id);
         }
 
         dom.btnClockIn.addEventListener('click', () => executeClockAction('簽到'));
         dom.btnClockOut.addEventListener('click', () => executeClockAction('簽退'));
 
-        // --- 打卡紀錄表格繪製與管理 ---
+        // 打卡紀錄表渲染
         function renderHistoryTable() {
             if (state.history.length === 0) {
                 dom.historyTableBody.innerHTML = `
@@ -1436,7 +1523,7 @@
                             </div>
                         </td>
                         <td class="py-3 px-4">
-                            <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">認證通過</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">安全核對</span>
                         </td>
                     </tr>
                 `;
@@ -1446,43 +1533,7 @@
             lucide.createIcons();
         }
 
-        function saveHistoryToLocalStorage() {
-            localStorage.setItem('classroom_gps_history_v2', JSON.stringify(state.history));
-        }
-
-        function loadHistoryFromLocalStorage() {
-            const saved = localStorage.getItem('classroom_gps_history_v2');
-            if (saved) {
-                try {
-                    state.history = JSON.parse(saved);
-                } catch(e) {
-                    state.history = [];
-                }
-            }
-            renderHistoryTable();
-            setTimeout(drawAllCheckInMarkersOnMap, 800);
-        }
-
-        function saveRosterToLocalStorage() {
-            localStorage.setItem('classroom_gps_roster_v2', JSON.stringify(state.roster));
-        }
-
-        function loadRosterFromLocalStorage() {
-            const saved = localStorage.getItem('classroom_gps_roster_v2');
-            if (saved) {
-                try {
-                    state.roster = JSON.parse(saved);
-                } catch(e) {
-                    state.roster = [...defaultRoster.map(s => ({...s, status: '未簽到', checkTime: '--', distance: '--', lat: null, lon: null}))];
-                }
-            } else {
-                state.roster = [...defaultRoster.map(s => ({...s, status: '未簽到', checkTime: '--', distance: '--', lat: null, lon: null}))];
-                saveRosterToLocalStorage();
-            }
-            renderAdminRosterTable();
-        }
-
-        // ----------------- 出缺勤與花名冊繪製 -----------------
+        // ----------------- 出缺勤與老師花名冊繪製 -----------------
         function renderAdminRosterTable() {
             const searchVal = dom.adminRosterSearch.value.trim().toLowerCase();
             
@@ -1504,7 +1555,7 @@
             if (filtered.length === 0) {
                 dom.adminRosterTableBody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="py-8 text-center text-slate-500">
+                        <td colspan="7" class="py-8 text-center text-slate-500">
                             <div class="flex flex-col items-center justify-center gap-1">
                                 <i data-lucide="users" class="w-6 h-6 opacity-30"></i>
                                 <span>找不到相符的學生資料</span>
@@ -1533,17 +1584,55 @@
                     ? `<span class="text-indigo-400 font-bold block text-[10px]">${s.lat.toFixed(6)}, ${s.lon.toFixed(6)}</span>`
                     : '';
 
+                // 裝置識別碼顯示，並做顏色標示 (如果對應到老師自己：藍，別人：綠，未綁定：灰色)
+                let deviceHtml = '';
+                let actionButtonHtml = '';
+                
+                if (s.deviceId) {
+                    const isMine = s.deviceId === myDeviceUUID;
+                    const badgeColor = isMine ? 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                    const keyIcon = isMine ? 'smartphone' : 'shield-check';
+                    
+                    deviceHtml = `
+                        <div class="flex items-center gap-1.5 px-2 py-1 rounded border ${badgeColor} font-mono w-max">
+                            <i data-lucide="${keyIcon}" class="w-3.5 h-3.5"></i>
+                            <span>${s.deviceId}</span>
+                        </div>
+                    `;
+
+                    // 老師可操作的一鍵即時解鎖按鈕
+                    actionButtonHtml = `
+                        <button onclick="unlockDevice('${s.id}')" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-500 text-rose-300 hover:text-white rounded-lg border border-rose-500/30 text-[10px] font-bold transition flex items-center gap-1 shadow">
+                            <i data-lucide="unlock" class="w-3 h-3"></i> 即時解鎖
+                        </button>
+                    `;
+                } else {
+                    deviceHtml = `
+                        <span class="text-slate-500 italic flex items-center gap-1 text-[11px]">
+                            <i data-lucide="lock-open" class="w-3.5 h-3.5"></i> 未綁定裝置
+                        </span>
+                    `;
+                    actionButtonHtml = `
+                        <span class="text-slate-600 text-[10px]">無需解鎖</span>
+                    `;
+                }
+
                 tableHtml += `
                     <tr class="hover:bg-slate-800/40 transition">
                         <td class="py-2.5 px-4">${s.dept}</td>
-                        <td class="py-2.5 px-4 font-mono text-slate-400">${s.id.toUpperCase()}</td>
-                        <td class="py-2.5 px-4 font-bold text-white">${s.name}</td>
-                        <td class="py-2.5 px-4">${statusBadge}</td>
-                        <td class="py-2.5 px-4 font-mono text-slate-300">${s.checkTime || '--'}</td>
+                        <td class="py-2.5 px-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-white">${s.name}</span>
+                                <span class="font-mono text-[10px] text-slate-500">${s.id.toUpperCase()}</span>
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-4">${statusBadge} <span class="font-mono text-slate-400 ml-1.5">${s.checkTime || '--'}</span></td>
                         <td class="py-2.5 px-4 font-mono text-slate-400 text-[11px]">
                             ${punchCoordsText}
                             <span>誤差與距離: ${distanceText}</span>
                         </td>
+                        <td class="py-2.5 px-4">${deviceHtml}</td>
+                        <td class="py-2.5 px-4">${actionButtonHtml}</td>
                     </tr>
                 `;
             });
@@ -1577,7 +1666,7 @@
                 
                 showToast("已登出管理者模式，返回一般打卡模式", "info");
                 if (state.selectedStudent) {
-                    selectStudent(state.selectedStudent.id); // 刷新裝置綁定顯示
+                    selectStudent(state.selectedStudent.id); 
                 }
                 lucide.createIcons();
             } else {
@@ -1595,10 +1684,10 @@
         });
 
         dom.btnExecuteLogin.addEventListener('click', () => {
-            const user = dom.adminUser.value.trim();
-            const pass = dom.adminPass.value.trim();
+            const userVal = dom.adminUser.value.trim();
+            const passVal = dom.adminPass.value.trim();
 
-            if (user === 'jsl' && pass === 'jsl') {
+            if (userVal === 'jsl' && passVal === 'jsl') {
                 state.isAdminMode = true;
                 document.body.classList.add('admin-mode-active');
 
@@ -1621,10 +1710,10 @@
 
                 dom.configStatusTag.innerHTML = `<span class="px-2 py-0.5 bg-rose-500 text-white rounded font-bold">管理者解鎖模式</span>`;
 
-                showToast("管理者登入成功！已解鎖配置修改、全班點名與裝置解綁功能。", "success");
+                showToast("管理者登入成功！已開啟雲端一鍵解鎖與配置管理權限。", "success");
                 renderAdminRosterTable();
                 if (state.selectedStudent) {
-                    selectStudent(state.selectedStudent.id); // 刷新裝置解鎖按鈕顯現狀態
+                    selectStudent(state.selectedStudent.id);
                 }
                 lucide.createIcons();
             } else {
@@ -1633,13 +1722,9 @@
             }
         });
 
-        dom.adminPass.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') dom.btnExecuteLogin.click();
-        });
-
-        // ----------------- 教室配置修改與保存 -----------------
-        dom.btnSaveCoords.addEventListener('click', () => {
-            if (!state.isAdminMode) return;
+        // ----------------- 點名配置與管理 -----------------
+        dom.btnSaveCoords.addEventListener('click', async () => {
+            if (!state.isAdminMode || !user) return;
 
             const newLat = parseFloat(dom.inputTargetLat.value);
             const newLon = parseFloat(dom.inputTargetLon.value);
@@ -1650,56 +1735,34 @@
                 return;
             }
 
-            state.targetLat = newLat;
-            state.targetLon = newLon;
-            state.targetRadius = newRadius;
-
-            localStorage.setItem('classroom_gps_target_lat', state.targetLat);
-            localStorage.setItem('classroom_gps_target_lon', state.targetLon);
-            localStorage.setItem('classroom_gps_target_radius', state.targetRadius);
-
-            if (map && classroomMarker && classroomCircle) {
-                const newPos = [state.targetLat, state.targetLon];
-                classroomMarker.setLatLng(newPos);
-                classroomCircle.setLatLng(newPos);
-                classroomCircle.setRadius(state.targetRadius);
-                map.panTo(newPos);
+            try {
+                await setDoc(getPublicDocRef('settings', 'classroom'), {
+                    targetLat: newLat,
+                    targetLon: newLon,
+                    targetRadius: newRadius
+                });
+                showToast("教室配置已成功同步並儲存至雲端資料庫！", "success");
+            } catch (e) {
+                console.error("Cloud save settings failed:", e);
+                showToast("雲端儲存失敗，請檢查權限設定", "error");
             }
-
-            dom.radiusDisplayText.textContent = `教室打卡半徑：${state.targetRadius} 米內`;
-            dom.classroomCoordinatesFooter.textContent = `教室座標：${state.targetLat.toFixed(6)}, ${state.targetLon.toFixed(6)} (${state.targetRadius}公尺)`;
-
-            showToast("教室位置配置已成功更新並同步！", "success");
-            updateSystemCalculation();
         });
 
-        dom.btnResetCoords.addEventListener('click', () => {
-            dom.inputTargetLat.value = "24.991999";
-            dom.inputTargetLon.value = "121.230375";
-            dom.inputTargetRadius.value = "2500";
-            showToast("座標欄已還原預設值，請確認點擊「儲存教室設定」以套用。", "info");
+        // 重設點名簿
+        dom.btnResetRoster.addEventListener('click', async () => {
+            if (!state.isAdminMode || !user) return;
+            state.roster = [...defaultRoster.map(s => ({...s, status: '未簽到', checkTime: '--', distance: '--', lat: null, lon: null, deviceId: null}))];
+            await prepopulateRoster();
+            renderAdminRosterTable();
+            showToast("點名單已在雲端重設為系統預設 49 人名單。", "success");
         });
 
-        // ----------------- 名單批次匯入控制 -----------------
-        dom.btnShowImportModal.addEventListener('click', () => {
-            dom.importTextarea.value = '';
-            dom.rosterImportModal.classList.remove('hidden');
-            dom.rosterImportModal.classList.add('flex');
-        });
-
-        dom.btnCloseImport.addEventListener('click', () => {
-            dom.rosterImportModal.classList.add('hidden');
-            dom.rosterImportModal.classList.remove('flex');
-        });
-        dom.btnCancelImport.addEventListener('click', () => {
-            dom.rosterImportModal.classList.add('hidden');
-            dom.rosterImportModal.classList.remove('flex');
-        });
-
-        dom.btnExecuteImport.addEventListener('click', () => {
+        // 批次匯入名單
+        dom.btnExecuteImport.addEventListener('click', async () => {
+            if (!state.isAdminMode || !user) return;
             const rawText = dom.importTextarea.value.trim();
             if (!rawText) {
-                showToast("請先貼上有效的學生名單資料！", "error");
+                showToast("請貼上名單資料！", "error");
                 return;
             }
 
@@ -1708,11 +1771,8 @@
 
             lines.forEach((line) => {
                 if (!line.trim()) return;
-
                 let parts = line.split(',');
-                if (parts.length < 3) {
-                    parts = line.split('\t');
-                }
+                if (parts.length < 3) parts = line.split('\t');
 
                 if (parts.length >= 3) {
                     newRoster.push({
@@ -1723,34 +1783,158 @@
                         checkTime: '--',
                         distance: '--',
                         lat: null,
-                        lon: null
+                        lon: null,
+                        deviceId: null
                     });
                 }
             });
 
             if (newRoster.length === 0) {
-                showToast("匯入失敗：格式不正確。請確認每行含有「科系,學號,姓名」！", "error");
+                showToast("格式錯誤！請確認包含「科系,學號,姓名」", "error");
                 return;
             }
 
-            state.roster = newRoster;
-            saveRosterToLocalStorage();
-            renderAdminRosterTable();
-            
-            dom.rosterImportModal.classList.add('hidden');
-            dom.rosterImportModal.classList.remove('flex');
-            
-            showToast(`成功批次匯入 ${newRoster.length} 位學生點名單！`, "success");
+            try {
+                const batch = writeBatch(db);
+                state.roster.forEach(s => {
+                    const docRef = getPublicDocRef('roster', s.id.toLowerCase());
+                    batch.delete(docRef);
+                });
+                newRoster.forEach(student => {
+                    const docRef = getPublicDocRef('roster', student.id.toLowerCase());
+                    batch.set(docRef, student);
+                });
+                await batch.commit();
+                
+                dom.rosterImportModal.classList.add('hidden');
+                dom.rosterImportModal.classList.remove('flex');
+                showToast(`成功雲端批次更替並匯入 ${newRoster.length} 位學生！`, "success");
+            } catch (e) {
+                console.error("Batch import error:", e);
+                showToast("雲端更置失敗，請再試一次", "error");
+            }
         });
 
-        dom.btnResetRoster.addEventListener('click', () => {
-            state.roster = [...defaultRoster.map(s => ({...s, status: '未簽到', checkTime: '--', distance: '--', lat: null, lon: null}))];
-            saveRosterToLocalStorage();
-            renderAdminRosterTable();
-            showToast("出缺勤與點名簿已還原為系統預設 49 人名單。", "success");
+        // 雲端點名歷史清除
+        dom.btnConfirmExecute.addEventListener('click', async () => {
+            if (!user) return;
+            try {
+                const batch = writeBatch(db);
+                state.history.forEach(item => {
+                    if (item.dbId) {
+                        const docRef = getPublicDocRef('history', item.dbId);
+                        batch.delete(docRef);
+                    }
+                });
+                state.roster.forEach(s => {
+                    const docRef = getPublicDocRef('roster', s.id.toLowerCase());
+                    batch.update(docRef, {
+                        status: '未簽到',
+                        checkTime: '--',
+                        distance: '--',
+                        lat: null,
+                        lon: null,
+                        deviceId: null // 清除所有綁定
+                    });
+                });
+                await batch.commit();
+                
+                dom.confirmModal.classList.add('hidden');
+                dom.confirmModal.classList.remove('flex');
+                showToast("雲端歷史及點名紀錄（含硬體鎖定碼）已成功徹底清空。", "success");
+            } catch (e) {
+                console.error("Clear database history error:", e);
+                showToast("清除雲端紀錄失敗", "error");
+            }
         });
 
-        // ----------------- 出缺勤與打卡流資料匯出 -----------------
+        // ----------------- 自適應 Firebase 認證啟動器 -----------------
+        const initAuth = async () => {
+            try {
+                await signInAnonymously(auth);
+            } catch (e) {
+                console.error("Firebase Auth failed:", e);
+                showToast("無法連接至雲端身分授權系統", "error");
+            }
+        };
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if (u) {
+                setupFirestoreListeners();
+            }
+        });
+
+        // ----------------- 核心音效與通知提示 -----------------
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playChime(success = true) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                if (success) {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                } else {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(100, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }
+            } catch (e) {
+                console.log("Audio block:", e);
+            }
+        }
+
+        // --- 初始化時鐘 ---
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const dateStr = now.toLocaleDateString('zh-TW', options);
+            
+            dom.liveTime.textContent = timeStr;
+            dom.liveDate.textContent = dateStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        let toastTimeout = null;
+        function showToast(text, type = "info") {
+            clearTimeout(toastTimeout);
+            dom.toastText.textContent = text;
+            
+            if (type === "success") {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400";
+                dom.toastMessage.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> ${text}`;
+            } else if (type === "error") {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-rose-500/10 border border-rose-500/30 text-rose-400";
+                dom.toastMessage.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4"></i> ${text}`;
+            } else {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 text-slate-300";
+                dom.toastMessage.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i> ${text}`;
+            }
+            
+            dom.toastMessage.classList.remove('hidden');
+            lucide.createIcons();
+            
+            toastTimeout = setTimeout(() => {
+                dom.toastMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        // --- 匯出功能 ---
         dom.btnExportAttendance.addEventListener('click', () => {
             if (state.roster.length === 0) {
                 showToast("目前並無學生名冊，無法匯出出缺勤報表！", "error");
@@ -1758,22 +1942,23 @@
             }
 
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
-            csvContent += "學系,學號,姓名,今日簽到狀態,簽到/簽退時間,距離教室誤差(公尺),打卡緯度,打卡經度\n";
+            csvContent += "學系,學號,姓名,今日簽到狀態,簽到/簽退時間,距離教室誤差(公尺),打卡緯度,打卡經度,綁定硬體碼\n";
 
             state.roster.forEach(s => {
                 const latStr = s.lat ? s.lat.toFixed(6) : '--';
                 const lonStr = s.lon ? s.lon.toFixed(6) : '--';
-                csvContent += `"${s.dept}","${s.id}","${s.name}","${s.status}","${s.checkTime}","${s.distance}","${latStr}","${lonStr}"\n`;
+                const devId = s.deviceId || '未綁定';
+                csvContent += `"${s.dept}","${s.id}","${s.name}","${s.status}","${s.checkTime}","${s.distance}","${latStr}","${lonStr}","${devId}"\n`;
             });
 
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `智慧課堂出缺勤報表_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute("download", `智慧課堂出缺勤與硬體鎖考勤表_${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            showToast("上課點名出缺勤報表匯出成功！", "success");
+            showToast("點名與硬體碼鎖定報表已匯出成功！", "success");
         });
 
         dom.btnExport.addEventListener('click', () => {
@@ -1799,102 +1984,23 @@
             showToast("歷史流水打卡報表匯出成功！", "success");
         });
 
-        // 清除歷史
-        dom.btnClear.addEventListener('click', () => {
-            if (state.history.length === 0) {
-                showToast("目前無打卡紀錄可以清除。", "info");
-                return;
-            }
-            dom.confirmModal.classList.remove('hidden');
-            dom.confirmModal.classList.add('flex');
-            lucide.createIcons();
-        });
-
-        dom.btnConfirmCancel.addEventListener('click', () => {
-            dom.confirmModal.classList.add('hidden');
-            dom.confirmModal.classList.remove('flex');
-        });
-
-        dom.btnConfirmExecute.addEventListener('click', () => {
-            state.history = [];
-            saveHistoryToLocalStorage();
-            renderHistoryTable();
-            
-            if (peerMarkersGroup) {
-                peerMarkersGroup.clearLayers();
-            }
-
-            state.roster.forEach(s => {
-                s.status = '未簽到';
-                s.checkTime = '--';
-                s.distance = '--';
-                s.lat = null;
-                s.lon = null;
-            });
-            saveRosterToLocalStorage();
-            renderAdminRosterTable();
-
-            dom.confirmModal.classList.add('hidden');
-            dom.confirmModal.classList.remove('flex');
-            showToast("歷史與點名紀錄已成功徹底清空。", "success");
-        });
-
-        function loadClassroomSettings() {
-            const cachedLat = localStorage.getItem('classroom_gps_target_lat');
-            const cachedLon = localStorage.getItem('classroom_gps_target_lon');
-            const cachedRadius = localStorage.getItem('classroom_gps_target_radius');
-
-            if (cachedLat && cachedLon && cachedRadius) {
-                state.targetLat = parseFloat(cachedLat);
-                state.targetLon = parseFloat(cachedLon);
-                state.targetRadius = parseInt(cachedRadius);
-            }
-
-            dom.inputTargetLat.value = state.targetLat;
-            dom.inputTargetLon.value = state.targetLon;
-            dom.inputTargetRadius.value = state.targetRadius;
-
-            dom.radiusDisplayText.textContent = `教室打卡半徑：${state.targetRadius} 米內`;
-            dom.classroomCoordinatesFooter.textContent = `教室座標：${state.targetLat.toFixed(6)}, ${state.targetLon.toFixed(6)} (${state.targetRadius}公尺)`;
-        }
-
-        // --- 核心提示訊息 UI ---
-        let toastTimeout = null;
-        function showToast(text, type = "info") {
-            clearTimeout(toastTimeout);
-            dom.toastText.textContent = text;
-            
-            if (type === "success") {
-                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400";
-                dom.toastMessage.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> ${text}`;
-            } else if (type === "error") {
-                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-rose-500/10 border border-rose-500/30 text-rose-400";
-                dom.toastMessage.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4"></i> ${text}`;
-            } else {
-                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 text-slate-300";
-                dom.toastMessage.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i> ${text}`;
-            }
-            
-            dom.toastMessage.classList.remove('hidden');
-            lucide.createIcons();
-            
-            toastTimeout = setTimeout(() => {
-                dom.toastMessage.classList.add('hidden');
-            }, 5000);
-        }
-
-        // --- 初始化入口點 ---
+        // 頁面加載初始化
         window.onload = function() {
             lucide.createIcons();
-            loadClassroomSettings();
             initMap();
-            loadRosterFromLocalStorage();
-            loadHistoryFromLocalStorage();
-            
+            initAuth();
             fetchUserIP();
 
             dom.gpsAuthModal.style.display = 'flex';
         };
+
+        // 綁定輔助 DOM 事件
+        dom.btnCloseLogin.addEventListener('click', () => { dom.adminLoginModal.classList.add('hidden'); dom.adminLoginModal.classList.remove('flex'); });
+        dom.btnShowImportModal.addEventListener('click', () => { dom.importTextarea.value = ''; dom.rosterImportModal.classList.remove('hidden'); dom.rosterImportModal.classList.add('flex'); });
+        dom.btnCloseImport.addEventListener('click', () => { dom.rosterImportModal.classList.add('hidden'); dom.rosterImportModal.classList.remove('flex'); });
+        dom.btnCancelImport.addEventListener('click', () => { dom.rosterImportModal.classList.add('hidden'); dom.rosterImportModal.classList.remove('flex'); });
+        dom.btnClear.addEventListener('click', () => { dom.confirmModal.classList.remove('hidden'); dom.confirmModal.classList.add('flex'); });
+        dom.btnConfirmCancel.addEventListener('click', () => { dom.confirmModal.classList.add('hidden'); dom.confirmModal.classList.remove('flex'); });
     </script>
 </body>
 </html>
