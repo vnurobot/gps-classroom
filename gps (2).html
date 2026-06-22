@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教室 GPS 行動打卡系統</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Leaflet.js 地圖 CSS 與 JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=300;400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        /* 自訂 Leaflet 脈衝動畫效果 */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.33); opacity: 1; }
+            80%, 100% { transform: scale(2); opacity: 0; }
+        }
+        .pulse-marker {
+            position: relative;
+        }
+        .pulse-marker::after {
+            content: '';
+            position: absolute;
+            width: 300%;
+            height: 300%;
+            top: -100%;
+            left: -100%;
+            background-color: #10b981;
+            border-radius: 50%;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- [強制 GPS 授權引導視窗] -->
+    <div id="gps-auth-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center z-[1000] p-4 transition-all duration-300">
+        <div class="bg-slate-800 border border-slate-700 max-w-lg w-full rounded-2xl p-6 shadow-2xl text-center overflow-y-auto max-h-[90vh]">
+            <div class="w-16 h-16 bg-indigo-600/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                <i data-lucide="map-pin" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">需要您的 GPS 定位授權</h3>
+            <p class="text-sm text-slate-300 mb-6 leading-relaxed">
+                本系統為「教室專用 GPS 打卡系統」，需要獲取您當前的真實地理位置，以計算您與教室之間的距離，並判定是否在 15 公尺的指定打卡範圍內。
+            </p>
+            
+            <!-- 權限說明卡 -->
+            <div class="bg-slate-900/60 rounded-xl p-4 text-left border border-slate-800 text-xs text-slate-400 space-y-3 mb-6">
+                <div class="flex items-start gap-2.5">
+                    <i data-lucide="shield-check" class="w-4.5 h-4.5 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                    <span><strong>隱私保護：</strong> 您的精確位置僅在瀏覽器本地用於距離運算，絕不會上傳或移作他用。</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <i data-lucide="navigation" class="w-4.5 h-4.5 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+                    <span><strong>打卡條件：</strong> 必須授權真實 GPS 且定位精準度小於或等於 15 公尺內方能打卡。</span>
+                </div>
+            </div>
+
+            <!-- 動態診斷提示區 (當在協作平台/Iframe 或定位失敗時會展示，極其詳盡) -->
+            <div id="gps-error-diagnostic" class="hidden text-left bg-rose-950/40 border border-rose-500/30 rounded-xl p-4 mb-6 text-xs text-rose-300 space-y-3">
+                <div class="flex items-center gap-1.5 font-bold text-rose-400 border-b border-rose-500/20 pb-1.5">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    <span>系統偵測：協作平台/內嵌環境權限受限</span>
+                </div>
+                <p id="error-diagnostic-text" class="leading-relaxed">無法取得您的 GPS 位置。</p>
+                
+                <!-- 針對協作平台內嵌 iframe 的手把手教學指南 -->
+                <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3 mt-2 text-slate-300 text-[11px] leading-relaxed">
+                    <span class="text-amber-400 font-bold flex items-center gap-1"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Google 協作平台（Google Sites）解決方案：</span>
+                    <p>
+                        Google 協作平台在「嵌入」自訂 HTML 程式碼時，為了安全性會將其封鎖在不具硬體存取權的沙盒 <code class="bg-slate-800 px-1 py-0.5 rounded text-rose-300 font-mono">iframe</code> 中。這會導致瀏覽器<strong>直接強制封鎖定位功能</strong>。
+                    </p>
+                    <div class="border-t border-slate-800 pt-2 space-y-1.5">
+                        <span class="text-emerald-400 font-bold block">💡 完美解決步驟（推薦）：</span>
+                        <ol class="list-decimal pl-4 space-y-1">
+                            <li>將此 HTML 檔案下載並命名為 <code class="bg-slate-800 px-1 font-mono text-xs">index.html</code>。</li>
+                            <li>上傳至免費網域託管平台如 <strong><a href="https://pages.github.com/" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">GitHub Pages</a></strong> 或 <strong><a href="https://vercel.com/" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">Vercel</a></strong>（均支援免費安全 https 網域）。</li>
+                            <li>取得專屬連結後，在 Google 協作平台編輯器中新增一個<strong>「按鈕」元件</strong>。</li>
+                            <li>將按鈕名稱設為「教室 GPS 打卡簽到」，連結指向託管的網址。</li>
+                            <li>使用者點擊按鈕後將會以<strong>「新分頁」</strong>開啟網頁，即可 100% 完美執行真實 GPS 簽到！</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按鈕 -->
+            <div class="space-y-2">
+                <button id="btn-grant-gps" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/20 transition flex items-center justify-center gap-2">
+                    <i data-lucide="bell" class="w-4 h-4 animate-pulse"></i> 允許 GPS 定位安全授權
+                </button>
+                
+                <!-- 沙盒/錯誤預留通道按鈕 (當發生錯誤時才會動態顯示) -->
+                <button id="btn-iframe-bypass" class="hidden w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2.5 px-4 rounded-xl text-xs transition items-center justify-center gap-1.5">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i> 進入預覽展示模式（不打卡，僅檢視介面）
+                </button>
+                
+                <p class="text-[10px] text-slate-500 mt-2">※ 拒絕授權且無預覽模式將無法進入系統</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- [自訂清除確認視窗] -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden items-center justify-center z-[1100] p-4">
+        <div class="bg-slate-800 border border-slate-700 max-w-sm w-full rounded-2xl p-6 shadow-2xl text-center">
+            <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">確定要清除紀錄嗎？</h3>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">
+                此動作將會永遠刪除您儲存在此瀏覽器中的所有打卡歷史數據，且此動作無法復原。
+            </p>
+            <div class="grid grid-cols-2 gap-3">
+                <button id="btn-confirm-cancel" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2 rounded-xl text-xs transition">
+                    取消
+                </button>
+                <button id="btn-confirm-execute" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-2 rounded-xl text-xs transition">
+                    確定清除
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 頂部導覽列 -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+                    <i data-lucide="map-pin" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wider text-white">教室 GPS 行動打卡系統</h1>
+                    <p class="text-xs text-slate-400">真實 GPS 定位 · 15米圍欄 · 地圖同步顯示</p>
+                </div>
+            </div>
+            
+            <!-- 即時時鐘 -->
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <div id="live-time" class="text-lg font-mono font-bold text-indigo-400">00:00:00</div>
+                    <div id="live-date" class="text-xs text-slate-400">2026年06月21日</div>
+                </div>
+                <div class="h-8 w-[1px] bg-slate-800 hidden sm:block"></div>
+                <!-- GPS 狀態標籤 -->
+                <div id="gps-status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                    <span>等待 GPS 授權中...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主內容區 -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- 左側：真實地圖顯示 (5格) -->
+        <section class="lg:col-span-5 flex flex-col gap-6">
+            
+            <!-- GPS 定位資訊 -->
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-bold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="compass" class="w-5 h-5 text-indigo-400"></i> 當前衛星定位數據
+                    </h2>
+                    <span id="system-mode-tag" class="text-xs px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 flex items-center gap-1 font-medium">
+                        <i data-lucide="shield" class="w-3.5 h-3.5"></i> 真實 GPS 模式
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                        <span class="text-xs text-slate-400 block mb-1">您的緯度 (Latitude)</span>
+                        <span id="current-lat" class="font-mono text-base font-semibold text-white">--.------</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                        <span class="text-xs text-slate-400 block mb-1">您的經度 (Longitude)</span>
+                        <span id="current-lon" class="font-mono text-base font-semibold text-white">--.------</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                        <span class="text-xs text-slate-400 block mb-1">GPS 定位誤差</span>
+                        <span id="current-accuracy" class="font-mono text-sm text-amber-400 font-semibold">等待訊號...</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                        <span class="text-xs text-slate-400 block mb-1">訊號更新時間</span>
+                        <span id="gps-updated-time" class="font-mono text-sm text-slate-300">--:--:--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 真實 GPS 地圖 -->
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 flex flex-col shadow-xl flex-grow min-h-[350px]">
+                <div class="flex items-center justify-between mb-3 px-1">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-200">實時衛星定位地圖</h3>
+                        <p class="text-[10px] text-slate-400">綠色圈：教室 15M 打卡範圍 | 藍色點：您當前位置</p>
+                    </div>
+                    <button id="btn-recenter-map" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 hover:text-white transition" title="重新將地圖對齊我的位置">
+                        <i data-lucide="focus" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                
+                <!-- 地圖本體 -->
+                <div class="flex-grow rounded-xl overflow-hidden border border-slate-700 relative min-h-[280px]">
+                    <div id="live-map" class="w-full h-full z-10 bg-slate-950"></div>
+                    <!-- 地圖加載中遮罩 -->
+                    <div id="map-loading-overlay" class="absolute inset-0 bg-slate-900/80 z-20 flex flex-col items-center justify-center gap-3">
+                        <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-xs text-slate-400">地圖加載中...</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 右側：設定、打卡操作 & 歷史紀錄 (7格) -->
+        <section class="lg:col-span-7 flex flex-col gap-6">
+            
+            <!-- 教室位置配置與目前判定 -->
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl grid grid-cols-1 md:grid-cols-12 gap-5">
+                
+                <!-- 教室配置區 -->
+                <div class="md:col-span-7 flex flex-col justify-between">
+                    <div>
+                        <h2 class="font-bold text-slate-200 flex items-center gap-2 mb-3">
+                            <i data-lucide="school" class="w-5 h-5 text-indigo-400"></i> 指定打卡教室配置
+                        </h2>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs text-slate-400 block mb-1">目標教室經緯度 (鎖定)</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="text" readonly id="target-lat" value="24.991999" class="bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-400 focus:outline-none cursor-not-allowed">
+                                    <input type="text" readonly id="target-lon" value="121.230375" class="bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-400 focus:outline-none cursor-not-allowed">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="text-xs text-slate-400 block mb-1">設定允許精準度半徑 (鎖定)</label>
+                                <div class="relative">
+                                    <input type="text" readonly id="target-radius" value="15 公尺" class="bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-400 w-full focus:outline-none cursor-not-allowed">
+                                    <span class="absolute right-3 top-2.5 text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                                        <i data-lucide="check" class="w-3 h-3"></i> 嚴格限制
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-slate-700/50 text-xs text-slate-400 leading-relaxed flex items-start gap-2">
+                        <i data-lucide="info" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5"></i>
+                        <span>本打卡系統已將座標強制綁定於學校教室，且打卡限制半徑為極嚴格的 <strong>15 公尺</strong>。請確保打卡時您身處教室，且手機 GPS 沒有受到高大建築物遮擋。</span>
+                    </div>
+                </div>
+
+                <!-- 距離與狀態判定 -->
+                <div class="md:col-span-5 bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                    <div class="text-center">
+                        <span class="text-xs text-slate-400 block mb-1">您與指定教室距離</span>
+                        <div id="distance-display" class="text-3xl font-black font-mono text-indigo-400">--- 米</div>
+                        <span class="text-[10px] text-slate-400 block mt-1">教室打卡半徑：15 米內</span>
+                    </div>
+
+                    <div class="my-4 h-[1px] bg-slate-800"></div>
+
+                    <!-- 判定燈號 -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs text-slate-400 mb-1.5">當前打卡判定</span>
+                        <div id="checkin-status-card" class="w-full py-2.5 px-3 rounded-lg text-center font-bold text-sm bg-red-500/10 text-red-400 border border-red-500/20">
+                            等待定位授權...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 打卡主控按鈕 -->
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- 上班打卡 -->
+                    <button id="btn-clock-in" disabled class="relative group bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-emerald-950/40 transition-all duration-200 transform active:scale-95 disabled:opacity-30 disabled:pointer-events-none flex flex-col items-center justify-center gap-2">
+                        <div class="p-2.5 bg-white/10 rounded-xl">
+                            <i data-lucide="log-in" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-lg tracking-wider">教室簽到簽到</span>
+                        <span class="text-[10px] opacity-80 font-normal">CLASS CLOCK IN</span>
+                    </button>
+
+                    <!-- 下班打卡 -->
+                    <button id="btn-clock-out" disabled class="relative group bg-gradient-to-br from-rose-600 to-orange-700 hover:from-rose-500 hover:to-orange-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-rose-950/40 transition-all duration-200 transform active:scale-95 disabled:opacity-30 disabled:pointer-events-none flex flex-col items-center justify-center gap-2">
+                        <div class="p-2.5 bg-white/10 rounded-xl">
+                            <i data-lucide="log-out" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-lg tracking-wider">教室下課簽退</span>
+                        <span class="text-[10px] opacity-80 font-normal">CLASS CLOCK OUT</span>
+                    </button>
+                </div>
+
+                <!-- 打卡提示盒 -->
+                <div id="toast-message" class="hidden mt-4 p-3 bg-slate-900 border border-slate-700 rounded-xl text-xs text-center flex items-center justify-center gap-2">
+                    <span id="toast-text" class="font-medium text-slate-300">提示內容將顯示於此</span>
+                </div>
+            </div>
+
+            <!-- 歷史紀錄 -->
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl flex-grow flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-bold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="history" class="w-5 h-5 text-indigo-400"></i> 教室打卡紀錄歷程
+                    </h2>
+                    <div class="flex gap-2">
+                        <button id="btn-export" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-medium rounded-lg text-white transition flex items-center gap-1">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> 匯出 CSV
+                        </button>
+                        <button id="btn-clear" class="px-3 py-1.5 bg-rose-950/50 hover:bg-rose-900/50 border border-rose-500/20 text-rose-300 text-xs font-medium rounded-lg transition flex items-center gap-1">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清除
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto border border-slate-700/50 rounded-xl bg-slate-900/40 flex-grow max-h-[300px]">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-800/80 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-700">
+                                <th class="py-3 px-4 font-medium">打卡時間</th>
+                                <th class="py-3 px-4 font-medium">打卡類型</th>
+                                <th class="py-3 px-4 font-medium">距離教室</th>
+                                <th class="py-3 px-4 font-medium">GPS 精確度</th>
+                                <th class="py-3 px-4 font-medium">狀態判定</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="text-xs text-slate-300 divide-y divide-slate-800">
+                            <!-- JS 渲染打卡紀錄 -->
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-500">
+                                    <div class="flex flex-col items-center justify-center gap-2">
+                                        <i data-lucide="file-text" class="w-8 h-8 opacity-40"></i>
+                                        <span>尚無任何課堂打卡紀錄</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="border-t border-slate-800 bg-slate-950/50 py-4 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p>© 2026 智慧課堂打卡系統. 確保打卡時您的瀏覽器與手機已開啟 GPS 定位授權。</p>
+            <p class="text-[10px] text-slate-600">教室座標：24.991999, 121.230375</p>
+        </div>
+    </footer>
+
+    <!-- JS 邏輯代碼 -->
+    <script>
+        // --- 初始化狀態變數 ---
+        let state = {
+            currentLat: 0,
+            currentLon: 0,
+            accuracy: 0,
+            targetLat: 24.991999170424236,  // 強制設定教室座標
+            targetLon: 121.23037590835791,
+            targetRadius: 15,              // 定位精準度/允許範圍限制為 15 公尺
+            distance: 99999,               // 當前距離
+            gpsConnected: false,
+            isPreviewMode: false,          // 是否啟用預覽沙盒兼容模式
+            watchId: null,                 // GPS 監聽實例 ID
+            history: []                    // 打卡紀錄儲存
+        };
+
+        // --- 地圖相關變數 ---
+        let map = null;
+        let classroomMarker = null;
+        let classroomCircle = null;
+        let userMarker = null;
+        let userAccuracyCircle = null;
+
+        // --- DOM 節點宣告 ---
+        const dom = {
+            liveTime: document.getElementById('live-time'),
+            liveDate: document.getElementById('live-date'),
+            gpsStatusBadge: document.getElementById('gps-status-badge'),
+            currentLat: document.getElementById('current-lat'),
+            currentLon: document.getElementById('current-lon'),
+            currentAccuracy: document.getElementById('current-accuracy'),
+            gpsUpdatedTime: document.getElementById('gps-updated-time'),
+            distanceDisplay: document.getElementById('distance-display'),
+            checkinStatusCard: document.getElementById('checkin-status-card'),
+            btnClockIn: document.getElementById('btn-clock-in'),
+            btnClockOut: document.getElementById('btn-clock-out'),
+            toastMessage: document.getElementById('toast-message'),
+            toastText: document.getElementById('toast-text'),
+            historyTableBody: document.getElementById('history-table-body'),
+            btnExport: document.getElementById('btn-export'),
+            btnClear: document.getElementById('btn-clear'),
+            systemModeTag: document.getElementById('system-mode-tag'),
+            
+            // 授權彈窗 DOM
+            gpsAuthModal: document.getElementById('gps-auth-modal'),
+            btnGrantGps: document.getElementById('btn-grant-gps'),
+            gpsErrorDiagnostic: document.getElementById('gps-error-diagnostic'),
+            errorDiagnosticText: document.getElementById('error-diagnostic-text'),
+            btnIframeBypass: document.getElementById('btn-iframe-bypass'),
+            
+            // 自訂確認彈窗 DOM
+            confirmModal: document.getElementById('confirm-modal'),
+            btnConfirmCancel: document.getElementById('btn-confirm-cancel'),
+            btnConfirmExecute: document.getElementById('btn-confirm-execute'),
+
+            btnRecenterMap: document.getElementById('btn-recenter-map'),
+            mapLoadingOverlay: document.getElementById('map-loading-overlay')
+        };
+
+        // 系統音效
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playChime(success = true) {
+            try {
+                if (success) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                } else {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(100, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }
+            } catch (e) {
+                console.log("Audio not supported or interaction blocked:", e);
+            }
+        }
+
+        // --- 初始化時鐘 ---
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const dateStr = now.toLocaleDateString('zh-TW', options);
+            
+            dom.liveTime.textContent = timeStr;
+            dom.liveDate.textContent = dateStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- 哈弗辛公式計算兩點距離 (公尺) ---
+        function calculateHaversine(lat1, lon1, lat2, lon2) {
+            const R = 6371000; // 地球半徑 (公尺)
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // --- 初始化真實地圖 (Leaflet) ---
+        function initMap() {
+            try {
+                // 建立地圖實例
+                map = L.map('live-map', {
+                    zoomControl: false,
+                    attributionControl: false
+                }).setView([state.targetLat, state.targetLon], 18);
+
+                // 載入 OpenStreetMap 地圖瓷磚 (採用深色主題)
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    maxZoom: 20
+                }).addTo(map);
+
+                // 移除加載中遮罩
+                dom.mapLoadingOverlay.classList.add('hidden');
+
+                // 教室 Icon (綠色脈衝點)
+                const classroomIcon = L.divIcon({
+                    html: `<div class="bg-emerald-500 w-4 h-4 rounded-full border-2 border-white shadow-lg pulse-marker flex items-center justify-center"></div>`,
+                    className: 'custom-classroom-icon',
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
+                });
+
+                // 新增教室標記
+                classroomMarker = L.marker([state.targetLat, state.targetLon], { icon: classroomIcon })
+                    .addTo(map)
+                    .bindPopup("<div class='text-slate-950 font-bold text-xs'>指定打卡教室</div>")
+                    .openPopup();
+
+                // 新增 15 米允許打卡半徑圈
+                classroomCircle = L.circle([state.targetLat, state.targetLon], {
+                    color: '#10b981',
+                    fillColor: '#10b981',
+                    fillOpacity: 0.15,
+                    radius: state.targetRadius,
+                    weight: 1.5,
+                    dashArray: '4'
+                }).addTo(map);
+
+            } catch (error) {
+                console.error("地圖載入錯誤：", error);
+                showToast("地圖模組加載失敗，請檢查網路連線", "error");
+            }
+        }
+
+        // --- 更新地圖上的使用者位置與精確度範圍 ---
+        function updateMapUserPosition() {
+            if (!map) return;
+
+            const userPos = [state.currentLat, state.currentLon];
+
+            // 使用者自訂 Icon (深藍色發光點)
+            const userIcon = L.divIcon({
+                html: `<div class="bg-indigo-500 w-4.5 h-4.5 rounded-full border-2 border-white shadow-xl ring-4 ring-indigo-500/30 flex items-center justify-center"></div>`,
+                className: 'custom-user-icon',
+                iconSize: [18, 18],
+                iconAnchor: [9, 9]
+            });
+
+            if (!userMarker) {
+                // 初次建立使用者標記
+                userMarker = L.marker(userPos, { icon: userIcon }).addTo(map);
+                userAccuracyCircle = L.circle(userPos, {
+                    color: '#6366f1',
+                    fillColor: '#6366f1',
+                    fillOpacity: 0.08,
+                    radius: state.accuracy,
+                    weight: 1
+                }).addTo(map);
+
+                autoFitBounds();
+            } else {
+                userMarker.setLatLng(userPos);
+                userAccuracyCircle.setLatLng(userPos);
+                userAccuracyCircle.setRadius(state.accuracy);
+            }
+        }
+
+        // 自動調整視角，確保同時能看到使用者與教室
+        function autoFitBounds() {
+            if (!map || !userMarker) return;
+            const group = new L.featureGroup([classroomMarker, userMarker]);
+            map.fitBounds(group.getBounds().pad(0.3));
+        }
+
+        dom.btnRecenterMap.addEventListener('click', () => {
+            if (state.currentLat && state.currentLon && map) {
+                map.panTo([state.currentLat, state.currentLon]);
+                showToast("地圖視角已對準您的位置", "info");
+            } else {
+                showToast("尚未取得您的精確定位", "error");
+            }
+        });
+
+        // --- 更新核心邏輯計算 ---
+        function updateSystemCalculation() {
+            // 計算目前距離
+            state.distance = calculateHaversine(
+                state.currentLat, 
+                state.currentLon, 
+                state.targetLat, 
+                state.targetLon
+            );
+
+            // 距離格式化
+            if (state.distance >= 1000) {
+                dom.distanceDisplay.textContent = `${(state.distance / 1000).toFixed(2)} 公里`;
+            } else {
+                dom.distanceDisplay.textContent = `${Math.round(state.distance)} 公尺`;
+            }
+
+            // 判定是否在 15 公尺打卡範圍內
+            const isWithinRange = state.distance <= state.targetRadius;
+            const isGpsWeak = state.accuracy > 40;
+
+            if (isWithinRange) {
+                if (isGpsWeak) {
+                    dom.checkinStatusCard.className = "w-full py-2.5 px-3 rounded-lg text-center font-bold text-sm bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                    dom.checkinStatusCard.innerHTML = `<span class="flex items-center justify-center gap-1"><i data-lucide="alert-circle" class="w-4 h-4"></i> 訊號弱 · 建議重整</span>`;
+                } else {
+                    dom.checkinStatusCard.className = "w-full py-2.5 px-3 rounded-lg text-center font-bold text-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                    dom.checkinStatusCard.innerHTML = `<span class="flex items-center justify-center gap-1"><i data-lucide="check-circle-2" class="w-4 h-4"></i> 已在教室內 · 准予打卡</span>`;
+                }
+                dom.btnClockIn.disabled = false;
+                dom.btnClockOut.disabled = false;
+            } else {
+                dom.checkinStatusCard.className = "w-full py-2.5 px-3 rounded-lg text-center font-bold text-sm bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                dom.checkinStatusCard.innerHTML = `<span class="flex items-center justify-center gap-1"><i data-lucide="alert-triangle" class="w-4 h-4"></i> 範圍外 (${Math.round(state.distance - state.targetRadius)}米) · 禁用</span>`;
+                
+                // 預覽展示模式下，即使超距也允許模擬點擊進行功能檢視
+                if (state.isPreviewMode) {
+                    dom.btnClockIn.disabled = false;
+                    dom.btnClockOut.disabled = false;
+                } else {
+                    dom.btnClockIn.disabled = true;
+                    dom.btnClockOut.disabled = true;
+                }
+            }
+
+            updateMapUserPosition();
+            lucide.createIcons();
+        }
+
+        // --- 處理定位更新事件 ---
+        function onLocationUpdated(lat, lon, accuracy) {
+            state.currentLat = parseFloat(lat);
+            state.currentLon = parseFloat(lon);
+            state.accuracy = accuracy;
+
+            // 更新介面數值
+            dom.currentLat.textContent = state.currentLat.toFixed(6);
+            dom.currentLon.textContent = state.currentLon.toFixed(6);
+            
+            if (state.isPreviewMode && accuracy === 1) {
+                dom.currentAccuracy.textContent = "± 1 公尺 (預覽兼容)";
+                dom.currentAccuracy.className = "font-mono text-sm text-indigo-400 font-semibold";
+            } else {
+                dom.currentAccuracy.textContent = `± ${Math.round(accuracy)} 公尺`;
+                if (accuracy <= 15) {
+                    dom.currentAccuracy.className = "font-mono text-sm text-emerald-400 font-semibold";
+                } else if (accuracy <= 30) {
+                    dom.currentAccuracy.className = "font-mono text-sm text-amber-400 font-semibold";
+                } else {
+                    dom.currentAccuracy.className = "font-mono text-sm text-rose-400 font-semibold";
+                }
+            }
+
+            const now = new Date();
+            dom.gpsUpdatedTime.textContent = now.toTimeString().split(' ')[0];
+
+            updateSystemCalculation();
+        }
+
+        // --- 真實地理定位追蹤 (HTML5 Geolocation API) ---
+        function startGpsTracking() {
+            if (state.isPreviewMode) return;
+
+            if ("geolocation" in navigator) {
+                dom.gpsStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
+                dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span><span>尋找衛星 GPS 定位中...</span>`;
+
+                // 呼叫 watchPosition 持續監聽定位，設定高精準度
+                state.watchId = navigator.geolocation.watchPosition(pos => {
+                    // 第一次成功取得位置時，代表授權並讀取成功，關閉引導視窗
+                    if (!state.gpsConnected) {
+                        state.gpsConnected = true;
+                        dom.gpsAuthModal.classList.add('opacity-0', 'pointer-events-none');
+                        setTimeout(() => dom.gpsAuthModal.style.display = 'none', 300);
+                        showToast("教室定位授權成功！已進入系統。", "success");
+                    }
+
+                    dom.gpsStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                    dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>GPS 衛星定位已成功連線</span>`;
+
+                    onLocationUpdated(
+                        pos.coords.latitude,
+                        pos.coords.longitude,
+                        pos.coords.accuracy
+                    );
+                }, (error) => {
+                    state.gpsConnected = false;
+                    handleGpsError(error);
+                    
+                    // 發生錯誤時還原按鈕，允許重試
+                    dom.btnGrantGps.disabled = false;
+                    dom.btnGrantGps.innerHTML = `<i data-lucide="bell" class="w-4 h-4 animate-pulse"></i> 允許 GPS 定位安全授權`;
+                }, { enableHighAccuracy: true });
+
+            } else {
+                handleGpsError({ code: 0, message: "不支援地理定位定位" });
+            }
+            lucide.createIcons();
+        }
+
+        // --- 錯誤診斷與處理 ---
+        function handleGpsError(error) {
+            dom.gpsStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20";
+            
+            let errMsg = "衛星定位失敗";
+            let diagnosis = "";
+
+            const isInIframe = window.self !== window.top;
+
+            if (error.code === 1 || error.code === error.PERMISSION_DENIED) {
+                errMsg = "定位授權遭拒絕";
+                if (isInIframe) {
+                    diagnosis = "偵測到您的瀏覽器已直接拒絕定位授權。這是因為此頁面目前正處於「沙盒預覽/協作平台內嵌（Iframe）」中。基於瀏覽器隱私安全規範，除非外層容器特別設定 allow=\"geolocation\" 屬性，否則在內嵌框架中直接呼叫 GPS 定位會被安全沙盒機制攔截而無法請求。";
+                } else {
+                    diagnosis = "您或您的瀏覽器已拒絕此網站存取位置資訊。請確認您已開啟瀏覽器的定位設定，或點選網址列左側的鎖頭圖示，將「位置資訊」變更為「允許」。";
+                }
+            } else if (error.code === 2 || error.code === error.POSITION_UNAVAILABLE) {
+                errMsg = "無法偵測到 GPS 訊號";
+                diagnosis = "瀏覽器無法從您的設備取得 GPS 衛星資料。若您在室內，可能因為高牆或建築物屏蔽導致定位失效，請嘗試靠近窗邊或移動到室外。";
+            } else if (error.code === 3 || error.code === error.TIMEOUT) {
+                errMsg = "定位連線逾時";
+                diagnosis = "搜尋 GPS 訊號逾時。請確認設備的位置服務（GPS）已經開啟，並重新點選按鈕嘗試。";
+            } else {
+                errMsg = error.message || "未知定位錯誤";
+                diagnosis = "無法建立 GPS 連線，請確認硬體是否正常支援地理定位服務。";
+            }
+
+            dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>${errMsg}</span>`;
+            
+            // 將診斷訊息灌入 Modal
+            dom.errorDiagnosticText.textContent = diagnosis;
+            dom.gpsErrorDiagnostic.classList.remove('hidden');
+            dom.btnIframeBypass.classList.remove('hidden');
+            dom.btnIframeBypass.classList.add('flex');
+            
+            showToast(`定位失敗：${errMsg}。已為您開啟故障診斷提示與展示通道。`, "error");
+            lucide.createIcons();
+        }
+
+        // --- 彈窗引導使用者授權定位的處理邏輯 ---
+        dom.btnGrantGps.addEventListener('click', () => {
+            dom.btnGrantGps.disabled = true;
+            dom.btnGrantGps.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> 正在與衛星通訊中...`;
+            
+            // 直接呼叫定位追蹤
+            startGpsTracking();
+        });
+
+        // 預覽展示模式按鈕事件
+        dom.btnIframeBypass.addEventListener('click', () => {
+            state.isPreviewMode = true;
+            
+            // 進入預覽模式，關閉引導視窗
+            dom.gpsAuthModal.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => dom.gpsAuthModal.style.display = 'none', 300);
+            
+            // 設定一組在學校附近的模擬展示座標 (例如在教室旁約 8 公尺處)
+            const demoLat = state.targetLat + 0.00005; 
+            const demoLon = state.targetLon - 0.00005;
+            
+            dom.systemModeTag.className = "text-xs px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20 flex items-center gap-1 font-medium";
+            dom.systemModeTag.innerHTML = `<i data-lucide="eye" class="w-3.5 h-3.5"></i> 預覽展示模式`;
+            
+            dom.gpsStatusBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
+            dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500"></span><span>預覽相容模式已載入</span>`;
+
+            onLocationUpdated(demoLat, demoLon, 1);
+            showToast("已成功進入預覽展示模式，地圖及面板功能已解鎖！", "success");
+        });
+
+        // --- 提示訊息 UI ---
+        let toastTimeout = null;
+        function showToast(text, type = "info") {
+            clearTimeout(toastTimeout);
+            dom.toastText.textContent = text;
+            
+            if (type === "success") {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400";
+                dom.toastMessage.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> ${text}`;
+            } else if (type === "error") {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-rose-500/10 border border-rose-500/30 text-rose-400";
+                dom.toastMessage.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4"></i> ${text}`;
+            } else {
+                dom.toastMessage.className = "mt-4 p-3 rounded-xl text-xs text-center flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 text-slate-300";
+                dom.toastMessage.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i> ${text}`;
+            }
+            
+            dom.toastMessage.classList.remove('hidden');
+            lucide.createIcons();
+            
+            toastTimeout = setTimeout(() => {
+                dom.toastMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        // --- 打卡邏輯實作 ---
+        function executeClockAction(type) {
+            const isWithinRange = state.distance <= state.targetRadius;
+
+            // 如果不在範圍外，且不是預覽模式下，完全不予打卡
+            if (!isWithinRange && !state.isPreviewMode) {
+                playChime(false);
+                showToast(`打卡失敗：您在教室範圍之外！(距離教室: ${Math.round(state.distance)}公尺)`, "error");
+                return;
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
+            const dateStr = now.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
+            
+            const record = {
+                id: Date.now(),
+                time: `${dateStr} ${timeStr}`,
+                type: type, // '簽到' 或 '簽退'
+                distance: Math.round(state.distance),
+                accuracy: Math.round(state.accuracy),
+                lat: state.currentLat,
+                lon: state.currentLon,
+                isOK: true
+            };
+
+            // 新增至歷史清單
+            state.history.unshift(record);
+            
+            saveHistoryToLocalStorage();
+            renderHistoryTable();
+
+            // 音效與通知
+            playChime(true);
+            
+            const methodText = state.isPreviewMode ? "預覽模擬" : "實時定位";
+            showToast(`已成功完成【${type}】簽到打卡！(${methodText} · 距離教室 ${record.distance} 米)`, "success");
+        }
+
+        dom.btnClockIn.addEventListener('click', () => executeClockAction('簽到'));
+        dom.btnClockOut.addEventListener('click', () => executeClockAction('簽退'));
+
+
+        // --- 打卡紀錄表格繪製與管理 ---
+        function renderHistoryTable() {
+            if (state.history.length === 0) {
+                dom.historyTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-slate-500">
+                            <div class="flex flex-col items-center justify-center gap-2">
+                                <i data-lucide="file-text" class="w-8 h-8 opacity-40"></i>
+                                <span>尚無任何課堂打卡紀錄</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            let rowsHtml = '';
+            state.history.forEach(item => {
+                const distanceText = item.distance >= 1000 
+                    ? `${(item.distance / 1000).toFixed(2)}km` 
+                    : `${item.distance}m`;
+
+                const accuracyText = item.accuracy === 1 ? "±1m (預覽)" : `± ${item.accuracy}m`;
+                const statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">成功簽到</span>`;
+
+                const typeColor = item.type === '簽到' 
+                    ? 'text-emerald-400 font-semibold' 
+                    : 'text-rose-400 font-semibold';
+
+                rowsHtml += `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-4 font-mono">${item.time}</td>
+                        <td class="py-3 px-4"><span class="${typeColor}">${item.type}</span></td>
+                        <td class="py-3 px-4 font-mono">${distanceText}</td>
+                        <td class="py-3 px-4 font-mono text-slate-400">${accuracyText}</td>
+                        <td class="py-3 px-4 text-xs">${statusBadge}</td>
+                    </tr>
+                `;
+            });
+
+            dom.historyTableBody.innerHTML = rowsHtml;
+            lucide.createIcons();
+        }
+
+        // 儲存至本地儲存區
+        function saveHistoryToLocalStorage() {
+            localStorage.setItem('classroom_gps_history', JSON.stringify(state.history));
+        }
+
+        // 從本地儲存區讀取
+        function loadHistoryFromLocalStorage() {
+            const saved = localStorage.getItem('classroom_gps_history');
+            if (saved) {
+                try {
+                    state.history = JSON.parse(saved);
+                } catch(e) {
+                    state.history = [];
+                }
+            }
+            renderHistoryTable();
+        }
+
+        // --- 清除歷史彈窗 ---
+        dom.btnClear.addEventListener('click', () => {
+            if (state.history.length === 0) {
+                showToast("目前並無任何歷史紀錄可供清除。", "info");
+                return;
+            }
+            dom.confirmModal.classList.remove('hidden');
+            dom.confirmModal.classList.add('flex');
+            lucide.createIcons();
+        });
+
+        dom.btnConfirmCancel.addEventListener('click', () => {
+            dom.confirmModal.classList.add('hidden');
+            dom.confirmModal.classList.remove('flex');
+        });
+
+        dom.btnConfirmExecute.addEventListener('click', () => {
+            state.history = [];
+            saveHistoryToLocalStorage();
+            renderHistoryTable();
+            dom.confirmModal.classList.add('hidden');
+            dom.confirmModal.classList.remove('flex');
+            showToast("已成功清空本地打卡歷史。", "success");
+        });
+
+        // 匯出 CSV 報表
+        dom.btnExport.addEventListener('click', () => {
+            if (state.history.length === 0) {
+                showToast("無打卡紀錄，無法匯出報表！", "error");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+            csvContent += "打卡時間,打卡類型,距離教室(公尺),定位誤差(公尺),緯度,經度\n";
+
+            state.history.forEach(item => {
+                csvContent += `"${item.time}","${item.type}",${item.distance},${item.accuracy},${item.lat},${item.lon}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `教室打卡報表_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("課堂簽到報表 CSV 匯出成功！", "success");
+        });
+
+
+        // --- 初始化入口點 ---
+        window.onload = function() {
+            // 初始化圖示
+            lucide.createIcons();
+
+            // 建立地圖
+            initMap();
+
+            // 載入本地歷史紀錄
+            loadHistoryFromLocalStorage();
+
+            // 顯示強制 GPS 授權彈窗
+            dom.gpsAuthModal.style.display = 'flex';
+        };
+    </script>
+</body>
+</html>
