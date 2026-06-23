@@ -18,7 +18,7 @@
         }
         /* 自訂 Leaflet 脈衝動畫效果 */
         @keyframes pulse-ring {
-            0 { transform: scale(0.33); opacity: 1; }
+            0% { transform: scale(0.33); opacity: 1; }
             80%, 100% { transform: scale(2); opacity: 0; }
         }
         .pulse-marker {
@@ -234,7 +234,7 @@
             </div>
         </div>
 
-        <!-- [管理者專用功能分頁狀態欄] -->
+        <!-- [管理者專用功能分頁狀態欄] (對齊 image_1af804.png，登入管理員後顯示，可放大版面) -->
         <div id="admin-sub-navbar" class="hidden bg-slate-950 border-t border-slate-850 px-4 py-2 transition-all duration-300">
             <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="flex items-center gap-1.5">
@@ -268,7 +268,7 @@
     <!-- 主內容區 -->
     <main class="flex-grow max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 transition-all duration-500">
         
-        <!-- 左側：真實地圖與 GPS 資料區 -->
+        <!-- 左側：真實地圖與 GPS 資料區 (在 maximized 模式下會被動態隱藏以達到放大效果) -->
         <section id="left-column" class="lg:col-span-5 flex flex-col gap-6 transition-all duration-500">
             
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl">
@@ -338,7 +338,7 @@
 
         </section>
 
-        <!-- 右側：設定、打卡操作 & 歷史紀錄 -->
+        <!-- 右側：設定、打卡操作 & 歷史紀錄 (在 maximized 模式下會自動變成 col-span-12 實現滿版) -->
         <section id="right-column" class="lg:col-span-7 flex flex-col gap-6 transition-all duration-500">
             
             <!-- [教師設定主面板] (僅管理者可見) -->
@@ -535,7 +535,7 @@
                 </div>
             </div>
 
-            <!-- [上課點名花名冊] (僅管理者可見) -->
+            <!-- [上課點名花名冊] (僅管理者可見，支援點選全螢幕放大模式) -->
             <div id="roster-panel" class="admin-only-section flex-section bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl flex-col transition-all duration-300">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
@@ -562,7 +562,7 @@
                     </div>
                 </div>
 
-                <!-- 視角一：當週詳細點名單 -->
+                <!-- 視角一：當週詳細點名單 (原先的詳細流水清單) -->
                 <div id="view-roster-detail" class="flex flex-col gap-4">
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-1">
                         <input type="text" id="admin-roster-search" placeholder="搜尋名單學號、姓名或科系..." class="md:col-span-5 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
@@ -620,10 +620,10 @@
                     </div>
                 </div>
 
-                <!-- 視角二：18週手動點名勾選矩陣 -->
+                <!-- 視角二：18週手動點名勾選矩陣 -> 依據 image_1af804.png 升級，且在全螢幕下完全延展 -->
                 <div id="view-roster-matrix" class="hidden flex flex-col gap-6">
                     
-                    <!-- 1. 頂部看板數據統計 -->
+                    <!-- 1. 頂部看板數據統計 (對齊 image_1af804.png) -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- 看板一：出席率圓餅圖卡片 -->
                         <div class="bg-slate-900/80 border border-slate-750 rounded-2xl p-5 flex items-center justify-between shadow-lg">
@@ -684,7 +684,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. 週次選擇與操作按鈕列 -->
+                    <!-- 2. 週次選擇與操作按鈕列 (對齊 image_1af804.png) -->
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-700/50 pb-4">
                         <div class="flex items-center gap-3">
                             <label class="text-sm font-bold text-slate-300">選擇週次：</label>
@@ -702,7 +702,7 @@
                         </div>
                     </div>
 
-                    <!-- 3. 看板與篩選基準列 -->
+                    <!-- 3. 看板與篩選基準列 (對齊 image_1af804.png) -->
                     <div class="flex flex-col gap-4">
                         <div class="flex flex-wrap items-center gap-2.5">
                             <span class="text-xs text-slate-400 font-bold">看板與狀態篩選基準：</span>
@@ -736,7 +736,7 @@
                             </div>
                         </div>
 
-                        <!-- 4. 整批一鍵設定 -->
+                        <!-- 4. 整批一鍵設定 (對齊 image_1af804.png) -->
                         <div class="flex flex-wrap items-center gap-3 text-xs bg-slate-900/60 border border-slate-800/80 px-4 py-3 rounded-2xl">
                             <span class="text-slate-400 font-bold">整批一鍵設定 (目前篩選名單)：</span>
                             <button id="btn-matrix-batch-check-current" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition shadow text-[11px]">
@@ -776,7 +776,7 @@
 
             </div>
 
-            <!-- [學期分析專屬全螢幕面板] -->
+            <!-- [學期分析專屬全螢幕面板] (由狀態欄點選放大切換時呈現) -->
             <div id="view-term-analytics" class="hidden flex-col gap-6 bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 shadow-xl transition-all duration-300">
                 <div class="flex items-center gap-2 border-b border-slate-700 pb-3">
                     <i data-lucide="bar-chart-3" class="w-6 h-6 text-indigo-400"></i>
@@ -809,7 +809,7 @@
                                 <text x="10" y="105" fill="#64748b" font-size="9" font-family="monospace">50%</text>
                                 <text x="10" y="145" fill="#64748b" font-size="9" font-family="monospace">0%</text>
 
-                                <!-- X 軸週次 -->
+                                <!-- X 軸週次 (選取數週表示) -->
                                 <text x="40" y="155" fill="#64748b" font-size="8">W1</text>
                                 <text x="130" y="155" fill="#64748b" font-size="8">W5</text>
                                 <text x="220" y="155" fill="#64748b" font-size="8">W9</text>
@@ -818,7 +818,7 @@
                                 <text x="490" y="155" fill="#64748b" font-size="8">W17</text>
                                 <text x="570" y="155" fill="#64748b" font-size="8">W18</text>
 
-                                <!-- 折線 -->
+                                <!-- 折線 (Demo走勢，後面用JS或直接靜態漸變線呈現) -->
                                 <path d="M40,30 L130,25 L220,50 L310,35 L400,28 L490,45 L570,38" fill="none" stroke="url(#trendGrad)" stroke-width="3" stroke-linecap="round" />
                                 
                                 <!-- 漸變定義 -->
@@ -855,7 +855,7 @@
                     </div>
                 </div>
 
-                <!-- 預警卡：高危缺課預警 -->
+                <!-- 預警卡：高危缺課預警 (18週內缺課大於3次者) -->
                 <div class="bg-rose-950/20 border border-rose-500/20 rounded-2xl p-5">
                     <div class="flex items-center gap-2 text-rose-400 font-bold text-sm mb-3">
                         <i data-lucide="alert-triangle" class="w-4 h-4"></i>
@@ -985,7 +985,7 @@
             // 教師面板視角狀態 ("detail" 為詳細名單，"matrix" 為 18 週「學堂點名通」多節點名表)
             teacherActiveView: "matrix", // 預設為點名矩陣 (學堂點名通)
 
-            // 「學堂點名通」專屬篩選器與看板狀態
+            // 「學堂點名通」專屬篩選器與看板狀態 (對齊 image_1af804.png)
             matrixSearchQuery: "",
             matrixFilterDept: "ALL",
             matrixFilterStatus: "ALL",
@@ -1112,7 +1112,7 @@
             attendanceProgressCircle: document.getElementById('attendance-progress-circle'),
             attendanceRatePercentage: document.getElementById('attendance-rate-percentage'),
 
-            // 學堂點名通專屬 DOM
+            // 學堂點名通專屬 DOM (對齊 image_1af804.png)
             viewRosterMatrix: document.getElementById('view-roster-matrix'),
             matrixSelectWeek: document.getElementById('matrix-select-week'),
             matrixTableBody: document.getElementById('matrix-table-body'),
@@ -1333,28 +1333,12 @@
             return currentMin >= startMin && currentMin <= endMin;
         }
 
-        // 產生並儲存本機硬體特徵 (Cookie + LocalStorage 雙向高硬度綁定防止清除快取代點)
+        // 產生並儲存本機硬體特徵
         function getOrCreateDeviceUUID() {
             let uuid = localStorage.getItem('classroom_device_uuid');
             if (!uuid) {
-                // 檢查 Cookie 是否留存有 UUID
-                const match = document.cookie.match(new RegExp('(^| )classroom_device_uuid=([^;]+)'));
-                if (match) {
-                    uuid = match[2];
-                    localStorage.setItem('classroom_device_uuid', uuid);
-                } else {
-                    uuid = 'dev-' + Math.random().toString(36).substring(2, 10) + '-' + Math.random().toString(36).substring(2, 10);
-                    localStorage.setItem('classroom_device_uuid', uuid);
-                    // 設定 Cookie 效期 365 天
-                    const d = new Date();
-                    d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
-                    document.cookie = `classroom_device_uuid=${uuid};expires=${d.toUTCString()};path=/;SameSite=Strict`;
-                }
-            } else {
-                // 確保 Cookie 也是同步存在的
-                const d = new Date();
-                d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
-                document.cookie = `classroom_device_uuid=${uuid};expires=${d.toUTCString()};path=/;SameSite=Strict`;
+                uuid = 'dev-' + Math.random().toString(36).substring(2, 10) + '-' + Math.random().toString(36).substring(2, 10);
+                localStorage.setItem('classroom_device_uuid', uuid);
             }
             return uuid;
         }
@@ -1597,29 +1581,12 @@
             let canIn = false;
             let canOut = false;
 
-            // 雙向「一機一碼」硬體衝突安全性檢驗
-            let isDeviceBoundToOther = false;
-            let boundStudentName = "";
-            if (state.selectedStudent) {
-                // 檢查此設備的 UUID 是否已綁定到「其他任何學號」上
-                const boundStudent = state.roster.find(s => 
-                    s.deviceId === myDeviceUUID && s.id.toLowerCase() !== state.selectedStudent.id.toLowerCase()
-                );
-                if (boundStudent) {
-                    isDeviceBoundToOther = true;
-                    boundStudentName = boundStudent.name;
-                }
-            }
-
             if (isSchoolIpActive) {
                 dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20");
                 dom.checkinStatusCard.innerHTML = `<span>校園 IP 認證 · 免除 GPS 限制</span>`;
             } else if (!hasLocation) {
                 dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-slate-800 text-slate-400 border border-slate-700");
                 dom.checkinStatusCard.innerHTML = `<span>等待 GPS 定位訊號中...</span>`;
-            } else if (isDeviceBoundToOther && !state.isAdminMode) {
-                dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-rose-500/10 text-rose-400 border border-rose-500/20");
-                dom.checkinStatusCard.innerHTML = `<span>⚠️ 本機已綁定其他學號 [${boundStudentName}] 限制代點</span>`;
             } else if (isWithinRange) {
                 dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20");
                 dom.checkinStatusCard.innerHTML = `<span>在打卡範圍內 · 請核對身分</span>`;
@@ -1633,15 +1600,16 @@
             if (state.selectedStudent) {
                 const isDeviceMatch = !state.selectedStudent.deviceId || (state.selectedStudent.deviceId === myDeviceUUID);
                 
-                // 只有位置正確、裝置匹配，且本機沒有幫其他人代打卡的衝突紀錄時，才允許按鈕高亮
-                if (locationPassed && (isDeviceMatch || state.isAdminMode) && (!isDeviceBoundToOther || state.isAdminMode)) {
+                if (locationPassed && (isDeviceMatch || state.isAdminMode)) {
                     const currentStatus = state.selectedStudent.status;
                     
+                    // 簽到與遲到按鈕：若目前狀態是未簽到，或是被標記為缺課，且已經到了簽到開始時間
                     if (currentStatus === '未簽到' || currentStatus === '缺課') {
                         if (isAfterSignInStart || state.isAdminMode) {
                             canIn = true;
                         }
                     } 
+                    // 簽退按鈕：狀態為已簽到或已遲到
                     else if (currentStatus === '已簽到' || currentStatus === '已遲到') {
                         if (isSignOutTime || state.isAdminMode) {
                             canOut = true;
@@ -1902,9 +1870,6 @@
                     state.selectedStudent = refreshed;
                 }
             }
-
-            // 安全連動：當點名名單更新時，立刻重新計算目前選取學員的打卡按鈕可用度與狀態卡片
-            updateSystemCalculation();
         }
 
         // --- 教師端學堂點名通單節勾選同步 ---
@@ -1939,40 +1904,13 @@
             }
         };
 
-        // --- 執行打卡動作 (聯動點名通 session 勾選 + 雙向安全檢驗) ---
+        // --- 執行打卡動作 (聯動點名通 session 勾選) ---
         async function executeClockAction(type) {
             if (!state.selectedStudent || !user) return;
 
-            // 1. 打卡當下「實時雲端二重校驗」，防止本地端和雲端狀態不一致導致的代點繞過
-            try {
-                const rosterDocRef = getPublicDocRef('roster', state.selectedStudent.id.toLowerCase());
-                const freshSnap = await getDoc(rosterDocRef);
-                if (freshSnap.exists()) {
-                    const freshData = freshSnap.data();
-                    
-                    // A. 驗證此學號是否已被「其他」裝置綁定
-                    if (freshData.deviceId && freshData.deviceId !== myDeviceUUID && !state.isAdminMode) {
-                        playChime(false);
-                        showToast("此學號已被其他裝置鎖定特徵！請聯絡教師解除。", "error");
-                        state.selectedStudent = freshData;
-                        updateSystemCalculation();
-                        return;
-                    }
-
-                    // B. 驗證本機 UUID 是否已被其他學號先下手綁定 (一機一碼嚴格限制)
-                    const otherBoundStudent = state.roster.find(s => 
-                        s.deviceId === myDeviceUUID && s.id.toLowerCase() !== state.selectedStudent.id.toLowerCase()
-                    );
-                    if (otherBoundStudent && !state.isAdminMode) {
-                        playChime(false);
-                        showToast(`打卡拒絕！本機已綁定其他學號 [${otherBoundStudent.name}]，每台設備僅供單人打卡。`, "error");
-                        updateSystemCalculation();
-                        return;
-                    }
-                }
-            } catch (err) {
-                console.error("安全校驗時出錯：", err);
-                showToast("網路異常，無法進行安全定位校驗！", "error");
+            if (state.selectedStudent.deviceId && state.selectedStudent.deviceId !== myDeviceUUID && !state.isAdminMode) {
+                playChime(false);
+                showToast("此學號已被其他裝置鎖定特徵！請聯絡教師解除。", "error");
                 return;
             }
 
@@ -2015,6 +1953,8 @@
                 await addDoc(getPublicCollectionRef('history'), record);
 
                 // 2. 聯動設定「學堂點名通」勾選狀態
+                // 若為簽到/遲到：自動將「第一節課」設為 true (出席)
+                // 若為簽退：自動將本日「所有節數」皆設為 true (代表全程參與)
                 const sessionAtt = state.selectedStudent.sessionAttendance || {};
                 const weekKey = `W${state.currentCalculatedWeek}`;
                 
@@ -2042,7 +1982,7 @@
                 await updateDoc(rosterDocRef, updateData);
 
                 playChime(true);
-                showToast("簽到打卡完成！本機已與您的學號強制綁定特徵。", "success");
+                showToast("簽到打卡完成！", "success");
             } catch (e) {
                 showToast("打卡失敗，請重試", "error");
             }
@@ -2160,7 +2100,7 @@
             lucide.createIcons();
         }
 
-        // 渲染新升級的「學堂點名通」點名矩陣
+        // 渲染新升級的「學堂點名通」點名矩陣 (視角二，對齊 image_1af804.png)
         function renderMatrixTable() {
             if (!state.roster || state.roster.length === 0) return;
 
@@ -2172,8 +2112,11 @@
 
             // 1. 過濾名單
             const filtered = state.roster.filter(s => {
+                // 學號姓名模糊搜尋
                 const matchSearch = s.id.toLowerCase().includes(searchVal) || s.name.toLowerCase().includes(searchVal);
+                // 班級科系過濾
                 const matchDept = (deptVal === "ALL") || (s.dept === deptVal);
+                // 單節出席狀態過濾
                 const isChecked = s.sessionAttendance && s.sessionAttendance[`W${currentWeek}_S${activeSession}`] === true;
                 const matchStatus = (statusVal === "ALL") ||
                                     (statusVal === "PRESENT" && isChecked) ||
@@ -2182,6 +2125,7 @@
                 return matchSearch && matchDept && matchStatus;
             });
 
+            // 更新統計字樣人數
             document.querySelectorAll('.matrix-total-filtered').forEach(el => el.textContent = filtered.length);
 
             // 2. 計算單節出席看板統計數據 (Card 1, Card 2, Card 3)
@@ -2224,10 +2168,11 @@
 
             let tableHtml = '';
             filtered.forEach(s => {
+                // 自動生成彩頭
                 const surname = s.name ? s.name.charAt(0) : '?';
                 const avatarBg = `bg-indigo-600/10 text-indigo-400 border border-indigo-500/10`;
 
-                // 動態計算學期總出席率
+                // 動態計算學期總出席率 (1~18週 * classSessions 總節數的勾選出席率)
                 const totalActiveSessions = 18 * state.classSessions;
                 let presentSessionsCount = 0;
                 if (s.sessionAttendance) {
@@ -2311,13 +2256,14 @@
             renderAdminRosterTable();
         });
 
-        // 實現「學堂點名通」整批一鍵設定邏輯
+        // 5. 實現「學堂點名通」整批一鍵設定邏輯 (針對目前過濾下的名單批次操作)
         async function executeMatrixBatchCheck(targetSessionIdx, isChecked, isAllSessions = false) {
             if (!state.isAdminMode || !user) {
                 showToast("非管理者身分，無法執行批次點名設定！", "error");
                 return;
             }
 
+            // 1. 先獲取目前過濾下的名單
             const searchVal = state.matrixSearchQuery.trim().toLowerCase();
             const deptVal = state.matrixFilterDept;
             const currentWeek = state.selectedTeacherViewWeek;
@@ -2340,10 +2286,12 @@
                     const rosterDocRef = getPublicDocRef('roster', s.id.toLowerCase());
 
                     if (isAllSessions) {
+                        // 全節數一鍵設定
                         for (let sIdx = 1; sIdx <= state.classSessions; sIdx++) {
                             sessionAtt[`W${currentWeek}_S${sIdx}`] = isChecked;
                         }
                     } else {
+                        // 單一節數設定
                         sessionAtt[`W${currentWeek}_S${targetSessionIdx}`] = isChecked;
                     }
 
@@ -2450,6 +2398,7 @@
                     deptStats[dept] = { total: 0, present: 0 };
                 }
                 
+                // 累計該科系學生已勾選的出席節數
                 const totalPossible = 18 * state.classSessions;
                 let presentCount = 0;
                 if (s.sessionAttendance) {
@@ -2494,6 +2443,7 @@
                 }
                 const termRate = totalPossible > 0 ? Math.round((presentCount / totalPossible) * 100) : 0;
                 
+                // 累積低於 80%
                 if (termRate < 80) {
                     warningCount++;
                     warningHtml += `
@@ -2610,6 +2560,7 @@
                 dom.configStatusTag.innerHTML = `<span class="px-2 py-0.5 bg-rose-500 text-white rounded font-bold">管理者配置模式</span>`;
                 showToast("管理者登入成功！已自動為您切換至全螢幕滿版週點名簿", "success");
                 
+                // 完美契合：登入成功後，預設直接進入全螢幕週點名簿視角
                 state.adminActiveTab = "matrix";
                 applyLayoutAndTabMode();
             } else {
@@ -2618,7 +2569,7 @@
             }
         });
 
-        // --- 儲存所有考勤設定 ---
+        // --- 儲存所有考勤控制設定 ---
         dom.btnSaveCoords.addEventListener('click', async () => {
             if (!state.isAdminMode || !user) return;
 
@@ -2676,7 +2627,7 @@
                         lat: null,
                         lon: null,
                         deviceId: null,
-                        sessionAttendance: {}, 
+                        sessionAttendance: {}, // 預設多節點名全空白
                         absentWeeks: {} 
                     });
                 }
@@ -2709,7 +2660,7 @@
                         lat: null,
                         lon: null,
                         deviceId: null,
-                        sessionAttendance: {}, 
+                        sessionAttendance: {}, // 清空所有勾選
                         absentWeeks: {} 
                     });
                 });
@@ -2893,6 +2844,7 @@
                     if (s.deviceId === myDeviceUUID) {
                         dom.btnAdminResetDevice.classList.add('hidden');
                     } else {
+                        // 管理者登入後，可強制一鍵解鎖綁定
                         if (state.isAdminMode) {
                             dom.btnAdminResetDevice.classList.remove('hidden');
                         }
@@ -2912,6 +2864,7 @@
             }
         });
 
+        // 點擊空白處自動收合搜尋選單
         document.addEventListener('click', (e) => {
             if (e.target !== dom.studentSearchInput) {
                 dom.searchResultsDropdown.classList.add('hidden');
@@ -2920,3 +2873,10 @@
 
         // 輔助點擊與彈窗綁定
         dom.btnShowImportModal.addEventListener('click', () => { dom.importTextarea.value = ''; dom.rosterImportModal.classList.remove('hidden'); dom.rosterImportModal.classList.add('flex'); });
+        dom.btnCloseImport.addEventListener('click', () => dom.rosterImportModal.classList.add('hidden'));
+        dom.btnCancelImport.addEventListener('click', () => dom.rosterImportModal.classList.add('hidden'));
+        dom.btnClear.addEventListener('click', () => { dom.confirmModal.classList.remove('hidden'); dom.confirmModal.classList.add('flex'); });
+        dom.btnConfirmCancel.addEventListener('click', () => dom.confirmModal.classList.add('hidden'));
+    </script>
+</body>
+</html>
