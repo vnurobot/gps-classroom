@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧課堂 GPS 行動打卡與點名系統 - 學堂點名通</title>
+    <title>智慧課堂 GPS 行動打卡與點名系統V624</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons CDN -->
@@ -1065,7 +1065,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, addDoc, updateDoc, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase 設定 ---
         const firebaseConfig = {
@@ -1099,7 +1099,7 @@
                 { id: 12, name: "第12節", start: "18:30", end: "19:15" },
                 { id: 13, name: "第13節", start: "19:15", end: "20:00" },
                 { id: 14, name: "第14節", start: "20:10", end: "20:55" },
-                { id: 15, name: "第15節", start: "20:55", end: "21:40" }
+                { id: 15, name: "第15節", start: "20:55", fill: "transparent", end: "21:40" }
             ],
             weekend: [
                 { id: 1, name: "第1節", start: "08:20", end: "09:05" },
@@ -2345,54 +2345,73 @@
         async function executeClockAction(type) {
             if (!state.selectedStudent || !user) return;
 
-            if (state.selectedStudent.deviceId && state.selectedStudent.deviceId !== myDeviceUUID && !state.isAdminMode) {
-                playChime(false);
-                showToast("此學號已被其他行動裝置特徵鎖定！請聯絡教師解除。", "error");
-                return;
-            }
+            // 顯示雲端安全通道比對中
+            showToast("正在透過雲端安全通道進行硬體特徵碼比對...", "info");
 
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
-            const dateStr = now.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
+            const studentDocRef = getPublicDocRef('roster', `${state.activeClassId}_${state.selectedStudent.id.toLowerCase()}`);
             
-            const finalLat = (state.currentLat === 0) ? state.targetLat : state.currentLat;
-            const finalLon = (state.currentLon === 0) ? state.targetLon : state.currentLon;
-
-            let finalType = type;
-            const currentHM = timeStr.substring(0, 5);
-            const lateTimeStr = addMinutes(state.signInStart, state.lateThreshold);
-            
-            const [curH, curM] = currentHM.split(':').map(Number);
-            const [lateH, lateM] = lateTimeStr.split(':').map(Number);
-
-            const isWithinGracePeriod = (curH * 60 + curM) <= (lateH * 60 + lateM);
-
-            if (type === '簽到') {
-                if (!isWithinGracePeriod) {
-                    finalType = '遲到';
-                }
-            }
-
-            const record = {
-                classId: state.activeClassId,
-                studentId: state.selectedStudent.id,
-                name: state.selectedStudent.name,
-                dept: state.selectedStudent.dept,
-                time: `${dateStr} ${timeStr}`,
-                dateKey: now.toISOString().split('T')[0], 
-                week: state.currentCalculatedWeek, 
-                type: finalType,
-                distance: isSchoolIP(state.userIp) ? 0 : Math.round(state.distance),
-                accuracy: isSchoolIP(state.userIp) ? 1 : Math.round(state.accuracy),
-                lat: finalLat,
-                lon: finalLon,
-                timestamp: Date.now()
-            };
-
             try {
+                // 從 Firestore 進行即時、單次最準確的雲端數據庫比對 (一機一碼實時防弊驗證)
+                const docSnap = await getDoc(studentDocRef);
+                if (!docSnap.exists()) {
+                    showToast("找不到該學生的雲端註冊資料！", "error");
+                    return;
+                }
+
+                const latestStudentData = docSnap.data();
+                const boundDeviceId = latestStudentData.deviceId;
+
+                // 進行雲端硬體特徵比對
+                if (boundDeviceId && boundDeviceId !== myDeviceUUID && !state.isAdminMode) {
+                    playChime(false);
+                    showToast(`【雲端比對失敗】此學號已綁定其他行動裝置 (裝置特徵: ${boundDeviceId.slice(0, 8)}...)。為防止代簽到，本系統已拒絕此次請求！`, "error");
+                    // 同步刷新本地狀態
+                    state.selectedStudent.deviceId = boundDeviceId;
+                    updateSystemCalculation();
+                    return;
+                }
+
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
+                const dateStr = now.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
+                
+                const finalLat = (state.currentLat === 0) ? state.targetLat : state.currentLat;
+                const finalLon = (state.currentLon === 0) ? state.targetLon : state.currentLon;
+
+                let finalType = type;
+                const currentHM = timeStr.substring(0, 5);
+                const lateTimeStr = addMinutes(state.signInStart, state.lateThreshold);
+                
+                const [curH, curM] = currentHM.split(':').map(Number);
+                const [lateH, lateM] = lateTimeStr.split(':').map(Number);
+
+                const isWithinGracePeriod = (curH * 60 + curM) <= (lateH * 60 + lateM);
+
+                if (type === '簽到') {
+                    if (!isWithinGracePeriod) {
+                        finalType = '遲到';
+                    }
+                }
+
+                const record = {
+                    classId: state.activeClassId,
+                    studentId: state.selectedStudent.id,
+                    name: state.selectedStudent.name,
+                    dept: state.selectedStudent.dept,
+                    time: `${dateStr} ${timeStr}`,
+                    dateKey: now.toISOString().split('T')[0], 
+                    week: state.currentCalculatedWeek, 
+                    type: finalType,
+                    distance: isSchoolIP(state.userIp) ? 0 : Math.round(state.distance),
+                    accuracy: isSchoolIP(state.userIp) ? 1 : Math.round(state.accuracy),
+                    lat: finalLat,
+                    lon: finalLon,
+                    timestamp: Date.now()
+                };
+
                 await addDoc(getPublicCollectionRef('history'), record);
 
-                const sessionAtt = state.selectedStudent.sessionAttendance || {};
+                const sessionAtt = latestStudentData.sessionAttendance || {};
                 const weekKey = `W${state.currentCalculatedWeek}`;
                 
                 let ruleMsg = "";
@@ -2424,14 +2443,17 @@
                     sessionAttendance: sessionAtt
                 };
                 
-                if (!state.selectedStudent.deviceId) {
+                if (!boundDeviceId) {
                     updateData.deviceId = myDeviceUUID;
+                    state.selectedStudent.deviceId = myDeviceUUID;
                 }
-                await updateDoc(getPublicDocRef('roster', `${state.activeClassId}_${state.selectedStudent.id.toLowerCase()}`), updateData);
+                
+                await updateDoc(studentDocRef, updateData);
 
                 playChime(true);
                 showToast(`${finalType}打卡成功！${ruleMsg}`, "success");
             } catch (e) {
+                console.error("雲端比對或寫入出錯：", e);
                 showToast("打卡出錯，請重試", "error");
             }
         }
@@ -2499,8 +2521,8 @@
                 if (s.deviceId) {
                     devText = `
                         <div class="flex items-center gap-1.5">
-                            <span class="text-emerald-400 font-mono text-[10px] md:text-xs">${s.deviceId.slice(0, 8)}...</span>
-                            <button onclick="unlockDevice('${s.id}')" class="px-2 py-0.5 bg-amber-500/20 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/30 rounded text-[10px] font-bold transition flex items-center gap-0.5" title="重設並解除硬體鎖定">
+                            <span class="text-emerald-400 font-mono text-[10px] md:text-xs" title="${s.deviceId}">${s.deviceId.slice(0, 8)}...</span>
+                            <button onclick="unlockDevice('${s.id}')" class="px-2 py-0.5 bg-amber-500/20 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/30 rounded text-[10px] font-bold transition flex items-center gap-0.5" title="重設並解除雲端硬體鎖定">
                                 <i data-lucide="unlock" class="w-3 h-3"></i> 解鎖
                             </button>
                         </div>
@@ -3228,7 +3250,7 @@
                 await batch.commit();
 
                 dom.rosterImportModal.classList.add('hidden');
-                showToast(`成功批次匯入 ${newRoster.length} 位學生至目前選取班級！`, "success");
+                showToast("成功批次匯入學員名單！", "success");
             } catch (e) {
                 showToast("匯入失敗", "error");
             }
