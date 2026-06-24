@@ -9,7 +9,7 @@
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Leaflet.js 地圖 CSS 與 JS -->
-    <link class="map-style" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=300;400;500;700;900&display=swap');
@@ -20,7 +20,7 @@
         /* 自訂 Leaflet 脈衝動畫效果 */
         @keyframes pulse-ring {
             0 { transform: scale(0.33); opacity: 1; }
-            80%, 100% { transform: scale(2.5); opacity: 0; }
+            80%, 100 { transform: scale(2.5); opacity: 0; }
         }
         .pulse-marker {
             position: relative;
@@ -176,19 +176,24 @@
             <button id="btn-close-import" class="absolute top-4 right-4 text-slate-400 hover:text-white transition">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
-            <div class="flex items-center gap-2 mb-3">
-                <i data-lucide="file-spreadsheet" class="w-6 h-6 text-indigo-400"></i>
-                <h3 class="text-lg font-bold text-white">批次匯入上課學生名單</h3>
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-6 h-6 text-indigo-400"></i>
+                    <h3 class="text-lg font-bold text-white">批次匯入上課學生名單</h3>
+                </div>
+                <button id="btn-load-import-template" type="button" class="bg-indigo-600/30 hover:bg-indigo-500/50 text-indigo-300 hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 border border-indigo-500/30">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i> 填入範例名冊
+                </button>
             </div>
             <p class="text-xs text-slate-400 mb-4 leading-relaxed">
                 請直接複製 Excel 欄位貼上，或輸入文字格式（每行一人，欄位間以 <strong class="text-slate-200">逗號,</strong> 或 <strong class="text-slate-200">Tab鍵</strong> 隔開）。<br>
-                格式範例：<code class="bg-slate-900 px-1.5 py-0.5 rounded text-emerald-400 font-mono text-[11px]">資訊四系,bd0213020,鄭杰剛</code>
+                將匯入至目前已選擇的班級。格式範例：<code class="bg-slate-900 px-1.5 py-0.5 rounded text-emerald-400 font-mono text-[11px]">資訊工程系,bc110001,王小明</code>
             </p>
             
             <textarea id="import-textarea" rows="8" placeholder="化材四系,bc0252001,劉國駿&#10;企管四系,bd0209012,朱沛如" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
             
             <div class="flex justify-between items-center mt-4">
-                <span class="text-[10px] text-amber-400 font-medium">※ 匯入新名單將覆蓋目前資料庫中的學生資料</span>
+                <span class="text-[10px] text-amber-400 font-medium">※ 匯入新名單將覆蓋目前已選取班級的學生資料</span>
                 <div class="flex gap-2">
                     <button id="btn-cancel-import" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-xl text-xs transition">取消</button>
                     <button id="btn-execute-import" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition">確認匯入</button>
@@ -205,7 +210,7 @@
             </div>
             <h3 class="text-lg font-bold text-white mb-2">確定要清除紀錄嗎？</h3>
             <p class="text-xs text-slate-400 mb-6 leading-relaxed">
-                此動作將會永遠刪除您儲存在雲端資料庫中的所有打卡歷史與勾選點名數據，且此動作無法復原。
+                此動作將會永遠刪除您目前所選班級中，儲存在雲端資料庫的所有打卡歷史與勾選點名數據，且此動作無法復原。
             </p>
             <div class="grid grid-cols-2 gap-3">
                 <button id="btn-confirm-cancel" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2 rounded-xl text-xs transition">
@@ -230,7 +235,7 @@
                         <span>學堂點名通 智慧 GPS 定位考勤</span>
                         <span id="badge-admin-active" class="hidden text-[10px] px-2.5 py-0.5 bg-rose-500 text-white rounded-full font-bold animate-pulse">管理者模式</span>
                     </h1>
-                    <p class="text-[11px] text-slate-400">雲端即時同步 · 精準一機一碼防代點 · 簡潔安全版</p>
+                    <p class="text-[11px] text-slate-400">雲端即時同步 · 精準一機一碼防代點 · 班級自訂名冊版</p>
                 </div>
             </div>
             
@@ -246,7 +251,7 @@
                     <span id="admin-btn-text">管理登入</span>
                 </button>
                 <div id="gps-status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
                     <span>雲端系統已連線</span>
                 </div>
             </div>
@@ -275,7 +280,7 @@
 
                     <button id="tab-btn-analytics" class="admin-only-section flex-section items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all">
                         <i data-lucide="bar-chart-3" class="w-4 h-4 text-amber-400"></i>
-                        <span>📊 學期數據分析</span>
+                        <span>📊 學期數據 analysis</span>
                     </button>
 
                     <button id="tab-btn-split" class="admin-only-section flex-section items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all">
@@ -332,6 +337,14 @@
                 </div>
 
                 <div class="space-y-2.5 text-xs">
+                    <!-- 地圖分頁新增：班級切換 -->
+                    <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+                        <label class="text-[10px] text-indigo-400 font-bold block mb-1">📡 快速切換班級課程</label>
+                        <select id="map-class-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-indigo-500">
+                            <!-- JS 動態載入 -->
+                        </select>
+                    </div>
+
                     <div class="flex justify-between items-center bg-slate-950/40 p-2 rounded-xl">
                         <span class="text-slate-400">我的經緯度</span>
                         <span id="immersive-coords" class="font-mono text-white font-semibold">等待定位訊號...</span>
@@ -382,13 +395,35 @@
                                 </span>
                             </div>
                         </div>
-                        <p class="text-xs text-slate-400 mb-3">請在下方輸入或搜尋您的學號，核對後即可開始打卡。</p>
+
+                        <div id="course-schedule-banner" class="mb-4 bg-indigo-950/40 border border-indigo-500/20 rounded-xl p-3 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-400">
+                                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-[11px] text-slate-400 font-bold">目前課程與上課時間</h4>
+                                    <p id="label-course-schedule" class="text-xs font-black text-slate-200">讀取雲端班級課表資訊中...</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 font-bold">當期學程</span>
+                        </div>
+
+                        <!-- 班級選取器 (學生端) -->
+                        <div class="mb-4 bg-slate-900/60 p-3 rounded-xl border border-slate-750">
+                            <label class="text-[11px] text-indigo-400 font-bold block mb-1">第一步：請先選擇您今天上課的課程班級</label>
+                            <select id="student-class-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-indigo-500">
+                                <!-- JS 動態載入 -->
+                            </select>
+                        </div>
+
+                        <p class="text-xs text-slate-400 mb-3">第二步：請在下方輸入或搜尋您的學號，核對後即可開始打卡。</p>
                         
                         <div class="relative mb-3">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                 <i data-lucide="search" class="w-4 h-4"></i>
                             </div>
-                            <input type="text" id="student-search-input" placeholder="請輸入學號搜尋..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                            <input type="text" id="student-search-input" placeholder="請輸入學號或姓名搜尋..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
                             
                             <div id="search-results-dropdown" class="absolute left-0 right-0 top-full mt-1.5 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-[150] max-h-52 overflow-y-auto hidden"></div>
                         </div>
@@ -410,6 +445,9 @@
                                 <i data-lucide="unlocked" class="w-3.5 h-3.5"></i> 解除此裝置打卡綁定 (管理者權限)
                             </button>
                         </div>
+
+                        <!-- 今日學習重點主題 (學生端) -->
+                        <div id="student-topics-container" class="hidden mt-4 bg-slate-900/40 border border-slate-800 rounded-xl p-3.5 shadow-inner"></div>
                     </div>
                 </div>
 
@@ -439,7 +477,7 @@
                             <i data-lucide="log-in" class="w-5 h-5" id="clock-in-icon"></i>
                         </div>
                         <span class="text-base tracking-wider" id="clock-in-btn-label">上課簽到打卡</span>
-                        <span id="label-signin-time" class="text-[9px] opacity-80 font-normal">限規規定簽到時段內</span>
+                        <span id="label-signin-time" class="text-[9px] opacity-80 font-normal">限規定的簽到時段內</span>
                     </button>
 
                     <button id="btn-clock-out" disabled class="relative group bg-gradient-to-br from-rose-600 to-orange-700 hover:from-rose-500 hover:to-orange-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-rose-950/40 transition-all duration-200 transform active:scale-95 disabled:opacity-30 disabled:pointer-events-none flex flex-col items-center justify-center gap-2 min-h-[80px]">
@@ -490,14 +528,18 @@
                     <div>
                         <h2 class="font-bold text-slate-200 text-base md:text-lg flex items-center gap-2">
                             <i data-lucide="users" class="w-5 h-5 text-indigo-400"></i>
-                            <span>上課學生點名冊 (學堂點名通 18 週勾選)</span>
+                            <span>上課學生點名冊 (<span class="active-class-name-label">預設班級</span> · 18 週勾選)</span>
                         </h2>
                         <p class="text-[11px] md:text-xs text-slate-400 mt-1">全班即時出缺勤與硬體互鎖防代點看板 (今日已註冊人數: <span id="admin-roster-count" class="text-indigo-400 font-bold">0</span> 人)</p>
                     </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button id="btn-show-import-modal" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-bold rounded-lg text-white transition flex items-center gap-1 min-h-[32px]">
-                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> 批次匯入名單
-                        </button>
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <!-- 週點名簿新增：班級切換 (修正：使用 bg-slate-900 border 防止黑底看不見文字) -->
+                        <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl">
+                            <span class="text-xs text-indigo-400 font-bold">切換班級</span>
+                            <select id="matrix-class-select" class="bg-slate-900 border-none text-xs text-white font-bold focus:outline-none cursor-pointer">
+                                <!-- JS 動態 -->
+                            </select>
+                        </div>
                         <button id="btn-export-attendance" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg text-white transition flex items-center gap-1 min-h-[32px]">
                             <i data-lucide="download" class="w-4 h-4"></i> 匯出出缺勤表
                         </button>
@@ -516,7 +558,7 @@
                                 <span id="matrix-gauge-text" class="absolute text-sm font-black text-white font-mono">0%</span>
                             </div>
                             <div>
-                                <h4 class="text-xs md:text-sm text-slate-400 font-bold mb-0.5">第 <span class="active-session-label">1</span> 節 出席率</h4>
+                                <h4 class="text-xs md:text-sm text-slate-400 font-bold mb-0.5"><span id="label-active-session-text">第 1 節</span> 出席率</h4>
                                 <div class="flex items-baseline gap-1">
                                     <span id="matrix-stat-ratio-checked" class="text-lg md:text-xl font-black text-white font-mono">0</span>
                                     <span class="text-xs text-slate-400">/ <span class="matrix-total-filtered">0</span> 人已出席</span>
@@ -609,10 +651,10 @@
                     <div class="flex flex-wrap items-center gap-3 text-xs md:text-sm bg-slate-900/60 border border-slate-800/80 px-4 py-3 rounded-2xl">
                         <span class="text-slate-400 font-bold">整批一鍵設定：</span>
                         <button id="btn-matrix-batch-check-current" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition text-[11px] md:text-xs">
-                            第 <span class="active-session-label">1</span> 節全體勾選
+                            <span class="active-session-label">第1節</span> 全體勾選
                         </button>
                         <button id="btn-matrix-batch-uncheck-current" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold rounded-xl transition text-[11px] md:text-xs">
-                            第 <span class="active-session-label">1</span> 節全體取消
+                            <span class="active-session-label">第1節</span> 全體取消
                         </button>
                         <button id="btn-matrix-batch-check-all-sessions" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition text-[11px] md:text-xs">
                             全節數全體勾選
@@ -645,11 +687,20 @@
         <!-- ==================== 4. 學期數據分析 (管理者專用) ==================== -->
         <section id="view-term-analytics" class="hidden flex-col gap-6">
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-xl">
-                <div class="flex items-center gap-2 border-b border-slate-700 pb-3 mb-6">
-                    <i data-lucide="bar-chart-3" class="w-6 h-6 text-indigo-400 animate-pulse"></i>
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-100">學期考勤數據視覺化分析</h2>
-                        <p class="text-xs text-slate-400">智慧分析本日、當週與全學期累計出缺勤模型</p>
+                <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-6">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-6 h-6 text-indigo-400 animate-pulse"></i>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-100">學期考勤數據視覺化分析</h2>
+                            <p class="text-xs text-slate-400">智慧分析本日、當週與全學期累計出缺勤 model</p>
+                        </div>
+                    </div>
+                    <!-- 數據分析分頁新增：班級切換 -->
+                    <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl">
+                        <span class="text-xs text-indigo-400 font-bold">切換班級課程</span>
+                        <select id="analytics-class-select" class="bg-slate-900 border-none text-xs text-white font-bold focus:outline-none cursor-pointer">
+                            <!-- JS 動態 -->
+                        </select>
                     </div>
                 </div>
 
@@ -741,10 +792,58 @@
         <section id="view-split-config" class="hidden grid-cols-1 lg:grid-cols-12 gap-6 w-full animate-fade-in">
             
             <div class="lg:col-span-5 flex flex-col gap-4">
+                
+                <!-- 🏫 班級課程管理系統 -->
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl">
+                    <h3 class="font-bold text-slate-200 mb-3 flex items-center justify-between text-sm md:text-base">
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="school" class="w-4.5 h-4.5 text-indigo-400"></i>
+                            <span>🏫 班級課程管理系統</span>
+                        </span>
+                        <span class="text-[10px] px-2 py-0.5 bg-indigo-500/10 text-indigo-300 rounded font-mono">Multi-Class</span>
+                    </h3>
+                    
+                    <div class="space-y-3.5 text-xs md:text-sm">
+                        <div>
+                            <label class="text-slate-400 block mb-1">切換目前上課班級</label>
+                            <select id="admin-class-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-white font-bold focus:outline-none focus:border-indigo-500">
+                                <!-- JS 動態載入 -->
+                            </select>
+                        </div>
+                        
+                        <div class="border-t border-slate-700/60 pt-3">
+                            <label class="text-slate-400 block mb-1">修改目前課程名稱</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="input-rename-class" placeholder="輸入新的課程名稱" class="flex-grow bg-slate-900 border border-slate-750 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none text-xs">
+                                <input type="hidden" id="input-rename-class-active">
+                                <button id="btn-rename-class" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition flex items-center gap-1">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> 儲存
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-700/60 pt-3">
+                            <label class="text-slate-400 block mb-1">新增全新班級課程</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="input-new-class-name" placeholder="例如：行動網頁前端乙班" class="flex-grow bg-slate-900 border border-slate-750 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none text-xs">
+                                <button id="btn-create-class" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-1">
+                            <button id="btn-delete-class" class="text-rose-400 hover:text-rose-300 font-bold text-xs flex items-center gap-1 transition">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 刪除目前選定班級課程與名冊
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl">
                     <h3 class="font-bold text-slate-200 mb-3 flex items-center gap-2 text-sm md:text-base">
                         <i data-lucide="sliders" class="w-4.5 h-4.5 text-indigo-400"></i>
-                        <span>實時定位核心參照數據</span>
+                        <span>Sliders 實時定位核心參照</span>
                     </h3>
                     <div class="grid grid-cols-2 gap-3.5 text-xs md:text-sm">
                         <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
@@ -768,72 +867,133 @@
                         <i data-lucide="school" class="w-5 h-5 text-indigo-400"></i> 教師端打卡教室與考勤設定
                     </h2>
                     <div class="space-y-4 text-xs md:text-sm">
-                        <div>
-                            <label class="text-slate-400 block mb-1">目標緯度</label>
-                            <input type="number" id="input-target-lat" value="24.991999" step="0.000001" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400 block mb-1">目標緯度</label>
+                                <input type="number" id="input-target-lat" value="24.991999" step="0.000001" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-slate-400 block mb-1">目標經度</label>
+                                <input type="number" id="input-target-lon" value="121.230375" step="0.000001" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-slate-400 block mb-1">目標經度</label>
-                            <input type="number" id="input-target-lon" value="121.230375" step="0.000001" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400 block mb-1">允許半徑 (米)</label>
+                                <input type="number" id="input-target-radius" value="2500" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-slate-400 block mb-1">第一週起始日期</label>
+                                <input type="date" id="input-week1-start" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-slate-400 block mb-1">允許半徑 (米)</label>
-                            <input type="number" id="input-target-radius" value="2500" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400 block mb-1">遲到判定時間 (分鐘)</label>
+                                <input type="number" id="input-late-threshold" value="15" min="1" max="90" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
+                            </div>
+                            <div class="flex flex-col justify-end">
+                                <span class="text-[10px] text-slate-500 mb-1">上課總節數指標</span>
+                                <div id="calculated-sessions-badge" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg py-2.5 text-center text-indigo-400 font-bold">3 節課</div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-slate-400 block mb-1">第一週起始日期</label>
-                            <input type="date" id="input-week1-start" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="text-slate-400 block mb-1">本次上課節數</label>
-                            <select id="select-class-sessions" disabled class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
-                                <option value="1">1 節課</option>
-                                <option value="2">2 節課</option>
-                                <option value="3" selected>3 節課</option>
-                                <option value="4">4 節課</option>
-                            </select>
+
+                        <!-- 智慧動態上課時段設定 -->
+                        <div class="border-t border-slate-700/60 pt-3 space-y-3">
+                            <span class="font-bold text-slate-200 block">動態上課時段設定（含星期設定）</span>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <span class="text-[10px] text-slate-400">上課星期</span>
+                                    <select id="select-class-day" disabled class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white focus:outline-none">
+                                        <option value="1">星期一</option>
+                                        <option value="2">星期二</option>
+                                        <option value="3" selected>星期三</option>
+                                        <option value="4">星期四</option>
+                                        <option value="5">星期五</option>
+                                        <option value="6">星期六</option>
+                                        <option value="7">星期日</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400">起始節次</span>
+                                    <select id="select-start-session" disabled class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white focus:outline-none">
+                                        <!-- JS 動態 -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400">結束節次</span>
+                                    <select id="select-end-session" disabled class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white focus:outline-none">
+                                        <!-- JS 動態 -->
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- 動態時段專屬儲存按鈕 -->
+                            <button id="btn-save-class-time" disabled class="w-full bg-indigo-600/80 hover:bg-indigo-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow">
+                                <i data-lucide="save" class="w-3.5 h-3.5"></i> 儲存課堂時間設定
+                            </button>
                         </div>
 
                         <div class="border-t border-slate-700/60 pt-3 space-y-2">
-                            <span class="font-bold text-slate-200">打卡時間時段設定</span>
+                            <span class="font-bold text-slate-200 block">系統自動匹配打卡時段（隨課堂自動更新）</span>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <span class="text-[10px] text-slate-400">簽到開始</span>
-                                    <input type="time" id="input-signin-start" value="08:00" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded px-2 py-1 focus:outline-none">
+                                    <span class="text-[10px] text-slate-400">簽到開始 (上課即刻開放)</span>
+                                    <input type="time" id="input-signin-start" value="08:20" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded px-2 py-1 text-slate-400 focus:outline-none">
                                 </div>
                                 <div>
-                                    <span class="text-[10px] text-slate-400">簽到截止</span>
-                                    <input type="time" id="input-signin-end" value="08:30" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded px-2 py-1 focus:outline-none">
+                                    <span class="text-[10px] text-slate-400">簽到截止 (第一堂結束即遲到)</span>
+                                    <input type="time" id="input-signin-end" value="09:10" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded px-2 py-1 text-slate-400 focus:outline-none">
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <span class="text-[10px] text-slate-400">簽退開始</span>
-                                    <input type="time" id="input-signout-start" value="09:50" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded px-2 py-1 focus:outline-none">
+                                    <span class="text-[10px] text-slate-400">簽退開放 (下課前 15 分鐘)</span>
+                                    <input type="time" id="input-signout-start" value="10:50" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded px-2 py-1 text-slate-400 focus:outline-none">
                                 </div>
                                 <div>
-                                    <span class="text-[10px] text-slate-400">簽退截止</span>
-                                    <input type="time" id="input-signout-end" value="10:20" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded px-2 py-1 focus:outline-none">
+                                    <span class="text-[10px] text-slate-400">簽退結束 (下課後 15 分鐘)</span>
+                                    <input type="time" id="input-signout-end" value="11:20" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded px-2 py-1 text-slate-400 focus:outline-none">
                                 </div>
                             </div>
                         </div>
 
                         <div id="admin-config-actions" class="hidden flex justify-end gap-2 pt-2">
-                            <button id="btn-reset-coords" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-white font-bold transition">重設</button>
-                            <button id="btn-save-coords" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded text-white font-bold transition">儲存設定</button>
+                            <button id="btn-reset-coords" class="p-2 bg-slate-700 hover:bg-slate-600 rounded text-white font-bold transition">重設</button>
+                            <button id="btn-save-coords" class="p-2 bg-emerald-600 hover:bg-emerald-500 rounded text-white font-bold transition">儲存設定</button>
                         </div>
                     </div>
+                </div>
+
+                <!-- 各節課堂主題雲端編輯器 (教師端) -->
+                <div id="admin-topics-panel" class="admin-only-section bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl">
+                    <h3 class="font-bold text-slate-200 mb-3 flex items-center gap-2 text-sm md:text-base">
+                        <i data-lucide="book-open" class="w-4.5 h-4.5 text-indigo-400"></i>
+                        <span>編輯第 <span class="active-week-label">18</span> 週各節課堂主題</span>
+                    </h3>
+                    <div id="admin-topics-inputs" class="space-y-3 text-xs">
+                        <!-- JS 動態注入 -->
+                    </div>
+                    <button id="btn-save-topics" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md">
+                        <i data-lucide="save" class="w-4.5 h-4.5"></i> 儲存本週主題設定
+                    </button>
                 </div>
             </div>
 
             <!-- 右側傳統週點名流水名單 -->
             <div class="lg:col-span-7 flex flex-col gap-4">
                 <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl flex flex-col">
-                    <div class="flex items-center justify-between mb-4">
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-slate-750 pb-3">
                         <h3 class="font-bold text-slate-200 text-sm md:text-base">學生當週詳細打卡紀錄清冊</h3>
-                        <select id="select-week" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white">
-                            <!-- 週次 -->
-                        </select>
+                        <div class="flex items-center gap-2">
+                            <!-- 批次匯入按鈕 -->
+                            <button id="btn-show-import-modal" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition flex items-center gap-1 min-h-[32px]">
+                                <i data-lucide="file-spreadsheet" class="w-4.5 h-4.5"></i> 批次匯入名單
+                            </button>
+                            <select id="select-week" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white">
+                                <!-- 週次 -->
+                            </select>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -853,6 +1013,7 @@
                                     <th class="py-2.5 px-4">姓名</th>
                                     <th class="py-2.5 px-4">今日狀態</th>
                                     <th class="py-2.5 px-4">已鎖定硬體特徵碼</th>
+                                    <th class="py-2.5 px-4 text-center">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-roster-table-body" class="text-xs md:text-sm text-slate-300 divide-y divide-slate-800">
@@ -896,7 +1057,7 @@
     <!-- 頁尾 -->
     <footer class="border-t border-slate-850 bg-slate-950/50 py-4 text-center text-xs text-slate-500 mt-6 font-medium">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p>© 2026 學堂點名通. 專為極簡、極致舒適 2、3、4 節多重課點名打造.</p>
+            <p>© 2026 學堂點名通. 專為極簡、極致舒適多重班級課程考勤點名打造.</p>
         </div>
     </footer>
 
@@ -904,7 +1065,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, addDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, addDoc, updateDoc, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase 設定 ---
         const firebaseConfig = {
@@ -921,6 +1082,39 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // 上課節次與標準起訖時間數據庫
+        const SESSIONS_DATA = {
+            weekday: [
+                { id: 1, name: "第1節", start: "08:20", end: "09:10" },
+                { id: 2, name: "第2節", start: "09:15", end: "10:05" },
+                { id: 3, name: "第3節", start: "10:15", end: "11:05" },
+                { id: 4, name: "第4節", start: "11:10", end: "12:00" },
+                { id: 6, name: "第6節", start: "13:00", end: "13:50" },
+                { id: 7, name: "第7節", start: "13:55", end: "14:45" },
+                { id: 8, name: "第8節", start: "14:55", end: "15:45" },
+                { id: 9, name: "第9節", start: "15:50", end: "16:40" },
+                { id: 10, name: "第10節", start: "16:20", end: "17:05" },
+                { id: 11, name: "第11節", start: "17:05", end: "17:50" },
+                { id: 12, name: "第12節", start: "18:30", end: "19:15" },
+                { id: 13, name: "第13節", start: "19:15", end: "20:00" },
+                { id: 14, name: "第14節", start: "20:10", end: "20:55" },
+                { id: 15, name: "第15節", start: "20:55", end: "21:40" }
+            ],
+            weekend: [
+                { id: 1, name: "第1節", start: "08:20", end: "09:05" },
+                { id: 2, name: "第2節", start: "09:10", end: "09:55" },
+                { id: 3, name: "第3節", start: "09:55", end: "10:40" },
+                { id: 4, name: "第4節", start: "10:50", fill: "transparent", end: "11:35" },
+                { id: 5, name: "第5節", start: "11:35", fill: "transparent", end: "12:20" },
+                { id: 6, name: "第6節", start: "13:00", end: "13:50" },
+                { id: 7, name: "第7節", start: "13:55", end: "14:45" },
+                { id: 8, name: "第8節", start: "14:40", fill: "transparent", end: "15:25" },
+                { id: 9, name: "第9節", start: "15:25", end: "16:10" },
+                { id: 10, name: "第10節", start: "16:20", end: "17:05" },
+                { id: 11, name: "第11節", start: "17:05", fill: "transparent", end: "17:50" }
+            ]
+        };
 
         // --- 初始化狀態變數 ---
         let state = {
@@ -940,28 +1134,34 @@
             selectedStudent: null,
             userIp: "",
             
-            // 考勤進階參數
+            // 考勤時間動態解析核心 (星期一到星期日)
+            classDayOfWeek: 3,            // 預設為星期三
+            dayType: "weekday",           // 依據星期自動決定平日(weekday)或假日(weekend)
+            startSessionIdx: 1, 
+            endSessionIdx: 3,   
+            lateThreshold: 15,  
+            
             week1StartDate: "2026-02-16", 
             currentCalculatedWeek: 18,    
             classSessions: 3,             
-            signInStart: "08:00",
-            signInEnd: "08:30",
-            signOutStart: "09:50",
-            signOutEnd: "10:20",
+            signInStart: "09:15",
+            signInEnd: "10:05",
+            signOutStart: "10:50",
+            signOutEnd: "11:20",
             
             selectedTeacherViewWeek: 18,
-            
-            // 系統目前選中的主功能標籤 ("checkin" | "satellite" | "matrix" | "analytics" | "split")
             activeTab: "checkin", 
 
-            // 「學堂點名通」專屬篩選器
             matrixSearchQuery: "",
             matrixFilterDept: "ALL",
             matrixFilterStatus: "ALL",
             matrixActiveSessionFilter: 1, 
-            
-            // 當前地圖圖層模式 (true = 衛星空照圖 / false = 暗黑向量圖)
-            isSatelliteLayerMode: false
+            isSatelliteLayerMode: false,
+
+            // 雲端班級與多堂上課內容數據庫
+            classes: [],                     // 班級列表
+            activeClassId: "class_default",   // 當前選取班級
+            sessionTopics: {}                 // 當前班級上課主題
         };
 
         let user = null; 
@@ -981,7 +1181,6 @@
         let userAccuracyCircle = null;
         let peerMarkersGroup = null;
 
-        // --- Map 圖層實體 ---
         const darkTileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
         const satTileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
@@ -996,21 +1195,18 @@
             badgeAdminActive: document.getElementById('badge-admin-active'),
             adminBtnText: document.getElementById('admin-btn-text'),
             
-            // 導覽標籤按鈕
             tabCheckin: document.getElementById('tab-btn-checkin'),
             tabSatellite: document.getElementById('tab-btn-satellite'),
             tabMatrix: document.getElementById('tab-btn-matrix'),
             tabAnalytics: document.getElementById('tab-btn-analytics'),
             tabSplit: document.getElementById('tab-btn-split'),
             
-            // 主要功能區塊 section
             viewSatelliteMap: document.getElementById('view-satellite-map'),
             viewStudentCheckin: document.getElementById('view-student-checkin'),
             viewRosterMatrixFull: document.getElementById('view-roster-matrix-full'),
             viewTermAnalytics: document.getElementById('view-term-analytics'),
             viewSplitConfig: document.getElementById('view-split-config'),
             
-            // 系統診斷 / 實時數據
             distanceDisplay: document.getElementById('distance-display'),
             checkinStatusCard: document.getElementById('checkin-status-card'),
             timeWindowBadge: document.getElementById('time-window-badge'),
@@ -1019,8 +1215,8 @@
             badgeComputedWeek: document.getElementById('badge-computed-week'),
             badgeComputedSessions: document.getElementById('badge-computed-sessions'),
             radiusDisplayText: document.getElementById('radius-display-text'),
+            labelCourseSchedule: document.getElementById('label-course-schedule'), // 修正：映射原本遺漏的 DOM 節點 
             
-            // 衛星模式懸浮元件
             immersiveCoords: document.getElementById('immersive-coords'),
             immersiveAccuracy: document.getElementById('immersive-accuracy'),
             immersiveIp: document.getElementById('immersive-ip'),
@@ -1033,7 +1229,6 @@
             btnToggleLayerImmersive: document.getElementById('btn-toggle-layer-immersive'),
             immersiveMapLoading: document.getElementById('immersive-map-loading-overlay'),
             
-            // 學生打卡搜尋與身分
             studentSearchInput: document.getElementById('student-search-input'),
             searchResultsDropdown: document.getElementById('search-results-dropdown'),
             studentIdentityCard: document.getElementById('student-identity-card'),
@@ -1042,13 +1237,11 @@
             studentCardTitle: document.getElementById('student-card-title'),
             btnAdminResetDevice: document.getElementById('btn-admin-reset-device'),
             
-            // 打卡動作
             btnClockIn: document.getElementById('btn-clock-in'),
             btnClockOut: document.getElementById('btn-clock-out'),
             toastMessage: document.getElementById('toast-message'),
             toastText: document.getElementById('toast-text'),
             
-            // 其他元件
             gpsAuthModal: document.getElementById('gps-auth-modal'),
             btnGrantGps: document.getElementById('btn-grant-gps'),
             btnCloseGpsModal: document.getElementById('btn-close-gps-modal'),
@@ -1064,12 +1257,18 @@
             btnConfirmCancel: document.getElementById('btn-confirm-cancel'),
             btnConfirmExecute: document.getElementById('btn-confirm-execute'),
             
-            // 教師端設定欄位
             inputTargetLat: document.getElementById('input-target-lat'),
             inputTargetLon: document.getElementById('input-target-lon'),
             inputTargetRadius: document.getElementById('input-target-radius'),
             inputWeek1Start: document.getElementById('input-week1-start'),
-            selectClassSessions: document.getElementById('select-class-sessions'),
+            inputLateThreshold: document.getElementById('input-late-threshold'),
+            
+            selectClassDay: document.getElementById('select-class-day'),
+            selectStartSession: document.getElementById('select-start-session'),
+            selectEndSession: document.getElementById('select-end-session'),
+            calculatedSessionsBadge: document.getElementById('calculated-sessions-badge'),
+            btnSaveClassTime: document.getElementById('btn-save-class-time'),
+            
             inputSigninStart: document.getElementById('input-signin-start'),
             inputSigninEnd: document.getElementById('input-signin-end'),
             inputSignoutStart: document.getElementById('input-signout-start'),
@@ -1078,7 +1277,6 @@
             btnResetCoords: document.getElementById('btn-reset-coords'),
             btnSaveCoords: document.getElementById('btn-save-coords'),
             
-            // 傳統分屏點名簿
             adminRosterCount: document.getElementById('admin-roster-count'),
             adminRosterSearch: document.getElementById('admin-roster-search'),
             adminRosterTableBody: document.getElementById('admin-roster-table-body'),
@@ -1096,7 +1294,6 @@
             btnCancelImport: document.getElementById('btn-cancel-import'),
             btnExecuteImport: document.getElementById('btn-execute-import'),
 
-            // 矩陣點名簿元件
             matrixSelectWeek: document.getElementById('matrix-select-week'),
             matrixTableBody: document.getElementById('matrix-table-body'),
             matrixGaugeCircle: document.getElementById('matrix-gauge-circle'),
@@ -1113,12 +1310,134 @@
             btnMatrixBatchUncheckCurrent: document.getElementById('btn-matrix-batch-uncheck-current'),
             btnMatrixBatchCheckAllSessions: document.getElementById('btn-matrix-batch-check-all-sessions'),
             btnMatrixBatchUncheckAllSessions: document.getElementById('btn-matrix-batch-uncheck-all-sessions'),
-            layoutStatusDesc: document.getElementById('layout-status-desc')
+            layoutStatusDesc: document.getElementById('layout-status-desc'),
+
+            // 主題編輯 UI 映射
+            adminTopicsInputs: document.getElementById('admin-topics-inputs'),
+            btnSaveTopics: document.getElementById('btn-save-topics'),
+
+            // 班級管理 UI 映射
+            studentClassSelect: document.getElementById('student-class-select'),
+            adminClassSelect: document.getElementById('admin-class-select'),
+            inputNewClassName: document.getElementById('input-new-class-name'),
+            btnCreateClass: document.getElementById('btn-create-class'),
+            btnDeleteClass: document.getElementById('btn-delete-class'),
+
+            // 全新追加的多頁面班級選取器對應 DOM 映射
+            mapClassSelect: document.getElementById('map-class-select'),
+            matrixClassSelect: document.getElementById('matrix-class-select'),
+            analyticsClassSelect: document.getElementById('analytics-class-select')
         };
+
+        // 時間算術輔助函數
+        function addMinutes(timeStr, mins) {
+            const [h, m] = timeStr.split(':').map(Number);
+            let newM = m + mins;
+            let newH = h;
+            if (newM >= 60) {
+                newH += Math.floor(newM / 60);
+                newM = newM % 60;
+            }
+            newH = newH % 24;
+            return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
+        }
+
+        function subtractMinutes(timeStr, mins) {
+            const [h, m] = timeStr.split(':').map(Number);
+            let newM = m - mins;
+            let newH = h;
+            if (newM < 0) {
+                newH -= Math.ceil(Math.abs(newM) / 60);
+                newM = (newM % 60 + 60) % 60;
+            }
+            if (newH < 0) newH = (newH % 24 + 24) % 24;
+            return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
+        }
+
+        function resolvePeriodsAndWindows() {
+            // 自動判定平假日類型：星期六(6)、星期日(7) 為假日
+            state.dayType = (state.classDayOfWeek === 6 || state.classDayOfWeek === 7) ? "weekend" : "weekday";
+            
+            const list = SESSIONS_DATA[state.dayType];
+            if (!list || list.length === 0) return;
+            
+            const startIdx = Math.min(state.startSessionIdx, list.length - 1);
+            const endIdx = Math.max(startIdx, Math.min(state.endSessionIdx, list.length - 1));
+
+            const startPeriod = list[startIdx];
+            const endPeriod = list[endIdx];
+
+            state.classSessions = (endIdx - startIdx) + 1;
+
+            state.signInStart = startPeriod.start;
+            state.signInEnd = startPeriod.end;
+
+            state.signOutStart = subtractMinutes(endPeriod.end, 15);
+            state.signOutEnd = addMinutes(endPeriod.end, 15);
+
+            dom.inputSigninStart.value = state.signInStart;
+            dom.inputSigninEnd.value = state.signInEnd;
+            dom.inputSignoutStart.value = state.signOutStart;
+            dom.inputSignoutEnd.value = state.signOutEnd;
+            dom.calculatedSessionsBadge.textContent = `${state.classSessions} 節課`;
+            dom.badgeComputedSessions.textContent = `${state.classSessions} 堂課`;
+        }
+
+        // 當教師更改星期或起始節次時，動態刷新 UI 元素
+        function populateDynamicPeriodDropdowns() {
+            // 依據當前 state 中的星期，更新 dayType
+            state.dayType = (state.classDayOfWeek === 6 || state.classDayOfWeek === 7) ? "weekend" : "weekday";
+            const list = SESSIONS_DATA[state.dayType];
+            if (!list) return;
+
+            let startHtml = '';
+            list.forEach((p, idx) => {
+                startHtml += `<option value="${idx}">${p.name} (${p.start}~${p.end})</option>`;
+            });
+            dom.selectStartSession.innerHTML = startHtml;
+            dom.selectStartSession.value = state.startSessionIdx;
+
+            refreshEndSessionDropdown();
+        }
+
+        function refreshEndSessionDropdown() {
+            const list = SESSIONS_DATA[state.dayType];
+            if (!list) return;
+            const startIdx = parseInt(dom.selectStartSession.value) || 0;
+
+            let endHtml = '';
+            list.forEach((p, idx) => {
+                if (idx >= startIdx) {
+                    endHtml += `<option value="${idx}">${p.name} (${p.start}~${p.end})</option>`;
+                }
+            });
+            dom.selectEndSession.innerHTML = endHtml;
+            dom.selectEndSession.value = Math.max(startIdx, state.endSessionIdx);
+        }
+
+        // 綁定星期變更事件
+        dom.selectClassDay.addEventListener('change', (e) => {
+            state.classDayOfWeek = parseInt(e.target.value);
+            state.startSessionIdx = 0;
+            state.endSessionIdx = 0;
+            populateDynamicPeriodDropdowns();
+            resolvePeriodsAndWindows();
+        });
+
+        dom.selectStartSession.addEventListener('change', (e) => {
+            state.startSessionIdx = parseInt(e.target.value);
+            refreshEndSessionDropdown();
+            state.endSessionIdx = parseInt(dom.selectEndSession.value);
+            resolvePeriodsAndWindows();
+        });
+
+        dom.selectEndSession.addEventListener('change', (e) => {
+            state.endSessionIdx = parseInt(e.target.value);
+            resolvePeriodsAndWindows();
+        });
 
         // 核心切換分頁路由控制
         function handleTabSwitch(targetTabId) {
-            // 安全防線：防堵學生繞過 UI 強制呼叫切換
             if (!state.isAdminMode && targetTabId !== 'checkin') {
                 showToast("此分頁功能僅限管理者使用！請先完成登入", "error");
                 return;
@@ -1126,14 +1445,12 @@
 
             state.activeTab = targetTabId;
 
-            // 1. 隱藏所有主要區塊
             dom.viewSatelliteMap.classList.add('hidden');
             dom.viewStudentCheckin.classList.add('hidden');
             dom.viewRosterMatrixFull.classList.add('hidden');
             dom.viewTermAnalytics.classList.add('hidden');
             dom.viewSplitConfig.classList.add('hidden');
 
-            // 2. 顯示目標區塊
             if (targetTabId === 'checkin') {
                 dom.viewStudentCheckin.classList.remove('hidden');
                 dom.layoutStatusDesc.innerHTML = `<span>打卡工作台已就緒 🚀</span>`;
@@ -1142,7 +1459,6 @@
                 dom.viewSatelliteMap.classList.add('flex');
                 dom.layoutStatusDesc.innerHTML = `<span class="text-indigo-400 font-bold">100% 滿版衛星觀看模式 🛰️</span>`;
                 
-                // 確保地圖尺寸自適應並置中
                 setTimeout(() => {
                     if (mapImmersive) {
                         mapImmersive.invalidateSize();
@@ -1157,16 +1473,16 @@
             } else if (targetTabId === 'analytics') {
                 dom.viewTermAnalytics.classList.remove('hidden');
                 dom.viewTermAnalytics.classList.add('flex');
-                dom.layoutStatusDesc.innerHTML = `<span class="text-amber-400 font-bold">全學期考勤分析面板 📊</span>`;
+                dom.layoutStatusDesc.innerHTML = `<span class="text-amber-400 font-bold">全學期考勤 analysis 📊</span>`;
                 renderTermAnalytics();
             } else if (targetTabId === 'split') {
                 dom.viewSplitConfig.classList.remove('hidden');
                 dom.viewSplitConfig.classList.add('grid');
                 dom.layoutStatusDesc.innerHTML = `<span>傳統考勤設定與點名分屏對齊 ⚙️</span>`;
                 recomputeWeekRosterStatuses();
+                renderAdminTopicsPanel();
             }
 
-            // 3. 更新按鈕高亮樣式
             const allTabs = [
                 { id: 'checkin', btn: dom.tabCheckin },
                 { id: 'satellite', btn: dom.tabSatellite },
@@ -1188,7 +1504,6 @@
             lucide.createIcons();
         }
 
-        // 綁定導覽按鈕點擊
         dom.tabCheckin.addEventListener('click', () => handleTabSwitch('checkin'));
         dom.tabSatellite.addEventListener('click', () => handleTabSwitch('satellite'));
         dom.tabMatrix.addEventListener('click', () => handleTabSwitch('matrix'));
@@ -1203,13 +1518,11 @@
                     attributionControl: false
                 }).setView([state.targetLat, state.targetLon], 13);
 
-                // 預設載入暗黑精簡圖層
                 darkLayer.addTo(mapImmersive);
                 dom.immersiveMapLoading.classList.add('hidden');
 
                 peerMarkersGroup = L.featureGroup().addTo(mapImmersive);
 
-                // 畫出打卡教室中心點
                 const classroomIcon = L.divIcon({
                     html: `<div class="bg-emerald-500 w-4.5 h-4.5 rounded-full border-2 border-white shadow-lg pulse-marker flex items-center justify-center"></div>`,
                     className: 'custom-classroom-icon-imm',
@@ -1235,7 +1548,6 @@
             }
         }
 
-        // 實時切換 Esri 真實衛星影像 / 簡約黑地圖圖層
         function toggleMapLayerImmersive() {
             if (!mapImmersive) return;
 
@@ -1258,7 +1570,6 @@
 
         dom.btnToggleLayerImmersive.addEventListener('click', toggleMapLayerImmersive);
 
-        // 重心聚焦至我
         dom.btnRecenterImmersive.addEventListener('click', () => {
             if (state.currentLat && state.currentLon && mapImmersive) {
                 mapImmersive.panTo([state.currentLat, state.currentLon]);
@@ -1268,7 +1579,6 @@
             }
         });
 
-        // 視野完美收納：一次打包呈現使用者與打卡教室
         function autoFitBoundsImmersive() {
             if (!mapImmersive) return;
             const markers = [classroomMarker];
@@ -1279,7 +1589,6 @@
 
         dom.btnFitBoundsImmersive.addEventListener('click', autoFitBoundsImmersive);
 
-        // 實時繪製與更新本機位置標記
         function updateMapUserPosition() {
             if (!mapImmersive || state.currentLat === 0 || state.currentLon === 0) return;
             const userPos = [state.currentLat, state.currentLon];
@@ -1308,13 +1617,12 @@
             }
         }
 
-        // 繪製其他已打卡同學的位置標記
         function drawAllCheckInMarkersOnMap() {
             if (!mapImmersive || !peerMarkersGroup) return;
             peerMarkersGroup.clearLayers();
 
             const latestPunchMap = new Map();
-            const weekHistory = state.history.filter(item => item.week === state.selectedTeacherViewWeek);
+            const weekHistory = state.history.filter(item => item.week === state.selectedTeacherViewWeek && item.classId === state.activeClassId);
             for (let i = weekHistory.length - 1; i >= 0; i--) {
                 const item = weekHistory[i];
                 if (item.lat && item.lon) {
@@ -1342,7 +1650,6 @@
             });
         }
 
-        // --- 核心考勤算法與週次起始 ---
         function initTeacherWeekOptions() {
             let optionsHtml = '';
             for (let w = 1; w <= 18; w++) {
@@ -1359,6 +1666,7 @@
                 dom.matrixSelectWeek.value = state.selectedTeacherViewWeek;
                 showToast(`已切換檢視「第 ${state.selectedTeacherViewWeek} 週」考勤紀錄`, "info");
                 recomputeWeekRosterStatuses();
+                renderAdminTopicsPanel();
             };
 
             dom.selectWeek.addEventListener('change', handleWeekChange);
@@ -1409,6 +1717,7 @@
         const myDeviceUUID = getOrCreateDeviceUUID();
         document.getElementById('local-device-id-badge').textContent = `本機硬體識別碼: ${myDeviceUUID}`;
 
+        // 判斷是否為校園 IP
         function isSchoolIP(ipStr) {
             if (!ipStr || typeof ipStr !== 'string') return false;
             const parts = ipStr.split('.').map(Number);
@@ -1489,37 +1798,60 @@
             const isWithinRange = hasLocation && (state.distance <= state.targetRadius);
             const isSchoolIpActive = isSchoolIP(state.userIp);
 
+            // 取得今天的星期 (Sunday = 0 -> 7, Monday = 1 ... Saturday = 6)
+            const todayRaw = new Date().getDay();
+            const todayDayOfWeek = todayRaw === 0 ? 7 : todayRaw;
+            
+            // 檢查今天是否為指定星期
+            const isCorrectDayOfWeek = (todayDayOfWeek === state.classDayOfWeek);
+
             const now = new Date();
             const timeStr = now.toTimeString().split(' ')[0].substring(0, 5); 
             
+            const lateTimeStr = addMinutes(state.signInStart, state.lateThreshold);
+
             const [curH, curM] = timeStr.split(':').map(Number);
             const [startH, startM] = state.signInStart.split(':').map(Number);
-            const [endH, endM] = state.signInEnd.split(':').map(Number);
+            const [lateH, lateM] = lateTimeStr.split(':').map(Number);
             
             const currentMin = curH * 60 + curM;
             const startMin = startH * 60 + startM;
-            const endMin = endH * 60 + endM;
+            const lateMin = lateH * 60 + lateM;
 
             const isAfterSignInStart = currentMin >= startMin;
-            const isLate = currentMin > endMin; 
+            const isLate = currentMin > lateMin; 
             const isSignOutTime = isTimeInWindow(timeStr, state.signOutStart, state.signOutEnd);
 
-            dom.timeWindowBadge.textContent = `簽到: ${state.signInStart}~${state.signInEnd} (遲到仍可打卡) | 簽退: ${state.signOutStart}~${state.signOutEnd}`;
-            dom.labelSigninTime.textContent = `簽到時段 (${state.signInStart} 起開放打卡)`;
+            const weekdayChinese = ["", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"];
+            dom.timeWindowBadge.textContent = `上課日: ${weekdayChinese[state.classDayOfWeek] || ''} | 準時簽到: ${state.signInStart}~${lateTimeStr} | 遲到判定: ${lateTimeStr}起 | 簽退: ${state.signOutStart}~${state.signOutEnd}`;
+            dom.labelSigninTime.textContent = `簽到時段 (${state.signInStart} 起，開課後 ${state.lateThreshold} 分鐘內算準時)`;
             dom.labelSignoutTime.textContent = `限定簽退時段 (${state.signOutStart}~${state.signOutEnd})`;
 
             if (isLate) {
-                document.getElementById('clock-in-btn-label').textContent = "上課遲到打卡";
+                document.getElementById('clock-in-btn-label').textContent = "上課遲到打卡 (已逾時)";
                 document.getElementById('clock-in-icon').setAttribute('class', "w-5 h-5 text-amber-400 animate-bounce");
             } else {
-                document.getElementById('clock-in-btn-label').textContent = "上課簽到打卡";
+                document.getElementById('clock-in-btn-label').textContent = "上課簽到打卡 (準時)";
                 document.getElementById('clock-in-icon').setAttribute('class', "w-5 h-5 text-white");
             }
 
             let canIn = false;
             let canOut = false;
 
-            if (isSchoolIpActive) {
+            // 判斷硬體鎖定 (一機一碼) 狀態並渲染特定提示
+            let isDeviceMatch = true;
+            if (state.selectedStudent) {
+                isDeviceMatch = !state.selectedStudent.deviceId || (state.selectedStudent.deviceId === myDeviceUUID);
+            }
+
+            // 打卡狀態與按鈕可用度防護
+            if (!isCorrectDayOfWeek && !state.isAdminMode) {
+                dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-rose-500/10 text-rose-400 border border-rose-500/20");
+                dom.checkinStatusCard.innerHTML = `<span>今天非本課程上課日 (設定為: ${weekdayChinese[state.classDayOfWeek]})</span>`;
+            } else if (state.selectedStudent && !isDeviceMatch && !state.isAdminMode) {
+                dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse");
+                dom.checkinStatusCard.innerHTML = `<span>⚠️ 裝置不符：此學號已綁定其他行動裝置！請聯絡老師重設。</span>`;
+            } else if (isSchoolIpActive) {
                 dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20");
                 dom.checkinStatusCard.innerHTML = `<span>校園 IP 認證 · 免除 GPS 限制</span>`;
             } else if (!hasLocation) {
@@ -1535,15 +1867,15 @@
 
             const locationPassed = isWithinRange || isSchoolIpActive || state.isPreviewMode || state.isAdminMode;
             
+            // 學生必須在正確的「星期」並且「地點與硬體特徵通過」才能按下打卡按鈕 (管理員除外)
             if (state.selectedStudent) {
-                const isDeviceMatch = !state.selectedStudent.deviceId || (state.selectedStudent.deviceId === myDeviceUUID);
-                if (locationPassed && (isDeviceMatch || state.isAdminMode)) {
+                if (locationPassed && (isDeviceMatch || state.isAdminMode) && (isCorrectDayOfWeek || state.isAdminMode)) {
                     const currentStatus = state.selectedStudent.status;
                     if (currentStatus === '未簽到' || currentStatus === '缺課') {
                         if (isAfterSignInStart || state.isAdminMode) {
                             canIn = true;
                         }
-                    } else if (currentStatus === '已簽到' || currentStatus === '已遲到') {
+                    } else if (currentStatus === 'Refreshed' || currentStatus === '已簽到' || currentStatus === '已遲到') {
                         if (isSignOutTime || state.isAdminMode) {
                             canOut = true;
                         }
@@ -1555,6 +1887,66 @@
             dom.btnClockOut.disabled = !canOut;
 
             updateMapUserPosition();
+            renderStudentTopics();
+        }
+
+        // 學生端動態渲染上課重點主題
+        function renderStudentTopics() {
+            const studentWeek = state.currentCalculatedWeek;
+            const list = SESSIONS_DATA[state.dayType];
+            if (!list) return;
+            const startIdx = Math.min(state.startSessionIdx, list.length - 1);
+            
+            let html = `
+                <div class="flex items-center gap-1.5 border-b border-slate-800 pb-2 mb-2">
+                    <i data-lucide="book-open" class="w-4.5 h-4.5 text-indigo-400"></i>
+                    <span class="font-bold text-slate-200">🧭 今日課堂學習主題 (第 ${studentWeek} 週)</span>
+                </div>
+                <div class="space-y-2">
+            `;
+            
+            let hasValidSessions = false;
+            for (let s = 1; s <= state.classSessions; s++) {
+                const key = `W${studentWeek}_S${s}`;
+                const topic = state.sessionTopics[key] || '教師尚未設定今日主題';
+                
+                const actualSessionIdx = startIdx + (s - 1);
+                const period = list[actualSessionIdx];
+                if (!period) continue;
+                hasValidSessions = true;
+
+                const now = new Date();
+                const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+                const isActive = isTimeInWindow(timeStr, period.start, period.end);
+                
+                const activeClass = isActive 
+                    ? "bg-indigo-500/10 border-indigo-500 text-indigo-300 ring-1 ring-indigo-500/30" 
+                    : "bg-slate-900/30 border-slate-850 text-slate-400";
+                
+                html += `
+                    <div class="p-2.5 rounded-xl border ${activeClass} flex justify-between items-center transition-all duration-300">
+                        <div class="flex-grow">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="font-bold text-[10px] text-slate-500">${period.name} (${period.start}~${period.end})</span>
+                                ${isActive ? '<span class="px-1.5 py-0.5 rounded text-[8px] font-black bg-indigo-600 text-white animate-pulse">🔥 進行中</span>' : ''}
+                            </div>
+                            <span class="font-bold text-xs text-slate-200">${topic}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            html += `</div>`;
+            
+            const container = document.getElementById('student-topics-container');
+            if (container) {
+                if (hasValidSessions && state.classSessions > 0) {
+                    container.innerHTML = html;
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                }
+            }
+            lucide.createIcons();
         }
 
         // --- 定位回調與追蹤 ---
@@ -1595,7 +1987,7 @@
                     dom.gpsStatusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>定位已就緒</span>`;
 
                     onLocationUpdated(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
-                }, () => {
+                }, (error) => {
                     state.gpsConnected = false;
                     dom.gpsStatusBadge.setAttribute('class', "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20");
                     dom.gpsStatusBadge.innerHTML = `<span>定位失敗</span>`;
@@ -1606,106 +1998,239 @@
         dom.btnGrantGps.addEventListener('click', () => startGpsTracking(true));
         dom.btnCloseGpsModal.addEventListener('click', () => {
             dom.gpsAuthModal.style.display = 'none';
-            showToast("已跳過定位授權。進入唯讀瀏覽模式", "info");
+            showToast("已跳過定位授權。進入唯讀模式", "info");
         });
 
-        // Firestore 實時資料庫監聽與設定同步
-        function setupFirestoreListeners() {
-            if (!user) return;
+        // 教師端主題編輯器渲染
+        function renderAdminTopicsPanel() {
+            const currentWeek = state.selectedTeacherViewWeek;
+            document.querySelectorAll('.active-week-label').forEach(el => el.textContent = currentWeek);
+            
+            // 獲取目前上課星期所對應的真實節次名稱
+            const list = SESSIONS_DATA[state.dayType];
+            const startIdx = Math.min(state.startSessionIdx, list.length - 1);
 
-            const settingsDocRef = getPublicDocRef('settings', 'classroom');
-            onSnapshot(settingsDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    
-                    state.targetLat = data.targetLat || 24.991999;
-                    state.targetLon = data.targetLon || 121.230375;
-                    state.targetRadius = data.targetRadius || 2500;
-                    state.week1StartDate = data.week1StartDate || "2026-02-16";
-                    state.classSessions = data.classSessions || 3;
-                    state.signInStart = data.signInStart || "08:00";
-                    state.signInEnd = data.signInEnd || "08:30";
-                    state.signOutStart = data.signOutStart || "09:50";
-                    state.signOutEnd = data.signOutEnd || "10:20";
-
-                    state.currentCalculatedWeek = calculateCurrentWeek(state.week1StartDate);
-
-                    // 教師端設定欄位填寫
-                    dom.inputTargetLat.value = state.targetLat;
-                    dom.inputTargetLon.value = state.targetLon;
-                    dom.inputTargetRadius.value = state.targetRadius;
-                    dom.inputWeek1Start.value = state.week1StartDate;
-                    dom.selectClassSessions.value = state.classSessions;
-                    dom.inputSigninStart.value = state.signInStart;
-                    dom.inputSigninEnd.value = state.signInEnd;
-                    dom.inputSignoutStart.value = state.signOutStart;
-                    dom.inputSignoutEnd.value = state.signOutEnd;
-
-                    dom.badgeComputedWeek.textContent = `第 ${state.currentCalculatedWeek} 週 (自動判斷)`;
-                    dom.badgeComputedSessions.textContent = `${state.classSessions} 堂課`;
-                    dom.radiusDisplayText.textContent = `教室打卡半徑：${state.targetRadius} 米內`;
-
-                    if (mapImmersive && classroomMarker && classroomCircle) {
-                        const newPos = [state.targetLat, state.targetLon];
-                        classroomMarker.setLatLng(newPos);
-                        classroomCircle.setLatLng(newPos);
-                        classroomCircle.setRadius(state.targetRadius);
-                    }
-                    
-                    renderSessionFilterPills();
-                    updateSystemCalculation();
-                }
-            });
-
-            // 監聽學生花名冊
-            const rosterRef = getPublicCollectionRef('roster');
-            onSnapshot(rosterRef, (snapshot) => {
-                const tempRoster = [];
-                snapshot.forEach(docSnap => tempRoster.push(docSnap.data()));
-                tempRoster.sort((a, b) => a.id.localeCompare(b.id));
-                state.roster = tempRoster;
+            let html = '';
+            for (let s = 1; s <= state.classSessions; s++) {
+                const key = `W${currentWeek}_S${s}`;
+                const val = state.sessionTopics[key] || '';
                 
-                populateDeptFilterOptions();
-                recomputeWeekRosterStatuses();
-            });
+                const actualSessionIdx = startIdx + (s - 1);
+                const period = list[actualSessionIdx];
+                const sessionName = period ? period.name : `第 ${s} 節`;
 
-            // 監聽打卡歷程
-            const historyRef = getPublicCollectionRef('history');
-            onSnapshot(historyRef, (snapshot) => {
-                const tempHistory = [];
-                snapshot.forEach(docSnap => tempHistory.push({ dbId: docSnap.id, ...docSnap.data() }));
-                tempHistory.sort((a, b) => b.timestamp - a.timestamp);
-                state.history = tempHistory;
-
-                recomputeWeekRosterStatuses();
-                renderHistoryTable();
-                drawAllCheckInMarkersOnMap();
-            });
+                html += `
+                    <div>
+                        <label class="text-slate-400 block mb-1">${sessionName} 課堂學習主題</label>
+                        <input type="text" id="input-topic-W${currentWeek}_S${s}" value="${val}" placeholder="例如：系統架構簡介、Vue 雙向綁定原理..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                `;
+            }
+            dom.adminTopicsInputs.innerHTML = html || `<p class="text-slate-500 italic text-xs">無課堂時段設定</p>`;
+            lucide.createIcons();
         }
 
+        dom.btnSaveTopics.addEventListener('click', async () => {
+            if (!state.isAdminMode || !user) return;
+            const currentWeek = state.selectedTeacherViewWeek;
+            const updatedTopics = { ...state.sessionTopics };
+            
+            for (let s = 1; s <= state.classSessions; s++) {
+                const key = `W${currentWeek}_S${s}`;
+                const inputEl = document.getElementById(`input-topic-${key}`);
+                if (inputEl) {
+                    updatedTopics[key] = inputEl.value.trim();
+                }
+            }
+            
+            try {
+                await updateDoc(getPublicDocRef('settings', 'class_' + state.activeClassId), {
+                    sessionTopics: updatedTopics
+                });
+                showToast(`第 ${currentWeek} 週各堂學習內容儲存成功！`, "success");
+            } catch (e) {
+                showToast("雲端儲存主題失敗", "error");
+            }
+        });
+
+        // --- 班級與名單多載核心功能 ---
+        function populateClassDropdowns() {
+            let optionsHtml = '';
+            state.classes.forEach(c => {
+                optionsHtml += `<option value="${c.id}">${c.name}</option>`;
+            });
+            dom.studentClassSelect.innerHTML = optionsHtml;
+            dom.adminClassSelect.innerHTML = optionsHtml;
+            
+            // 同步渲染各分頁新加入的班級下拉選單
+            dom.mapClassSelect.innerHTML = optionsHtml;
+            dom.matrixClassSelect.innerHTML = optionsHtml;
+            dom.analyticsClassSelect.innerHTML = optionsHtml;
+
+            // 同步選取項
+            dom.studentClassSelect.value = state.activeClassId;
+            dom.adminClassSelect.value = state.activeClassId;
+            dom.mapClassSelect.value = state.activeClassId;
+            dom.matrixClassSelect.value = state.activeClassId;
+            dom.analyticsClassSelect.value = state.activeClassId;
+
+            // 更新週點名簿上方班級標籤
+            const activeClass = state.classes.find(c => c.id === state.activeClassId);
+            if (activeClass) {
+                document.querySelectorAll('.active-class-name-label').forEach(el => el.textContent = activeClass.name);
+            }
+        }
+
+        // 綁定切換班級事件
+        const handleClassSwitch = (newClassId) => {
+            state.activeClassId = newClassId;
+            dom.studentClassSelect.value = newClassId;
+            dom.adminClassSelect.value = newClassId;
+            dom.mapClassSelect.value = newClassId;
+            dom.matrixClassSelect.value = newClassId;
+            dom.analyticsClassSelect.value = newClassId;
+            
+            // 重設目前學生身分
+            state.selectedStudent = null;
+            dom.studentSearchInput.value = '';
+            dom.studentCardIcon.setAttribute('class', "w-5 h-5 text-slate-500");
+            dom.studentCardSub.textContent = "尚未選擇身分";
+            dom.studentCardTitle.textContent = "請由上方搜尋欄選取您的學號";
+            dom.btnAdminResetDevice.classList.add('hidden');
+
+            showToast(`已成功切換至上課班級：${state.classes.find(c => c.id === newClassId)?.name || ''}`, "info");
+
+            // 重新綁定該班級的 settings 監聽器與刷新表格
+            bindClassSettingsListener(newClassId);
+        };
+
+        // 綁定所有班級下拉選單的變更事件，確保一鍵同步
+        dom.studentClassSelect.addEventListener('change', (e) => handleClassSwitch(e.target.value));
+        dom.adminClassSelect.addEventListener('change', (e) => handleClassSwitch(e.target.value));
+        dom.mapClassSelect.addEventListener('change', (e) => handleClassSwitch(e.target.value));
+        dom.matrixClassSelect.addEventListener('change', (e) => handleClassSwitch(e.target.value));
+        dom.analyticsClassSelect.addEventListener('change', (e) => handleClassSwitch(e.target.value));
+
+        // 新增班級
+        dom.btnCreateClass.addEventListener('click', async () => {
+            if (!state.isAdminMode || !user) return;
+            const newClassName = dom.inputNewClassName.value.trim();
+            if (!newClassName) {
+                showToast("請輸入班級課程名稱！", "error");
+                return;
+            }
+
+            const newClassId = 'class_' + Math.random().toString(36).substring(2, 10);
+            const newClassObj = { id: newClassId, name: newClassName };
+
+            try {
+                // 1. 寫入 class 列表
+                await setDoc(getPublicDocRef('classes', newClassId), newClassObj);
+                
+                // 2. 初始化此班級的預設考勤設定 (預設週三上課，1~3節)
+                await setDoc(getPublicDocRef('settings', 'class_' + newClassId), {
+                    targetLat: 24.991999,
+                    targetLon: 121.230375,
+                    targetRadius: 2500,
+                    week1StartDate: "2026-02-16",
+                    lateThreshold: 15,
+                    classDayOfWeek: 3,
+                    startSessionIdx: 1,
+                    endSessionIdx: 3,
+                    sessionTopics: {}
+                });
+
+                dom.inputNewClassName.value = '';
+                showToast(`班級「${newClassName}」建立成功！已自動為您切換至該班級課程`, "success");
+                handleClassSwitch(newClassId);
+            } catch (e) {
+                showToast("建立班級失敗", "error");
+            }
+        });
+
+        // 刪除班級
+        dom.btnDeleteClass.addEventListener('click', async () => {
+            if (!state.isAdminMode || !user) return;
+            if (state.activeClassId === 'class_default') {
+                showToast("預設班級課程無法刪除！", "error");
+                return;
+            }
+            const activeClass = state.classes.find(c => c.id === state.activeClassId);
+            if (!activeClass) return;
+
+            if (!confirm(`確定要刪除「${activeClass.name}」嗎？此動作將會永遠清空該班級底下的學生名冊與所有打卡考勤紀錄！`)) {
+                return;
+            }
+
+            try {
+                const batch = writeBatch(db);
+                
+                // 1. 刪除該班級底下的學生
+                state.roster.filter(s => s.classId === state.activeClassId).forEach(s => {
+                    batch.delete(getPublicDocRef('roster', `${state.activeClassId}_${s.id.toLowerCase()}`));
+                });
+
+                // 2. 刪除該班級底下的打卡歷史
+                state.history.filter(h => h.classId === state.activeClassId).forEach(h => {
+                    if (h.dbId) batch.delete(getPublicDocRef('history', h.dbId));
+                });
+
+                // 3. 刪除班級文件與設定
+                batch.delete(getPublicDocRef('classes', state.activeClassId));
+                batch.delete(getPublicDocRef('settings', 'class_' + state.activeClassId));
+
+                await batch.commit();
+
+                showToast(`班級「${activeClass.name}」已被徹底清空並刪除。`, "success");
+                handleClassSwitch('class_default');
+            } catch (e) {
+                showToast("刪除班級出錯", "error");
+            }
+        });
+
         function populateDeptFilterOptions() {
+            const currentRoster = state.roster.filter(s => s.classId === state.activeClassId);
             const depts = new Set();
-            state.roster.forEach(s => { if (s.dept) depts.add(s.dept); });
+            currentRoster.forEach(s => { if (s.dept) depts.add(s.dept); });
             let optionsHtml = `<option value="ALL">所有班級/科系</option>`;
             depts.forEach(dept => { optionsHtml += `<option value="${dept}">${dept}</option>`; });
             dom.matrixFilterDept.innerHTML = optionsHtml;
         }
 
+        // 節次篩選按鈕渲染 (修正：使其對齊真實節次名稱)
         function renderSessionFilterPills() {
+            const list = SESSIONS_DATA[state.dayType];
+            if (!list) return;
+            const startIdx = Math.min(state.startSessionIdx, list.length - 1);
+
             let pillsHtml = '';
             for (let s = 1; s <= state.classSessions; s++) {
                 const isActive = s === state.matrixActiveSessionFilter;
+                
+                const actualSessionIdx = startIdx + (s - 1);
+                const period = list[actualSessionIdx];
+                const sessionName = period ? period.name : `第 ${s} 節`;
+
                 const activeClasses = isActive 
                     ? "bg-indigo-600 border-indigo-500 text-white font-bold animate-pulse" 
                     : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white";
                 pillsHtml += `
                     <button type="button" onclick="changeActiveSessionFilter(${s})" class="px-3.5 py-2 border rounded-xl text-xs md:text-sm transition shadow ${activeClasses}">
-                        第 ${s} 節
+                        ${sessionName}
                     </button>
                 `;
             }
             dom.matrixSessionPillsContainer.innerHTML = pillsHtml;
-            document.querySelectorAll('.active-session-label').forEach(el => el.textContent = state.matrixActiveSessionFilter);
+
+            // 更新週點名簿上方與批次點名按鈕標籤的當前選取節次文字
+            const currentSelectedPeriod = list[startIdx + (state.matrixActiveSessionFilter - 1)];
+            const currentSelectedName = currentSelectedPeriod ? currentSelectedPeriod.name : `第 ${state.matrixActiveSessionFilter} 節`;
+            
+            document.querySelectorAll('.active-session-label').forEach(el => el.textContent = currentSelectedName);
+            const gaugeTextEl = document.getElementById('label-active-session-text');
+            if (gaugeTextEl) {
+                gaugeTextEl.textContent = `${currentSelectedName}`;
+            }
         }
 
         window.changeActiveSessionFilter = function(sessionIdx) {
@@ -1714,12 +2239,13 @@
             recomputeWeekRosterStatuses();
         };
 
-        // 計算學生狀態
+        // 計算並刷新目前班級的考勤點名狀態
         function recomputeWeekRosterStatuses() {
-            if (!state.roster || state.roster.length === 0) return;
-            const weekHistory = state.history.filter(h => h.week === state.selectedTeacherViewWeek);
+            if (!state.roster) return; // 修正：若 roster 未載入則不執行後續，但長度為 0 仍應繼續清空與重繪
+            const weekHistory = state.history.filter(h => h.week === state.selectedTeacherViewWeek && h.classId === state.activeClassId);
 
             state.roster.forEach(student => {
+                if (student.classId !== state.activeClassId) return;
                 if (!student.sessionAttendance) student.sessionAttendance = {};
                 
                 const studentLogs = weekHistory.filter(h => h.studentId.toLowerCase() === student.id.toLowerCase());
@@ -1740,51 +2266,82 @@
 
             renderAdminRosterTable();
             renderMatrixTable();
+            renderTermAnalytics(); // 修正：將學期數據分析渲染整合進流程更新鏈中，確保切換班級/點名變更時，數據分析即時更新
 
             if (state.selectedStudent) {
-                const refreshed = state.roster.find(s => s.id === state.selectedStudent.id);
-                if (refreshed) state.selectedStudent = refreshed;
+                const refreshed = state.roster.find(s => s.classId === state.activeClassId && s.id.toLowerCase() === state.selectedStudent.id.toLowerCase());
+                if (refreshed) {
+                    state.selectedStudent = refreshed;
+                }
             }
+            updateSystemCalculation(); // 修正關鍵：花名冊與解綁事件監聽觸發時，同步執行核心打卡防代點計算，讓警告狀態即時更新與解除！
         }
 
-        // 規則三：管理者手動點名級聯（教師手動）
         window.toggleStudentSessionCheck = async function(studentId, weekNum, sessionIdx, isChecked) {
-            if (!state.isAdminMode) {
+            if (!state.isAdminMode || !user) {
                 showToast("非管理者身分，無法手動勾選！", "error");
                 return;
             }
             try {
-                const studentDocRef = getPublicDocRef('roster', studentId.toLowerCase());
+                const studentDocRef = getPublicDocRef('roster', `${state.activeClassId}_${studentId.toLowerCase()}`);
                 const updateObj = {};
 
                 if (isChecked) {
-                    // 若勾選出席，則自動連帶勾選後續的所有節次（如勾第一節，則自動勾二、三節）
                     for (let s = sessionIdx; s <= state.classSessions; s++) {
                         updateObj[`sessionAttendance.W${weekNum}_S${s}`] = true;
                     }
                     await updateDoc(studentDocRef, updateObj);
-                    showToast(`手動勾選出席（已自動重疊級聯勾選第 ${sessionIdx} 至 ${state.classSessions} 節）`, "success");
+                    showToast("已手動勾選出席（已自動向下級聯勾選至今日最後一節）", "success");
                 } else {
-                    // 取消勾選時，僅單獨取消該節，方便靈活微調
                     updateObj[`sessionAttendance.W${weekNum}_S${sessionIdx}`] = false;
                     await updateDoc(studentDocRef, updateObj);
-                    showToast(`手動取消勾選第 ${sessionIdx} 節出席`, "info");
+                    showToast("手動取消節次出席", "info");
                 }
             } catch (e) {
                 showToast("同步出錯", "error");
             }
         };
 
+        // 解鎖並重設學生的硬體特徵碼 (一機一碼解綁)
         window.unlockDevice = async function(studentId) {
+            if (!user) return;
+            if (!state.isAdminMode) {
+                showToast("非管理者身分，無法重設裝置特徵碼！", "error");
+                return;
+            }
             try {
-                await updateDoc(getPublicDocRef('roster', studentId.toLowerCase()), { deviceId: null });
-                showToast(`裝置解鎖綁定成功！`, "success");
+                await updateDoc(getPublicDocRef('roster', `${state.activeClassId}_${studentId.toLowerCase()}`), { 
+                    deviceId: null 
+                });
+                showToast(`學生 ${studentId.toUpperCase()} 的硬體裝置綁定已成功解鎖重設！`, "success");
             } catch (e) {
-                showToast("解鎖失敗", "error");
+                showToast("解鎖失敗，請檢查網路連線", "error");
             }
         };
 
-        // 學生執行打卡動作（整合規則一 & 規則二）
+        // 學生退選雲端移除邏輯
+        window.dropStudent = async function(studentId) {
+            if (!state.isAdminMode || !user) {
+                showToast("非管理者身分，無法執行退選！", "error");
+                return;
+            }
+            
+            const studentObj = state.roster.find(s => s.classId === state.activeClassId && s.id.toLowerCase() === studentId.toLowerCase());
+            if (!studentObj) return;
+
+            if (!confirm(`確定要將學生「${studentObj.name} (${studentObj.id.toUpperCase()})」退選並從此課程中移除嗎？\n此動作將會刪除該學生的所有註冊資訊！`)) {
+                return;
+            }
+
+            try {
+                await deleteDoc(getPublicDocRef('roster', `${state.activeClassId}_${studentId.toLowerCase()}`));
+                showToast(`學生 ${studentObj.name} 已成功辦理退選移除！`, "success");
+            } catch (e) {
+                showToast("退選處理出錯，請稍後再試", "error");
+            }
+        };
+
+        // 學生實際執行打卡簽到與智慧級聯
         async function executeClockAction(type) {
             if (!state.selectedStudent || !user) return;
 
@@ -1802,15 +2359,22 @@
             const finalLon = (state.currentLon === 0) ? state.targetLon : state.currentLon;
 
             let finalType = type;
+            const currentHM = timeStr.substring(0, 5);
+            const lateTimeStr = addMinutes(state.signInStart, state.lateThreshold);
+            
+            const [curH, curM] = currentHM.split(':').map(Number);
+            const [lateH, lateM] = lateTimeStr.split(':').map(Number);
+
+            const isWithinGracePeriod = (curH * 60 + curM) <= (lateH * 60 + lateM);
+
             if (type === '簽到') {
-                const [curH, curM] = timeStr.split(':').map(Number);
-                const [endH, endM] = state.signInEnd.split(':').map(Number);
-                if (curH * 60 + curM > endH * 60 + endM) {
+                if (!isWithinGracePeriod) {
                     finalType = '遲到';
                 }
             }
 
             const record = {
+                classId: state.activeClassId,
                 studentId: state.selectedStudent.id,
                 name: state.selectedStudent.name,
                 dept: state.selectedStudent.dept,
@@ -1831,37 +2395,24 @@
                 const sessionAtt = state.selectedStudent.sessionAttendance || {};
                 const weekKey = `W${state.currentCalculatedWeek}`;
                 
-                // 計算學生自第一堂課開始起經過的時間（分鐘）
-                const [curH, curM] = timeStr.split(':').map(Number);
-                const [startH, startM] = state.signInStart.split(':').map(Number);
-                const currentMin = curH * 60 + curM;
-                const startMin = startH * 60 + startM;
-                const timeDiff = currentMin - startMin; 
-
                 let ruleMsg = "";
 
-                if (finalType === '簽到' || finalType === '遲到') {
-                    if (timeDiff <= 50) {
-                        // 規則一：第一堂準時抵達（學生自動）
-                        // 在早上第一堂課開始起 50 分鐘內完成簽到打卡，自動勾選本週所有後續課堂
-                        for (let s = 1; s <= state.classSessions; s++) {
-                            sessionAtt[`${weekKey}_S${s}`] = true;
-                        }
-                        ruleMsg = "第一堂準時抵達！系統已為您自動完成本週所有後續課堂的出席勾選。";
-                    } else {
-                        // 規則二：遲到超過第一堂才點名（學生自動）
-                        // 超過第一堂課開始起 50 分鐘後才打卡，判定第一堂課缺席（不勾選），並完成第二堂課以後的勾選
-                        sessionAtt[`${weekKey}_S1`] = false; 
-                        for (let s = 2; s <= state.classSessions; s++) {
-                            sessionAtt[`${weekKey}_S${s}`] = true;
-                        }
-                        ruleMsg = "遲到超過第一堂課（50分鐘後）。第 1 節記為未出席，已自動勾選後續第 2 節起的出席。";
+                if (finalType === '簽到') {
+                    for (let s = 1; s <= state.classSessions; s++) {
+                        sessionAtt[`${weekKey}_S${s}`] = true;
                     }
+                    ruleMsg = `您在遲到時限截止 (${lateTimeStr}) 前準時抵達！系統已自動為您勾選今日所有後續課堂出席。`;
+                } else if (finalType === '遲到') {
+                    sessionAtt[`${weekKey}_S1`] = false; 
+                    for (let s = 2; s <= state.classSessions; s++) {
+                        sessionAtt[`${weekKey}_S${s}`] = true; 
+                    }
+                    ruleMsg = `遲到打卡（開課已超過 ${state.lateThreshold} 分鐘，逾時 ${lateTimeStr} ）。首堂判定缺課，已為您勾選其後之出席。`;
                 } else if (finalType === '簽退') {
                     for (let s = 1; s <= state.classSessions; s++) {
                         sessionAtt[`${weekKey}_S${s}`] = true;
                     }
-                    ruleMsg = "下課簽退打卡成功！";
+                    ruleMsg = "下課簽退打卡成功！已將整段課堂出席確認同步。";
                 }
 
                 const updateData = {
@@ -1876,7 +2427,7 @@
                 if (!state.selectedStudent.deviceId) {
                     updateData.deviceId = myDeviceUUID;
                 }
-                await updateDoc(getPublicDocRef('roster', state.selectedStudent.id.toLowerCase()), updateData);
+                await updateDoc(getPublicDocRef('roster', `${state.activeClassId}_${state.selectedStudent.id.toLowerCase()}`), updateData);
 
                 playChime(true);
                 showToast(`${finalType}打卡成功！${ruleMsg}`, "success");
@@ -1885,13 +2436,16 @@
             }
         }
 
+        dom.btnClockIn.disabled = true;
+        dom.btnClockOut.disabled = true;
+
         dom.btnClockIn.addEventListener('click', () => executeClockAction('簽到'));
         dom.btnClockOut.addEventListener('click', () => executeClockAction('簽退'));
 
-        // 渲染打卡流水表
+        // 渲染打卡流水表 (以 Class 進行過濾)
         function renderHistoryTable() {
             const todayStr = new Date().toISOString().split('T')[0];
-            const todayHistory = state.history.filter(item => item.dateKey === todayStr);
+            const currentHistory = state.history.filter(item => item.dateKey === todayStr && item.classId === state.activeClassId);
 
             const rowRenderer = (item) => {
                 const typeColor = item.type === '遲到' ? 'text-amber-400 font-bold' : (item.type === '簽到' ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold');
@@ -1906,18 +2460,17 @@
             };
 
             let rowsHtml = '';
-            todayHistory.forEach(item => { rowsHtml += rowRenderer(item); });
+            currentHistory.forEach(item => { rowsHtml += rowRenderer(item); });
             dom.historyTableBody.innerHTML = rowsHtml || `<tr><td colspan="4" class="py-4 text-center text-slate-600">無打卡歷史</td></tr>`;
 
-            // 學生打卡頁面流水
             let studentRowsHtml = '';
-            todayHistory.forEach(item => {
+            currentHistory.forEach(item => {
                 const typeColor = item.type === '遲到' ? 'text-amber-400 font-bold' : (item.type === '簽到' ? 'text-emerald-400' : 'text-rose-400');
                 studentRowsHtml += `
                     <tr class="hover:bg-slate-800/20">
                         <td class="py-2.5 px-4 font-mono">${item.time}</td>
                         <td class="py-2.5 px-4 font-bold">${item.studentId.toUpperCase()}</td>
-                        <td class="py-2.5 px-4 text-slate-400">${item.dept}</td>
+                        <td class="py-2.5 px-4 text-slate-400">${item.text || item.dept}</td>
                         <td class="py-2.5 px-4"><span class="${typeColor}">${item.type}</span></td>
                         <td class="py-2.5 px-4 font-mono text-slate-400">${item.distance}m (±${item.accuracy}m)</td>
                     </tr>
@@ -1926,22 +2479,36 @@
             dom.studentHistoryTableBody.innerHTML = studentRowsHtml || `<tr><td colspan="5" class="py-8 text-center text-slate-600">本日尚無您與同窗的打卡歷程</td></tr>`;
         }
 
-        // 渲染傳統點名清冊
+        // 渲染傳統點名清冊 (以 Class 進行過濾，並附加退選與硬體鎖解綁操作)
         function renderAdminRosterTable() {
+            const currentRoster = state.roster.filter(s => s.classId === state.activeClassId);
             const searchVal = dom.adminRosterSearch.value.trim().toLowerCase();
-            const filtered = state.roster.filter(s => 
+            const filtered = currentRoster.filter(s => 
                 s.id.toLowerCase().includes(searchVal) || s.name.toLowerCase().includes(searchVal)
             );
 
-            dom.adminRosterCount.textContent = state.roster.length;
+            dom.adminRosterCount.textContent = currentRoster.length;
 
-            const presentCount = state.roster.filter(s => s.status === '已簽到' || s.status === '已遲到' || s.status === '已簽退').length;
-            const rate = state.roster.length > 0 ? Math.round((presentCount / state.roster.length) * 100) : 0;
+            const presentCount = currentRoster.filter(s => s.status === '已簽到' || s.status === '已遲到' || s.status === '已簽退').length;
+            const rate = currentRoster.length > 0 ? Math.round((presentCount / currentRoster.length) * 100) : 0;
             dom.attendanceRatePercentage.textContent = `${rate}%`;
 
             let tableHtml = '';
             filtered.forEach(s => {
-                const devText = s.deviceId ? `<span class="text-emerald-400 font-mono text-[10px] md:text-xs">${s.deviceId.slice(0, 8)}...</span>` : `<span class="text-slate-600 italic">未綁定</span>`;
+                let devText = '';
+                if (s.deviceId) {
+                    devText = `
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-emerald-400 font-mono text-[10px] md:text-xs">${s.deviceId.slice(0, 8)}...</span>
+                            <button onclick="unlockDevice('${s.id}')" class="px-2 py-0.5 bg-amber-500/20 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/30 rounded text-[10px] font-bold transition flex items-center gap-0.5" title="重設並解除硬體鎖定">
+                                <i data-lucide="unlock" class="w-3 h-3"></i> 解鎖
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    devText = `<span class="text-slate-600 italic text-[11px] md:text-xs">未鎖定</span>`;
+                }
+
                 tableHtml += `
                     <tr class="hover:bg-slate-800/25 transition">
                         <td class="py-2.5 px-4 md:text-sm lg:text-base">${s.dept}</td>
@@ -1949,15 +2516,22 @@
                         <td class="py-2.5 px-4 md:text-sm lg:text-base">${s.name}</td>
                         <td class="py-2.5 px-4 text-indigo-400 font-bold md:text-sm lg:text-base">${s.status}</td>
                         <td class="py-2.5 px-4">${devText}</td>
+                        <td class="py-2.5 px-4 text-center">
+                            <button onclick="dropStudent('${s.id}')" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1 mx-auto">
+                                <i data-lucide="user-minus" class="w-3.5 h-3.5"></i> 退選
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
-            dom.adminRosterTableBody.innerHTML = tableHtml || `<tr><td colspan="5" class="py-4 text-center">無名單資料</td></tr>`;
+            dom.adminRosterTableBody.innerHTML = tableHtml || `<tr><td colspan="6" class="py-4 text-center">無名單資料</td></tr>`;
+            lucide.createIcons();
         }
 
-        // 渲染學堂點名通極致矩陣 (週點名簿)
+        // 渲染學堂點名通極致矩陣 (週點名簿) (以 Class 進行過濾) (修正：勾選欄位上方節次名稱與設定完全一致)
         function renderMatrixTable() {
-            if (!state.roster || state.roster.length === 0) return;
+            const currentRoster = state.roster.filter(s => s.classId === state.activeClassId);
+            if (!currentRoster) return;
 
             const searchVal = state.matrixSearchQuery.trim().toLowerCase();
             const deptVal = state.matrixFilterDept;
@@ -1965,7 +2539,11 @@
             const currentWeek = state.selectedTeacherViewWeek;
             const activeSession = state.matrixActiveSessionFilter;
 
-            const filtered = state.roster.filter(s => {
+            // 獲取目前上課星期所對應的真實節次
+            const list = SESSIONS_DATA[state.dayType];
+            const startIdx = Math.min(state.startSessionIdx, list.length - 1);
+
+            const filtered = currentRoster.filter(s => {
                 const matchSearch = s.id.toLowerCase().includes(searchVal) || s.name.toLowerCase().includes(searchVal);
                 const matchDept = (deptVal === "ALL") || (s.dept === deptVal);
                 const isChecked = s.sessionAttendance && s.sessionAttendance[`W${currentWeek}_S${activeSession}`] === true;
@@ -1996,7 +2574,12 @@
             let dynamicHeaders = '';
             for (let s = 1; s <= state.classSessions; s++) {
                 const isHighlight = s === activeSession;
-                dynamicHeaders += `<th class="py-3 px-4 text-center min-w-[80px] md:text-sm lg:text-base ${isHighlight ? 'text-indigo-400 bg-indigo-500/10 font-black border-x border-slate-800' : 'text-slate-400'}">第 ${s} 節</th>`;
+                
+                const actualSessionIdx = startIdx + (s - 1);
+                const period = list[actualSessionIdx];
+                const sessionName = period ? period.name : `第 ${s} 節`;
+
+                dynamicHeaders += `<th class="py-3 px-4 text-center min-w-[80px] md:text-sm lg:text-base ${isHighlight ? 'text-indigo-400 bg-indigo-500/10 font-black border-x border-slate-800' : 'text-slate-400'}">${sessionName}</th>`;
             }
             dom.matrixTableBody.previousElementSibling.innerHTML = `<tr>${staticHeaders}${dynamicHeaders}</tr>`;
 
@@ -2051,21 +2634,22 @@
 
         // 一鍵批次點名勾選
         async function executeMatrixBatchCheck(targetSessionIdx, isChecked, isAllSessions = false) {
-            if (!state.isAdminMode) {
+            if (!state.isAdminMode || !user) {
                 showToast("非管理者，無法批次設定", "error");
                 return;
             }
             const currentWeek = state.selectedTeacherViewWeek;
+            const currentRoster = state.roster.filter(s => s.classId === state.activeClassId);
             try {
                 const batch = writeBatch(db);
-                state.roster.forEach(s => {
+                currentRoster.forEach(s => {
                     const sessionAtt = s.sessionAttendance || {};
                     if (isAllSessions) {
                         for (let sIdx = 1; sIdx <= state.classSessions; sIdx++) { sessionAtt[`W${currentWeek}_S${sIdx}`] = isChecked; }
                     } else {
                         sessionAtt[`W${currentWeek}_S${targetSessionIdx}`] = isChecked;
                     }
-                    batch.update(getPublicDocRef('roster', s.id.toLowerCase()), { sessionAttendance: sessionAtt });
+                    batch.update(getPublicDocRef('roster', `${state.activeClassId}_${s.id.toLowerCase()}`), { sessionAttendance: sessionAtt });
                 });
                 await batch.commit();
                 showToast("批次點名同步完成！", "success");
@@ -2082,12 +2666,13 @@
         // 匯出當週 CSV
         dom.btnMatrixExportWeek.addEventListener('click', () => {
             const currentWeek = state.selectedTeacherViewWeek;
+            const currentRoster = state.roster.filter(s => s.classId === state.activeClassId);
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
             let headers = "班級科系,學號,姓名";
             for (let s = 1; s <= state.classSessions; s++) { headers += `,第 ${s} 節`; }
             csvContent += headers + "\n";
 
-            state.roster.forEach(s => {
+            currentRoster.forEach(s => {
                 let row = `"${s.dept}","${s.id}","${s.name}"`;
                 for (let sessionIdx = 1; sessionIdx <= state.classSessions; sessionIdx++) {
                     const isChecked = s.sessionAttendance && s.sessionAttendance[`W${currentWeek}_S${sessionIdx}`] === true;
@@ -2105,11 +2690,16 @@
             document.body.removeChild(link);
         });
 
-        // 考勤高風險預警分析
+        // 考勤高風險預警分析 (修正：防呆、篩選當前班級，並繪製對比圖)
         function renderTermAnalytics() {
-            if (state.roster.length === 0) return;
+            const currentRoster = state.roster.filter(s => s.classId === state.activeClassId);
+            if (currentRoster.length === 0) {
+                document.getElementById('analytics-dept-list').innerHTML = `<p class="text-slate-500 italic text-xs">無學生數據</p>`;
+                document.getElementById('analytics-warning-tbody').innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-500 italic">無學生數據</td></tr>`;
+                return;
+            }
             const deptStats = {};
-            state.roster.forEach(s => {
+            currentRoster.forEach(s => {
                 const dept = s.dept || "通用班級";
                 if (!deptStats[dept]) deptStats[dept] = { total: 0, present: 0 };
                 const totalPossible = 18 * state.classSessions;
@@ -2140,7 +2730,7 @@
             document.getElementById('analytics-dept-list').innerHTML = deptHtml;
 
             let warningHtml = '';
-            state.roster.forEach(s => {
+            currentRoster.forEach(s => {
                 const totalPossible = 18 * state.classSessions;
                 let presentCount = 0;
                 if (s.sessionAttendance) {
@@ -2149,7 +2739,7 @@
                 const termRate = totalPossible > 0 ? Math.round((presentCount / totalPossible) * 100) : 0;
                 if (termRate < 80) {
                     warningHtml += `
-                        <tr class="hover:bg-rose-950/10 transition border-b border-rose-950/20">
+                        <tr class="hover:bg-rose-950/10 transition border-b border-rose-500/20">
                             <td class="py-2.5 px-3">${s.dept}</td>
                             <td class="py-2.5 px-3 font-mono">${s.id.toUpperCase()}</td>
                             <td class="py-2.5 px-3 font-bold text-rose-300">${s.name}</td>
@@ -2174,7 +2764,12 @@
                 dom.inputTargetLon.readOnly = true;
                 dom.inputTargetRadius.readOnly = true;
                 dom.inputWeek1Start.readOnly = true;
-                dom.selectClassSessions.disabled = true;
+                dom.inputLateThreshold.readOnly = true; 
+                
+                dom.selectClassDay.disabled = true;
+                dom.selectStartSession.disabled = true;
+                dom.selectEndSession.disabled = true;
+                dom.btnSaveClassTime.disabled = true;
 
                 showToast("已登出管理者，切回學生一般視角", "info");
                 handleTabSwitch('checkin');
@@ -2201,7 +2796,12 @@
                 dom.inputTargetLon.readOnly = false;
                 dom.inputTargetRadius.readOnly = false;
                 dom.inputWeek1Start.readOnly = false;
-                dom.selectClassSessions.disabled = false;
+                dom.inputLateThreshold.readOnly = false; 
+
+                dom.selectClassDay.disabled = false;
+                dom.selectStartSession.disabled = false;
+                dom.selectEndSession.disabled = false;
+                dom.btnSaveClassTime.disabled = false;
 
                 showToast("管理者驗證成功！已解鎖衛星地圖、週點名簿與數據分析視角！", "success");
                 handleTabSwitch('matrix');
@@ -2211,21 +2811,38 @@
             }
         });
 
-        dom.btnSaveCoords.addEventListener('click', async () => {
-            if (!state.isAdminMode) return;
+        // 獨立儲存「上課星期與課堂動態時段」設定
+        dom.btnSaveClassTime.addEventListener('click', async () => {
+            if (!state.isAdminMode || !user) return;
             try {
-                await setDoc(getPublicDocRef('settings', 'classroom'), {
+                await updateDoc(getPublicDocRef('settings', 'class_' + state.activeClassId), {
+                    classDayOfWeek: parseInt(dom.selectClassDay.value),
+                    startSessionIdx: parseInt(dom.selectStartSession.value),
+                    endSessionIdx: parseInt(dom.selectEndSession.value)
+                });
+                showToast("課堂時間與星期時段配置雲端更新成功！", "success");
+            } catch (e) {
+                showToast("儲存課堂時間失敗，請檢查網路", "error");
+            }
+        });
+
+        // 儲存最新的教室經緯度設定
+        dom.btnSaveCoords.addEventListener('click', async () => {
+            if (!state.isAdminMode || !user) return;
+            try {
+                await setDoc(getPublicDocRef('settings', 'class_' + state.activeClassId), {
                     targetLat: parseFloat(dom.inputTargetLat.value),
                     targetLon: parseFloat(dom.inputTargetLon.value),
                     targetRadius: parseInt(dom.inputTargetRadius.value),
                     week1StartDate: dom.inputWeek1Start.value,
-                    classSessions: parseInt(dom.selectClassSessions.value),
-                    signInStart: dom.inputSigninStart.value,
-                    signInEnd: dom.inputSigninEnd.value,
-                    signOutStart: dom.inputSignoutStart.value,
-                    signOutEnd: dom.inputSignoutEnd.value
+                    lateThreshold: parseInt(dom.inputLateThreshold.value),
+                    
+                    classDayOfWeek: parseInt(dom.selectClassDay.value),
+                    startSessionIdx: parseInt(dom.selectStartSession.value),
+                    endSessionIdx: parseInt(dom.selectEndSession.value),
+                    sessionTopics: state.sessionTopics
                 });
-                showToast("考勤配置與授權設定儲存成功！", "success");
+                showToast("考勤位置參數配置儲存成功！", "success");
             } catch (e) {
                 showToast("雲端儲存失敗", "error");
             }
@@ -2238,7 +2855,8 @@
                 dom.searchResultsDropdown.classList.add('hidden');
                 return;
             }
-            const matched = state.roster.filter(s => s.id.toLowerCase().includes(val) || s.name.toLowerCase().includes(val));
+            const currentRoster = state.roster.filter(s => s.classId === state.activeClassId);
+            const matched = currentRoster.filter(s => s.id.toLowerCase().includes(val) || s.name.toLowerCase().includes(val));
             let listHtml = '';
             matched.forEach(s => {
                 listHtml += `
@@ -2253,7 +2871,7 @@
         });
 
         window.selectStudentIdentity = function(studentId) {
-            const s = state.roster.find(item => item.id.toLowerCase() === studentId.toLowerCase());
+            const s = state.roster.find(item => item.classId === state.activeClassId && item.id.toLowerCase() === studentId.toLowerCase());
             if (s) {
                 state.selectedStudent = s;
                 dom.studentSearchInput.value = `${s.name} (${s.id.toUpperCase()})`;
@@ -2332,6 +2950,149 @@
             toastTimeout = setTimeout(() => dom.toastMessage.classList.add('hidden'), 5000);
         }
 
+        let settingsUnsubscribe = null;
+        function bindClassSettingsListener(classId) {
+            if (settingsUnsubscribe) settingsUnsubscribe();
+
+            const settingsDocRef = getPublicDocRef('settings', 'class_' + classId);
+            settingsUnsubscribe = onSnapshot(settingsDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    state.targetLat = data.targetLat || 24.991999;
+                    state.targetLon = data.targetLon || 121.230375;
+                    state.targetRadius = data.targetRadius || 2500;
+                    state.week1StartDate = data.week1StartDate || "2026-02-16";
+                    state.lateThreshold = data.lateThreshold !== undefined ? data.lateThreshold : 15; 
+                    
+                    state.classDayOfWeek = data.classDayOfWeek !== undefined ? data.classDayOfWeek : 3;
+                    state.startSessionIdx = data.startSessionIdx !== undefined ? data.startSessionIdx : 1;
+                    state.endSessionIdx = data.endSessionIdx !== undefined ? data.endSessionIdx : 3;
+
+                    state.sessionTopics = data.sessionTopics || {};
+
+                    state.currentCalculatedWeek = calculateCurrentWeek(state.week1StartDate);
+
+                    dom.inputTargetLat.value = state.targetLat;
+                    dom.inputTargetLon.value = state.targetLon;
+                    dom.inputTargetRadius.value = state.targetRadius;
+                    dom.inputWeek1Start.value = state.week1StartDate;
+                    dom.inputLateThreshold.value = state.lateThreshold; 
+                    
+                    dom.selectClassDay.value = state.classDayOfWeek;
+                    populateDynamicPeriodDropdowns();
+                    resolvePeriodsAndWindows();
+
+                    // 安全限制：確保當前選擇的節數過濾器不超出本班級的最大節次
+                    state.matrixActiveSessionFilter = Math.min(state.matrixActiveSessionFilter, state.classSessions);
+                    if (state.matrixActiveSessionFilter < 1) state.matrixActiveSessionFilter = 1;
+
+                    dom.badgeComputedWeek.textContent = `第 ${state.currentCalculatedWeek} 週 (自動判斷)`;
+                    dom.radiusDisplayText.textContent = `教室打卡半徑：${state.targetRadius} 米內`;
+
+                    // 動態解析學生的上課時間看板說明
+                    const activeClass = state.classes.find(c => c.id === state.activeClassId);
+                    const list = SESSIONS_DATA[state.dayType];
+                    const startIdx = Math.min(state.startSessionIdx, list.length - 1);
+                    const endIdx = Math.max(startIdx, Math.min(state.endSessionIdx, list.length - 1));
+                    
+                    const weekdayChinese = ["", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"];
+                    const periodDesc = (list[startIdx] && list[endIdx]) 
+                        ? `${weekdayChinese[state.classDayOfWeek]} ${list[startIdx].name}~${list[endIdx].name} (${list[startIdx].start}~${list[endIdx].end})` 
+                        : "時段未設定";
+
+                    if (activeClass && dom.labelCourseSchedule) {
+                        dom.labelCourseSchedule.textContent = `${activeClass.name} | 今日上課時段：${periodDesc}`;
+                    }
+
+                    if (mapImmersive && classroomMarker && classroomCircle) {
+                        const newPos = [state.targetLat, state.targetLon];
+                        classroomMarker.setLatLng(newPos);
+                        classroomCircle.setLatLng(newPos);
+                        classroomCircle.setRadius(state.targetRadius);
+                    }
+                    
+                    renderSessionFilterPills();
+                    renderAdminTopicsPanel();
+                    recomputeWeekRosterStatuses(); // 此處非同步設定載入成功後，立刻重新計算並繪製點名簿，避免節次欄位不正確
+                    updateSystemCalculation();
+                } else {
+                    // 如果該班級無專屬 settings，則建立預設設定
+                    setDoc(settingsDocRef, {
+                        targetLat: 24.991999,
+                        targetLon: 121.230375,
+                        targetRadius: 2500,
+                        week1StartDate: "2026-02-16",
+                        lateThreshold: 15,
+                        classDayOfWeek: 3,
+                        startSessionIdx: 1,
+                        endSessionIdx: 3,
+                        sessionTopics: {}
+                    });
+                }
+            });
+        }
+
+        // Firestore 實時資料庫監聽與設定同步
+        function setupFirestoreListeners() {
+            if (!user) return;
+
+            // 1. 監聽全班級列表
+            const classesRef = getPublicCollectionRef('classes');
+            onSnapshot(classesRef, async (snapshot) => {
+                const tempClasses = [];
+                snapshot.forEach(docSnap => tempClasses.push(docSnap.data()));
+                
+                // 如果無班級資料，雲端初始化預設課程
+                if (tempClasses.length === 0) {
+                    const defaultClass = { id: 'class_default', name: '預設通用課程班級' };
+                    await setDoc(getPublicDocRef('classes', 'class_default'), defaultClass);
+                    return;
+                }
+                
+                state.classes = tempClasses.sort((a, b) => a.name.localeCompare(b.name));
+                populateClassDropdowns();
+
+                // 檢查目前選取班級是否存在，不在則切回第一個
+                if (!state.classes.some(c => c.id === state.activeClassId)) {
+                    state.activeClassId = state.classes[0].id;
+                }
+                
+                dom.studentClassSelect.value = state.activeClassId;
+                dom.adminClassSelect.value = state.activeClassId;
+                dom.mapClassSelect.value = state.activeClassId;
+                dom.matrixClassSelect.value = state.activeClassId;
+                dom.analyticsClassSelect.value = state.activeClassId;
+
+                bindClassSettingsListener(state.activeClassId);
+            });
+
+            // 2. 監聽學生花名冊
+            const rosterRef = getPublicCollectionRef('roster');
+            onSnapshot(rosterRef, (snapshot) => {
+                const tempRoster = [];
+                snapshot.forEach(docSnap => tempRoster.push(docSnap.data()));
+                tempRoster.sort((a, b) => a.id.localeCompare(b.id));
+                state.roster = tempRoster;
+                
+                populateDeptFilterOptions();
+                recomputeWeekRosterStatuses();
+            });
+
+            // 3. 監聽打卡歷程
+            const historyRef = getPublicCollectionRef('history');
+            onSnapshot(historyRef, (snapshot) => {
+                const tempHistory = [];
+                snapshot.forEach(docSnap => tempHistory.push({ dbId: docSnap.id, ...docSnap.data() }));
+                tempHistory.sort((a, b) => b.timestamp - a.timestamp);
+                state.history = tempHistory;
+
+                recomputeWeekRosterStatuses();
+                renderHistoryTable();
+                drawAllCheckInMarkersOnMap();
+            });
+        }
+
         window.onload = function() {
             lucide.createIcons();
             initTeacherWeekOptions(); 
@@ -2342,14 +3103,42 @@
             });
             fetchUserIP();
             dom.gpsAuthModal.style.display = 'flex';
+
+            const btnLoadTemplate = document.getElementById('btn-load-import-template');
+            if (btnLoadTemplate) {
+                btnLoadTemplate.addEventListener('click', () => {
+                    dom.importTextarea.value = "資訊工程系,bc110001,王小明\n資訊管理系,bc110002,李鐵雄\n電子工程系,bc110003,張美麗\n人工智慧應用系,bc110004,趙研新\n化學材料工程系,bc110005,錢進來\n企業管理系,bc110006,孫悟空\n應用外語系,bc110007,林黛玉\n電機工程系,bc110008,周杰倫";
+                    showToast("已載入標準測試學生名冊範本，您可以直接點擊「確認匯入」進行測試！", "success");
+                });
+            }
+
+            const btnRename = document.getElementById('btn-rename-class');
+            if (btnRename) {
+                btnRename.addEventListener('click', async () => {
+                    if (!state.isAdminMode || !user) {
+                        showToast("請先完成管理者登入與連線！", "error");
+                        return;
+                    }
+                    const newName = document.getElementById('input-rename-class').value.trim();
+                    if (!newName) {
+                        showToast("課程名稱不可為空！", "error");
+                        return;
+                    }
+                    try {
+                        await updateDoc(getPublicDocRef('classes', state.activeClassId), { name: newName });
+                        showToast(`課程名稱已成功修改為「${newName}」！`, "success");
+                        document.getElementById('input-rename-class').value = '';
+                    } catch (e) {
+                        showToast("反更名失敗，請檢查網路連線", "error");
+                    }
+                });
+            }
         };
 
-        // 彈窗快捷控制
         dom.btnShowImportModal.addEventListener('click', () => { dom.importTextarea.value = ''; dom.rosterImportModal.classList.remove('hidden'); });
         dom.btnCloseImport.addEventListener('click', () => dom.rosterImportModal.classList.add('hidden'));
         dom.btnCancelImport.addEventListener('click', () => dom.rosterImportModal.classList.add('hidden'));
 
-        // 控制清除記錄彈跳視窗（顯隱雙類別更新）
         dom.btnClear.addEventListener('click', () => { 
             dom.confirmModal.classList.remove('hidden'); 
             dom.confirmModal.classList.add('flex'); 
@@ -2359,7 +3148,6 @@
             dom.confirmModal.classList.remove('flex');
         });
 
-        // 「一鍵確認清除」功能：安全防護 + 狀態解除
         dom.btnConfirmExecute.addEventListener('click', async () => {
             if (!user) {
                 showToast("未登入雲端認證，無法執行清除", "error");
@@ -2368,24 +3156,22 @@
             try {
                 const batch = writeBatch(db);
                 
-                // 1. 安全刪除歷史打卡記錄
-                state.history.forEach(item => {
+                state.history.filter(h => h.classId === state.activeClassId).forEach(item => {
                     if (item && item.dbId) {
                         batch.delete(getPublicDocRef('history', item.dbId));
                     }
                 });
 
-                // 2. 安全重置學生考勤狀態與綁定
-                state.roster.forEach(s => {
+                state.roster.filter(s => s.classId === state.activeClassId).forEach(s => {
                     if (s && s.id) {
-                        batch.update(getPublicDocRef('roster', s.id.toLowerCase()), {
+                        batch.update(getPublicDocRef('roster', `${state.activeClassId}_${s.id.toLowerCase()}`), {
                             status: '未簽到',
                             checkTime: '--',
                             distance: '--',
                             lat: null,
                             lon: null,
                             deviceId: null,
-                            sessionAttendance: {}, // 清除 18 週內的所有多節點名狀態
+                            sessionAttendance: {}, 
                             absentWeeks: {} 
                         });
                     }
@@ -2393,18 +3179,17 @@
 
                 await batch.commit();
 
-                // 隱藏自訂確認彈窗
                 dom.confirmModal.classList.add('hidden');
                 dom.confirmModal.classList.remove('flex');
 
-                showToast("本日考勤、全學期勾選紀錄與裝置綁定已徹底清除重置！", "success");
+                showToast("本日考勤、全學期勾選紀錄與裝置鎖定已徹底重置！", "success");
             } catch (e) {
                 console.error("清除歷史出錯：", e);
                 showToast("一鍵重置失敗，請檢查網路連接", "error");
             }
         });
 
-        // 匯入學生名單
+        // 批次匯入名單
         dom.btnExecuteImport.addEventListener('click', async () => {
             if (!state.isAdminMode || !user) return;
             const rawText = dom.importTextarea.value.trim();
@@ -2416,6 +3201,7 @@
                 const parts = line.split(',');
                 if (parts.length >= 3) {
                     newRoster.push({
+                        classId: state.activeClassId, 
                         dept: parts[0].trim(),
                         id: parts[1].trim(),
                         name: parts[2].trim(),
@@ -2433,18 +3219,16 @@
 
             try {
                 const batch = writeBatch(db);
-                state.roster.forEach(s => {
-                    if (s && s.id) {
-                        batch.delete(getPublicDocRef('roster', s.id.toLowerCase()));
-                    }
+                state.roster.filter(s => s.classId === state.activeClassId).forEach(s => {
+                    batch.delete(getPublicDocRef('roster', `${state.activeClassId}_${s.id.toLowerCase()}`));
                 });
                 newRoster.forEach(s => {
-                    batch.set(getPublicDocRef('roster', s.id.toLowerCase()), s);
+                    batch.set(getPublicDocRef('roster', `${state.activeClassId}_${s.id.toLowerCase()}`), s);
                 });
                 await batch.commit();
 
                 dom.rosterImportModal.classList.add('hidden');
-                showToast(`成功批次匯入 ${newRoster.length} 位學生名單！`, "success");
+                showToast(`成功批次匯入 ${newRoster.length} 位學生至目前選取班級！`, "success");
             } catch (e) {
                 showToast("匯入失敗", "error");
             }
