@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧課堂 GPS 行動打卡與點名系統V624</title>
+    <title>智慧GPS點名系統V1</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons CDN -->
@@ -232,7 +232,7 @@
                 </div>
                 <div>
                     <h1 class="text-base font-extrabold tracking-wider text-white flex items-center gap-2">
-                        <span>學堂點名通 智慧 GPS 定位考勤</span>
+                        <span>詹老師的課堂點名系統_AI_GPS</span>
                         <span id="badge-admin-active" class="hidden text-[10px] px-2.5 py-0.5 bg-rose-500 text-white rounded-full font-bold animate-pulse">管理者模式</span>
                     </h1>
                     <p class="text-[11px] text-slate-400">雲端即時同步 · 精準一機一碼防代點 · 班級自訂名冊版</p>
@@ -1354,6 +1354,91 @@
             return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
         }
 
+        function toMins(timeStr) {
+            if (!timeStr) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        function computeAttendanceForArrivalTime(timeStr) {
+            const list = SESSIONS_DATA[state.dayType];
+            if (!list) return { sessionAtt: {}, currentSessionIdx: 1, isTooLate: false };
+
+            const startIdx = Math.min(state.startSessionIdx, list.length - 1);
+            const currentMin = toMins(timeStr);
+
+            let currentSessionIdx = 1; 
+            let isTooLate = false;
+
+            const firstPeriod = list[startIdx];
+            const lastPeriod = list[startIdx + state.classSessions - 1];
+
+            if (!firstPeriod || !lastPeriod) {
+                return { sessionAtt: {}, currentSessionIdx: 1, isTooLate: false };
+            }
+
+            const classStartMin = toMins(firstPeriod.start);
+            const classEndMin = toMins(lastPeriod.end);
+
+            if (currentMin < classStartMin) {
+                currentSessionIdx = 1;
+            } else if (currentMin > classEndMin) {
+                isTooLate = true;
+            } else {
+                let found = false;
+                for (let s = 1; s <= state.classSessions; s++) {
+                    const period = list[startIdx + s - 1];
+                    if (!period) continue;
+                    const pStart = toMins(period.start);
+                    const pEnd = toMins(period.end);
+
+                    if (currentMin >= pStart && currentMin <= pEnd) {
+                        currentSessionIdx = s;
+                        found = true;
+                        break;
+                    }
+                    if (s < state.classSessions) {
+                        const nextPeriod = list[startIdx + s];
+                        if (nextPeriod) {
+                            const nextStart = toMins(nextPeriod.start);
+                            if (currentMin > pEnd && currentMin < nextStart) {
+                                currentSessionIdx = s + 1;
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!found) {
+                    currentSessionIdx = state.classSessions;
+                }
+            }
+
+            const sessionAtt = {};
+            const weekKey = `W${state.currentCalculatedWeek}`;
+            
+            for (let s = 1; s <= state.classSessions; s++) {
+                if (s < currentSessionIdx) {
+                    sessionAtt[`${weekKey}_S${s}`] = false;
+                } else {
+                    sessionAtt[`${weekKey}_S${s}`] = true;
+                }
+            }
+
+            // 檢查第一節課是否遲到（若抵達時間在第一節課內，但超過了設定的遲到判定閾值）
+            if (currentSessionIdx === 1) {
+                const lateTimeStr = addMinutes(firstPeriod.start, state.lateThreshold);
+                if (currentMin > toMins(lateTimeStr)) {
+                    sessionAtt[`${weekKey}_S1`] = false;
+                    for (let s = 2; s <= state.classSessions; s++) {
+                        sessionAtt[`${weekKey}_S${s}`] = true;
+                    }
+                }
+            }
+
+            return { sessionAtt, currentSessionIdx, isTooLate };
+        }
+
         function resolvePeriodsAndWindows() {
             // 自動判定平假日類型：星期六(6)、星期日(7) 為假日
             state.dayType = (state.classDayOfWeek === 6 || state.classDayOfWeek === 7) ? "weekend" : "weekday";
@@ -1807,6 +1892,7 @@
 
             const now = new Date();
             const timeStr = now.toTimeString().split(' ')[0].substring(0, 5); 
+            const currentMin = toMins(timeStr);
             
             const lateTimeStr = addMinutes(state.signInStart, state.lateThreshold);
 
@@ -1814,12 +1900,8 @@
             const [startH, startM] = state.signInStart.split(':').map(Number);
             const [lateH, lateM] = lateTimeStr.split(':').map(Number);
             
-            const currentMin = curH * 60 + curM;
-            const startMin = startH * 60 + startM;
-            const lateMin = lateH * 60 + lateM;
-
-            const isAfterSignInStart = currentMin >= startMin;
-            const isLate = currentMin > lateMin; 
+            const isAfterSignInStart = currentMin >= toMins(state.signInStart);
+            const isLate = currentMin > toMins(lateTimeStr); 
             const isSignOutTime = isTimeInWindow(timeStr, state.signOutStart, state.signOutEnd);
 
             const weekdayChinese = ["", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"];
@@ -1827,7 +1909,20 @@
             dom.labelSigninTime.textContent = `簽到時段 (${state.signInStart} 起，開課後 ${state.lateThreshold} 分鐘內算準時)`;
             dom.labelSignoutTime.textContent = `限定簽退時段 (${state.signOutStart}~${state.signOutEnd})`;
 
-            if (isLate) {
+            const { sessionAtt, currentSessionIdx, isTooLate } = computeAttendanceForArrivalTime(timeStr);
+            const isSignOutTooLate = currentMin > toMins(state.signOutEnd);
+
+            if (isTooLate) {
+                document.getElementById('clock-in-btn-label').textContent = "超過打卡時段 (禁止打卡)";
+                document.getElementById('clock-in-icon').setAttribute('class', "w-5 h-5 text-rose-500");
+            } else if (currentSessionIdx > 1) {
+                const list = SESSIONS_DATA[state.dayType];
+                const startIdx = Math.min(state.startSessionIdx, list.length - 1);
+                const period = list[startIdx + currentSessionIdx - 1];
+                const sessionName = period ? period.name : `第 ${currentSessionIdx} 節`;
+                document.getElementById('clock-in-btn-label').textContent = `課堂遲到打卡 (目前為 ${sessionName})`;
+                document.getElementById('clock-in-icon').setAttribute('class', "w-5 h-5 text-amber-400 animate-bounce");
+            } else if (isLate) {
                 document.getElementById('clock-in-btn-label').textContent = "上課遲到打卡 (已逾時)";
                 document.getElementById('clock-in-icon').setAttribute('class', "w-5 h-5 text-amber-400 animate-bounce");
             } else {
@@ -1838,16 +1933,34 @@
             let canIn = false;
             let canOut = false;
 
-            // 判斷硬體鎖定 (一機一碼) 狀態並渲染特定提示
+            // 判斷硬體鎖定 (一機一碼) 狀態與重複綁定比對並渲染特定提示
             let isDeviceMatch = true;
+            let isDeviceDuplicate = false;
+            let duplicateOwner = null;
             if (state.selectedStudent) {
                 isDeviceMatch = !state.selectedStudent.deviceId || (state.selectedStudent.deviceId === myDeviceUUID);
+                
+                // 雲端或本地快取清單中，檢查是否有其他學員已搶先綁定了目前這台裝置的UUID (防止同台手機代打卡)
+                duplicateOwner = state.roster.find(item => 
+                    item.classId === state.activeClassId && 
+                    item.deviceId === myDeviceUUID && 
+                    item.id.toLowerCase() !== state.selectedStudent.id.toLowerCase()
+                );
+                if (duplicateOwner) {
+                    isDeviceDuplicate = true;
+                }
             }
 
             // 打卡狀態與按鈕可用度防護
             if (!isCorrectDayOfWeek && !state.isAdminMode) {
                 dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-rose-500/10 text-rose-400 border border-rose-500/20");
                 dom.checkinStatusCard.innerHTML = `<span>今天非本課程上課日 (設定為: ${weekdayChinese[state.classDayOfWeek]})</span>`;
+            } else if (isTooLate && !state.isAdminMode) {
+                dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30");
+                dom.checkinStatusCard.innerHTML = `<span>⚠️ 超過課程打卡時段，已禁止打卡</span>`;
+            } else if (state.selectedStudent && isDeviceDuplicate && !state.isAdminMode) {
+                dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse");
+                dom.checkinStatusCard.innerHTML = `<span>⚠️ 機碼重複：此裝置已被「${duplicateOwner.name} (${duplicateOwner.id.toUpperCase()})」綁定！不允許代打卡。</span>`;
             } else if (state.selectedStudent && !isDeviceMatch && !state.isAdminMode) {
                 dom.checkinStatusCard.setAttribute('class', "w-full py-2 px-3 rounded-lg text-center font-bold text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse");
                 dom.checkinStatusCard.innerHTML = `<span>⚠️ 裝置不符：此學號已綁定其他行動裝置！請聯絡老師重設。</span>`;
@@ -1867,16 +1980,32 @@
 
             const locationPassed = isWithinRange || isSchoolIpActive || state.isPreviewMode || state.isAdminMode;
             
-            // 學生必須在正確的「星期」並且「地點與硬體特徵通過」才能按下打卡按鈕 (管理員除外)
+            if (state.selectedStudent && !isTooLate && (locationPassed || state.isAdminMode)) {
+                const list = SESSIONS_DATA[state.dayType];
+                const startIdx = Math.min(state.startSessionIdx, list.length - 1);
+                const activeSessions = [];
+                const weekKey = `W${state.currentCalculatedWeek}`;
+                for (let s = 1; s <= state.classSessions; s++) {
+                    if (sessionAtt[`${weekKey}_S${s}`] === true) {
+                        const period = list[startIdx + s - 1];
+                        activeSessions.push(period ? period.name : `第 ${s} 節`);
+                    }
+                }
+                if (activeSessions.length > 0) {
+                    dom.checkinStatusCard.innerHTML += `<div class="text-[10px] text-indigo-300 mt-1">💡 目前打卡將為您勾選：${activeSessions.join('、')} 出席</div>`;
+                }
+            }
+
+            // 學生必須在正確的「星期」並且「地點與硬體特徵通過」且「無重複機碼鎖定」才能按下打卡按鈕 (管理員除外)
             if (state.selectedStudent) {
-                if (locationPassed && (isDeviceMatch || state.isAdminMode) && (isCorrectDayOfWeek || state.isAdminMode)) {
+                if (locationPassed && (isDeviceMatch || state.isAdminMode) && (!isDeviceDuplicate || state.isAdminMode) && (isCorrectDayOfWeek || state.isAdminMode)) {
                     const currentStatus = state.selectedStudent.status;
                     if (currentStatus === '未簽到' || currentStatus === '缺課') {
-                        if (isAfterSignInStart || state.isAdminMode) {
+                        if ((isAfterSignInStart && !isTooLate) || state.isAdminMode) {
                             canIn = true;
                         }
                     } else if (currentStatus === 'Refreshed' || currentStatus === '已簽到' || currentStatus === '已遲到') {
-                        if (isSignOutTime || state.isAdminMode) {
+                        if ((isSignOutTime && !isSignOutTooLate) || state.isAdminMode) {
                             canOut = true;
                         }
                     }
@@ -2371,6 +2500,19 @@
                     return;
                 }
 
+                // 雙重安全閥：再次雲端確認這台設備是否已被其他人佔用綁定
+                const rosterRef = getPublicCollectionRef('roster');
+                const dupQuerySnap = state.roster.find(item => 
+                    item.classId === state.activeClassId && 
+                    item.deviceId === myDeviceUUID && 
+                    item.id.toLowerCase() !== state.selectedStudent.id.toLowerCase()
+                );
+                if (dupQuerySnap && !state.isAdminMode) {
+                    playChime(false);
+                    showToast(`【防代打卡拒絕】偵測到此裝置已綁定給其他同班同學「${dupQuerySnap.name}」，無法重複打卡！`, "error");
+                    return;
+                }
+
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
                 const dateStr = now.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
@@ -2380,16 +2522,23 @@
 
                 let finalType = type;
                 const currentHM = timeStr.substring(0, 5);
-                const lateTimeStr = addMinutes(state.signInStart, state.lateThreshold);
                 
-                const [curH, curM] = currentHM.split(':').map(Number);
-                const [lateH, lateM] = lateTimeStr.split(':').map(Number);
-
-                const isWithinGracePeriod = (curH * 60 + curM) <= (lateH * 60 + lateM);
+                const { sessionAtt, currentSessionIdx, isTooLate: checkTooLate } = computeAttendanceForArrivalTime(currentHM);
 
                 if (type === '簽到') {
-                    if (!isWithinGracePeriod) {
+                    if (checkTooLate) {
+                        showToast("已超過打卡截止時間，禁止打卡！", "error");
+                        return;
+                    }
+                    if (currentSessionIdx > 1) {
                         finalType = '遲到';
+                    } else {
+                        const lateTimeStr = addMinutes(state.signInStart, state.lateThreshold);
+                        const [curH, curM] = currentHM.split(':').map(Number);
+                        const [lateH, lateM] = lateTimeStr.split(':').map(Number);
+                        if (curH * 60 + curM > lateH * 60 + lateM) {
+                            finalType = '遲到';
+                        }
                     }
                 }
 
@@ -2411,22 +2560,20 @@
 
                 await addDoc(getPublicCollectionRef('history'), record);
 
-                const sessionAtt = latestStudentData.sessionAttendance || {};
                 const weekKey = `W${state.currentCalculatedWeek}`;
-                
                 let ruleMsg = "";
 
-                if (finalType === '簽到') {
+                if (finalType === '簽到' || finalType === '遲到') {
+                    const activeSessions = [];
+                    const list = SESSIONS_DATA[state.dayType];
+                    const startIdx = Math.min(state.startSessionIdx, list.length - 1);
                     for (let s = 1; s <= state.classSessions; s++) {
-                        sessionAtt[`${weekKey}_S${s}`] = true;
+                        if (sessionAtt[`${weekKey}_S${s}`] === true) {
+                            const period = list[startIdx + s - 1];
+                            activeSessions.push(period ? period.name : `第 ${s} 節`);
+                        }
                     }
-                    ruleMsg = `您在遲到時限截止 (${lateTimeStr}) 前準時抵達！系統已自動為您勾選今日所有後續課堂出席。`;
-                } else if (finalType === '遲到') {
-                    sessionAtt[`${weekKey}_S1`] = false; 
-                    for (let s = 2; s <= state.classSessions; s++) {
-                        sessionAtt[`${weekKey}_S${s}`] = true; 
-                    }
-                    ruleMsg = `遲到打卡（開課已超過 ${state.lateThreshold} 分鐘，逾時 ${lateTimeStr} ）。首堂判定缺課，已為您勾選其後之出席。`;
+                    ruleMsg = `打卡成功！已為您登錄當前抵達節次：${activeSessions.join('、')} 設為出席。`;
                 } else if (finalType === '簽退') {
                     for (let s = 1; s <= state.classSessions; s++) {
                         sessionAtt[`${weekKey}_S${s}`] = true;
@@ -2522,7 +2669,7 @@
                     devText = `
                         <div class="flex items-center gap-1.5">
                             <span class="text-emerald-400 font-mono text-[10px] md:text-xs" title="${s.deviceId}">${s.deviceId.slice(0, 8)}...</span>
-                            <button onclick="unlockDevice('${s.id}')" class="px-2 py-0.5 bg-amber-500/20 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/30 rounded text-[10px] font-bold transition flex items-center gap-0.5" title="重設並解除雲端硬體鎖定">
+                            <button onclick="unlockDevice('${s.id}')" class="px-2 py-0.5 bg-amber-500/20 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/30 rounded text-[10px] font-bold transition flex items-center gap-0.5" title="重設並解除硬體鎖定">
                                 <i data-lucide="unlock" class="w-3 h-3"></i> 解鎖
                             </button>
                         </div>
@@ -2895,6 +3042,30 @@
         window.selectStudentIdentity = function(studentId) {
             const s = state.roster.find(item => item.classId === state.activeClassId && item.id.toLowerCase() === studentId.toLowerCase());
             if (s) {
+                // 自動檢查此機碼 (myDeviceUUID) 是否已被同班級的其他學生綁定
+                const duplicateStudent = state.roster.find(item => 
+                    item.classId === state.activeClassId && 
+                    item.deviceId === myDeviceUUID && 
+                    item.id.toLowerCase() !== s.id.toLowerCase()
+                );
+
+                if (duplicateStudent && !state.isAdminMode) {
+                    // 機碼重複，有人代點名防護觸發
+                    playChime(false);
+                    showToast(`【硬體機碼衝突】此裝置已被學號「${duplicateStudent.id.toUpperCase()} (${duplicateStudent.name})」綁定！一機限綁一人。`, "error");
+                    
+                    // 重設目前選定身分
+                    state.selectedStudent = null;
+                    dom.studentSearchInput.value = '';
+                    dom.studentCardIcon.setAttribute('class', "w-5 h-5 text-rose-500");
+                    dom.studentCardSub.textContent = "無法綁定此身分";
+                    dom.studentCardTitle.innerHTML = `<span class="text-rose-400 font-bold">⚠️ 機碼重複綁定，拒絕選取</span>`;
+                    dom.btnAdminResetDevice.classList.add('hidden');
+                    updateSystemCalculation();
+                    return;
+                }
+
+                // 若通過重複檢查，正常綁定選取
                 state.selectedStudent = s;
                 dom.studentSearchInput.value = `${s.name} (${s.id.toUpperCase()})`;
                 dom.searchResultsDropdown.classList.add('hidden');
