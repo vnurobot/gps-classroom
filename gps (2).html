@@ -151,7 +151,7 @@
                 <i data-lucide="lock" class="w-6 h-6"></i>
             </div>
             <h3 class="text-lg font-bold text-white text-center mb-1">管理者身份登入</h3>
-            <p class="text-xs text-slate-400 text-center mb-6">請輸入管理者帳號與密碼 (帳密皆為 jsl)</p>
+            <p class="text-xs text-slate-400 text-center mb-6">請輸入管理者帳號與密碼</p>
             
             <div class="space-y-4">
                 <div>
@@ -379,6 +379,30 @@
         <!-- ==================== 2. 打卡工作台 (普通學生簽到/唯一可見主畫面) ==================== -->
         <section id="view-student-checkin" class="flex flex-col gap-6 w-full animate-fade-in">
             
+            <!-- 打卡大按鈕移至最上方 -->
+            <div id="student-clock-actions" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button id="btn-clock-in" disabled class="relative group bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-emerald-950/40 transition-all duration-200 transform active:scale-95 disabled:opacity-30 disabled:pointer-events-none flex flex-col items-center justify-center gap-2 min-h-[80px]">
+                        <div class="p-2 bg-white/10 rounded-xl">
+                            <i data-lucide="log-in" class="w-5 h-5" id="clock-in-icon"></i>
+                        </div>
+                        <span class="text-base tracking-wider" id="clock-in-btn-label">上課簽到打卡</span>
+                        <span id="label-signin-time" class="text-[9px] opacity-80 font-normal">限規規定之簽到時段內</span>
+                    </button>
+
+                    <button id="btn-clock-out" disabled class="relative group bg-gradient-to-br from-rose-600 to-orange-700 hover:from-rose-500 hover:to-orange-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-rose-950/40 transition-all duration-200 transform active:scale-95 disabled:opacity-30 disabled:pointer-events-none flex flex-col items-center justify-center gap-2 min-h-[80px]">
+                        <div class="p-2 bg-white/10 rounded-xl">
+                            <i data-lucide="log-out" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-base tracking-wider">下課簽退打卡</span>
+                        <span id="label-signout-time" class="text-[9px] opacity-80 font-normal">限規定的簽退時段內</span>
+                    </button>
+                </div>
+                <div id="toast-message" class="hidden mt-4 p-3 bg-slate-900 border border-slate-700 rounded-xl text-xs text-center flex items-center justify-center gap-2">
+                    <span id="toast-text" class="font-medium text-slate-300">提示內容將顯示於此</span>
+                </div>
+            </div>
+
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-5">
                 <div class="lg:col-span-7 flex flex-col justify-between">
                     <div>
@@ -467,29 +491,6 @@
                             簽到時段: 未載入 | 簽退時段: 未載入
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div id="student-clock-actions" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 shadow-xl relative overflow-hidden">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <button id="btn-clock-in" disabled class="relative group bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-emerald-950/40 transition-all duration-200 transform active:scale-95 disabled:opacity-30 disabled:pointer-events-none flex flex-col items-center justify-center gap-2 min-h-[80px]">
-                        <div class="p-2 bg-white/10 rounded-xl">
-                            <i data-lucide="log-in" class="w-5 h-5" id="clock-in-icon"></i>
-                        </div>
-                        <span class="text-base tracking-wider" id="clock-in-btn-label">上課簽到打卡</span>
-                        <span id="label-signin-time" class="text-[9px] opacity-80 font-normal">限規定的簽到時段內</span>
-                    </button>
-
-                    <button id="btn-clock-out" disabled class="relative group bg-gradient-to-br from-rose-600 to-orange-700 hover:from-rose-500 hover:to-orange-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-rose-950/40 transition-all duration-200 transform active:scale-95 disabled:opacity-30 disabled:pointer-events-none flex flex-col items-center justify-center gap-2 min-h-[80px]">
-                        <div class="p-2 bg-white/10 rounded-xl">
-                            <i data-lucide="log-out" class="w-5 h-5"></i>
-                        </div>
-                        <span class="text-base tracking-wider">下課簽退打卡</span>
-                        <span id="label-signout-time" class="text-[9px] opacity-80 font-normal">限規定的簽退時段內</span>
-                    </button>
-                </div>
-                <div id="toast-message" class="hidden mt-4 p-3 bg-slate-900 border border-slate-700 rounded-xl text-xs text-center flex items-center justify-center gap-2">
-                    <span id="toast-text" class="font-medium text-slate-300">提示內容將顯示於此</span>
                 </div>
             </div>
 
@@ -927,10 +928,6 @@
                                     </select>
                                 </div>
                             </div>
-                            <!-- 動態時段專屬儲存按鈕 -->
-                            <button id="btn-save-class-time" disabled class="w-full bg-indigo-600/80 hover:bg-indigo-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow">
-                                <i data-lucide="save" class="w-3.5 h-3.5"></i> 儲存課堂時間設定
-                            </button>
                         </div>
 
                         <div class="border-t border-slate-700/60 pt-3 space-y-2">
@@ -957,9 +954,10 @@
                             </div>
                         </div>
 
-                        <div id="admin-config-actions" class="hidden flex justify-end gap-2 pt-2">
-                            <button id="btn-reset-coords" class="p-2 bg-slate-700 hover:bg-slate-600 rounded text-white font-bold transition">重設</button>
-                            <button id="btn-save-coords" class="p-2 bg-emerald-600 hover:bg-emerald-500 rounded text-white font-bold transition">儲存設定</button>
+                        <div id="admin-config-actions" class="hidden flex justify-end pt-2">
+                            <button id="btn-save-coords" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs md:text-sm transition flex items-center justify-center gap-1.5 shadow">
+                                <i data-lucide="save" class="w-3.5 h-3.5"></i> 儲存設定
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1064,7 +1062,7 @@
     <!-- Firebase SDK V11 Module 整合 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase 設定 ---
@@ -1078,6 +1076,15 @@
             appId: "1:670468566302:web:f36f705ba9be2e2fb36d0f"
         };
         const appId = 'gps-classroom-prod-v10'; 
+
+        // 老師登入用「帳號」欄位會被轉換成這個網域下的 Email，實際對應到 Firebase Authentication
+        // 的 Email/Password 帳號（例如帳號輸入 jsl，實際登入 Email 為 jsl@gps-classroom-teacher.com）
+        // 注意：網域不可用 .local / .test / .example / .invalid 等 RFC 保留網域，
+        // Google 的驗證系統會直接判定為 INVALID_EMAIL，即使格式看起來正常也一樣
+        // 需先在 Firebase Console -> Authentication -> Sign-in method 開啟 Email/Password，
+        // 並在 Users 頁籤手動新增對應的老師帳號與密碼
+        const TEACHER_EMAIL_DOMAIN = 'gps-classroom-teacher.com';
+        const toTeacherEmail = (username) => `${username.trim().toLowerCase()}@${TEACHER_EMAIL_DOMAIN}`;
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -1161,7 +1168,9 @@
             // 雲端班級與多堂上課內容數據庫
             classes: [],                     // 班級列表
             activeClassId: "class_default",   // 當前選取班級
-            sessionTopics: {}                 // 當前班級上課主題
+            sessionTopics: {},                // 當前班級上課主題
+            allSettings: {},                  // 雲端所有班級的設定快取 (智慧星期選取優先用)
+            hasAutoSelected: false            // 旗標：避免每次更新重繪時重複觸發自動選取
         };
 
         let user = null; 
@@ -1215,7 +1224,7 @@
             badgeComputedWeek: document.getElementById('badge-computed-week'),
             badgeComputedSessions: document.getElementById('badge-computed-sessions'),
             radiusDisplayText: document.getElementById('radius-display-text'),
-            labelCourseSchedule: document.getElementById('label-course-schedule'), // 修正：映射原本遺漏的 DOM 節點 
+            labelCourseSchedule: document.getElementById('label-course-schedule'), 
             
             immersiveCoords: document.getElementById('immersive-coords'),
             immersiveAccuracy: document.getElementById('immersive-accuracy'),
@@ -1267,14 +1276,12 @@
             selectStartSession: document.getElementById('select-start-session'),
             selectEndSession: document.getElementById('select-end-session'),
             calculatedSessionsBadge: document.getElementById('calculated-sessions-badge'),
-            btnSaveClassTime: document.getElementById('btn-save-class-time'),
             
             inputSigninStart: document.getElementById('input-signin-start'),
             inputSigninEnd: document.getElementById('input-signin-end'),
             inputSignoutStart: document.getElementById('input-signout-start'),
             inputSignoutEnd: document.getElementById('input-signout-end'),
             adminConfigActions: document.getElementById('admin-config-actions'),
-            btnResetCoords: document.getElementById('btn-reset-coords'),
             btnSaveCoords: document.getElementById('btn-save-coords'),
             
             adminRosterCount: document.getElementById('admin-roster-count'),
@@ -2210,6 +2217,79 @@
             }
         }
 
+        // 智慧型自動班級選取核心 (依據星期優先選課)
+        function triggerSmartAutoSelect() {
+            if (state.hasAutoSelected) return;
+            // 確保雲端所有基本要素：班級、學生花名冊、所有班級的設定都已完全載入
+            if (state.classes.length === 0 || state.roster.length === 0 || Object.keys(state.allSettings).length === 0) return;
+
+            const lastStudentId = localStorage.getItem('classroom_last_student_id');
+            const lastClassId = localStorage.getItem('classroom_last_class_id');
+
+            if (!lastStudentId) {
+                // 如果瀏覽器中從無此機器的打卡/選取紀錄，則標記為已處理
+                state.hasAutoSelected = true;
+                return;
+            }
+
+            // 尋找此學生修讀、註冊的所有課程與班級
+            const studentEnrollments = state.roster.filter(s => s.id.toLowerCase() === lastStudentId.toLowerCase());
+            if (studentEnrollments.length === 0) {
+                state.hasAutoSelected = true;
+                return;
+            }
+
+            const candidateClassIds = studentEnrollments.map(s => s.classId);
+
+            // 取得今天的星期 (Sunday = 0 -> 7, Monday = 1 ... Saturday = 6)
+            const todayRaw = new Date().getDay();
+            const todayDayOfWeek = todayRaw === 0 ? 7 : todayRaw;
+
+            let targetClassId = null;
+            let matchedToday = false;
+
+            // 優先比對：查看哪一個修讀課程的上課星期剛好是「今天」
+            for (const classId of candidateClassIds) {
+                const settingsKey = 'class_' + classId;
+                const classSettings = state.allSettings[settingsKey];
+                if (classSettings && classSettings.classDayOfWeek === todayDayOfWeek) {
+                    targetClassId = classId;
+                    matchedToday = true;
+                    break;
+                }
+            }
+
+            // 備用方案：如果今天沒有他的課，則會自動選取上一次打卡或選取的科目
+            if (!targetClassId && lastClassId && candidateClassIds.includes(lastClassId)) {
+                targetClassId = lastClassId;
+            }
+
+            // 極限備用：直接使用修讀的第一個課程班級
+            if (!targetClassId && candidateClassIds.length > 0) {
+                targetClassId = candidateClassIds[0];
+            }
+
+            if (targetClassId) {
+                state.hasAutoSelected = true;
+                
+                // 切換目前打卡班級，並在切換完畢後自動核對學號身分
+                if (targetClassId !== state.activeClassId) {
+                    handleClassSwitch(targetClassId);
+                }
+                
+                setTimeout(() => {
+                    selectStudentIdentity(lastStudentId);
+                    if (matchedToday) {
+                        showToast(`系統已自動偵測星期，為您選定今日課程「${state.classes.find(c => c.id === targetClassId)?.name}」！`, "success");
+                    } else {
+                        showToast(`今日無相關課程，已自動為您選定備用上課科目！`, "info");
+                    }
+                }, 400);
+            } else {
+                state.hasAutoSelected = true;
+            }
+        }
+
         // 綁定切換班級事件
         const handleClassSwitch = (newClassId) => {
             state.activeClassId = newClassId;
@@ -2229,8 +2309,8 @@
 
             showToast(`已成功切換至上課班級：${state.classes.find(c => c.id === newClassId)?.name || ''}`, "info");
 
-            // 重新綁定該班級的 settings 監聽器與刷新表格
-            bindClassSettingsListener(newClassId);
+            // 套用目前選定班級的雲端參數
+            applyActiveSettings();
         };
 
         // 綁定所有班級下拉選單的變更事件，確保一鍵同步
@@ -2279,13 +2359,27 @@
 
         // 刪除班級
         dom.btnDeleteClass.addEventListener('click', async () => {
-            if (!state.isAdminMode || !user) return;
+            console.log('[刪除班級按鈕] 點擊事件已觸發', {
+                isAdminMode: state.isAdminMode,
+                hasUser: !!user,
+                activeClassId: state.activeClassId,
+                classesCount: state.classes ? state.classes.length : 0
+            });
+
+            if (!state.isAdminMode || !user) {
+                showToast("請先以教師身份登入，才能刪除班級課程", "error");
+                return;
+            }
             if (state.activeClassId === 'class_default') {
                 showToast("預設班級課程無法刪除！", "error");
                 return;
             }
             const activeClass = state.classes.find(c => c.id === state.activeClassId);
-            if (!activeClass) return;
+            if (!activeClass) {
+                console.error('[刪除班級按鈕] 找不到目前選定的班級資料', state.activeClassId, state.classes);
+                showToast("找不到目前選定的班級資料，請重新整理頁面後再試一次", "error");
+                return;
+            }
 
             if (!confirm(`確定要刪除「${activeClass.name}」嗎？此動作將會永遠清空該班級底下的學生名冊與所有打卡考勤紀錄！`)) {
                 return;
@@ -2313,7 +2407,8 @@
                 showToast(`班級「${activeClass.name}」已被徹底清空並刪除。`, "success");
                 handleClassSwitch('class_default');
             } catch (e) {
-                showToast("刪除班級出錯", "error");
+                console.error("刪除班級出錯，完整錯誤如下：", e);
+                showToast(`刪除班級出錯：${e.code || e.message || '未知錯誤'}`, "error");
             }
         });
 
@@ -2370,7 +2465,7 @@
 
         // 計算並刷新目前班級的考勤點名狀態
         function recomputeWeekRosterStatuses() {
-            if (!state.roster) return; // 修正：若 roster 未載入則不執行後續，但長度為 0 仍應繼續清空與重繪
+            if (!state.roster) return; 
             const weekHistory = state.history.filter(h => h.week === state.selectedTeacherViewWeek && h.classId === state.activeClassId);
 
             state.roster.forEach(student => {
@@ -2395,7 +2490,7 @@
 
             renderAdminRosterTable();
             renderMatrixTable();
-            renderTermAnalytics(); // 修正：將學期數據分析渲染整合進流程更新鏈中，確保切換班級/點名變更時，數據分析即時更新
+            renderTermAnalytics(); 
 
             if (state.selectedStudent) {
                 const refreshed = state.roster.find(s => s.classId === state.activeClassId && s.id.toLowerCase() === state.selectedStudent.id.toLowerCase());
@@ -2403,7 +2498,7 @@
                     state.selectedStudent = refreshed;
                 }
             }
-            updateSystemCalculation(); // 修正關鍵：花名冊與解綁事件監聽觸發時，同步執行核心打卡防代點計算，讓警告狀態即時更新與解除！
+            updateSystemCalculation(); 
         }
 
         window.toggleStudentSessionCheck = async function(studentId, weekNum, sessionIdx, isChecked) {
@@ -2597,6 +2692,10 @@
                 
                 await updateDoc(studentDocRef, updateData);
 
+                // 同步記錄最後一次在瀏覽器中成功打卡的學號與課程 (智慧考勤星期判定優先用)
+                localStorage.setItem('classroom_last_student_id', state.selectedStudent.id);
+                localStorage.setItem('classroom_last_class_id', state.activeClassId);
+
                 playChime(true);
                 showToast(`${finalType}打卡成功！${ruleMsg}`, "success");
             } catch (e) {
@@ -2697,7 +2796,7 @@
             lucide.createIcons();
         }
 
-        // 渲染學堂點名通極致矩陣 (週點名簿) (以 Class 進行過濾) (修正：勾選欄位上方節次名稱與設定完全一致)
+        // 渲染學堂點名通極致矩陣 (週點名簿) (以 Class 進行過濾) 
         function renderMatrixTable() {
             const currentRoster = state.roster.filter(s => s.classId === state.activeClassId);
             if (!currentRoster) return;
@@ -2859,7 +2958,7 @@
             document.body.removeChild(link);
         });
 
-        // 考勤高風險預警分析 (修正：防呆、篩選當前班級，並繪製對比圖)
+        // 考勤高風險預警分析 
         function renderTermAnalytics() {
             const currentRoster = state.roster.filter(s => s.classId === state.activeClassId);
             if (currentRoster.length === 0) {
@@ -2922,7 +3021,7 @@
         }
 
         // --- 管理登入控制與重設機制 ---
-        dom.btnToggleAdminMode.addEventListener('click', () => {
+        dom.btnToggleAdminMode.addEventListener('click', async () => {
             if (state.isAdminMode) {
                 state.isAdminMode = false;
                 document.body.classList.remove('admin-mode-active');
@@ -2938,7 +3037,19 @@
                 dom.selectClassDay.disabled = true;
                 dom.selectStartSession.disabled = true;
                 dom.selectEndSession.disabled = true;
-                dom.btnSaveClassTime.disabled = true;
+
+                // 登出時同步隱藏「儲存設定」按鈕區塊
+                if (dom.adminConfigActions) dom.adminConfigActions.classList.add('hidden');
+
+                // 真正登出教師的 Email/Password 身份，改回匿名登入，
+                // 確保之後的操作在 Firestore 規則眼中真的只是學生等級權限
+                try {
+                    await signOut(auth);
+                    const anonCredential = await signInAnonymously(auth);
+                    user = anonCredential.user;
+                } catch (e) {
+                    showToast("登出時發生錯誤，請重新整理頁面", "error");
+                }
 
                 showToast("已登出管理者，切回學生一般視角", "info");
                 handleTabSwitch('checkin');
@@ -2953,8 +3064,26 @@
 
         dom.btnCloseLogin.addEventListener('click', () => dom.adminLoginModal.classList.add('hidden'));
 
-        dom.btnExecuteLogin.addEventListener('click', () => {
-            if (dom.adminUser.value.trim() === 'jsl' && dom.adminPass.value.trim() === 'jsl') {
+        dom.btnExecuteLogin.addEventListener('click', async () => {
+            const username = dom.adminUser.value.trim();
+            const password = dom.adminPass.value.trim();
+            if (!username || !password) {
+                dom.loginErrorMsg.textContent = "請輸入帳號與密碼！";
+                dom.loginErrorMsg.classList.remove('hidden');
+                return;
+            }
+
+            dom.loginErrorMsg.classList.add('hidden');
+            dom.btnExecuteLogin.disabled = true;
+            dom.btnExecuteLogin.textContent = "驗證中...";
+
+            try {
+                // 呼叫 Firebase 真正的 Email/Password 驗證，而非前端字串比對
+                // 驗證成功後 request.auth.token.firebase.sign_in_provider 會變成 'password'，
+                // Firestore 規則的 isTeacher() 才能真正辨識出這是老師身份
+                const credential = await signInWithEmailAndPassword(auth, toTeacherEmail(username), password);
+                user = credential.user;
+
                 state.isAdminMode = true;
                 document.body.classList.add('admin-mode-active');
                 dom.adminLoginModal.classList.add('hidden');
@@ -2970,30 +3099,23 @@
                 dom.selectClassDay.disabled = false;
                 dom.selectStartSession.disabled = false;
                 dom.selectEndSession.disabled = false;
-                dom.btnSaveClassTime.disabled = false;
+
+                // 修正：登入成功後顯示「儲存設定」按鈕（原本永遠是 hidden，導致無法儲存）
+                if (dom.adminConfigActions) dom.adminConfigActions.classList.remove('hidden');
 
                 showToast("管理者驗證成功！已解鎖衛星地圖、週點名簿與數據分析視角！", "success");
                 handleTabSwitch('matrix');
-            } else {
+            } catch (error) {
+                // 不論帳號不存在、密碼錯誤、或格式錯誤，一律顯示同樣訊息，避免洩漏帳號是否存在
+                dom.loginErrorMsg.textContent = "帳號或密碼錯誤！";
                 dom.loginErrorMsg.classList.remove('hidden');
                 playChime(false);
+            } finally {
+                dom.btnExecuteLogin.disabled = false;
+                dom.btnExecuteLogin.textContent = "驗證並登入";
             }
         });
 
-        // 獨立儲存「上課星期與課堂動態時段」設定
-        dom.btnSaveClassTime.addEventListener('click', async () => {
-            if (!state.isAdminMode || !user) return;
-            try {
-                await updateDoc(getPublicDocRef('settings', 'class_' + state.activeClassId), {
-                    classDayOfWeek: parseInt(dom.selectClassDay.value),
-                    startSessionIdx: parseInt(dom.selectStartSession.value),
-                    endSessionIdx: parseInt(dom.selectEndSession.value)
-                });
-                showToast("課堂時間與星期時段配置雲端更新成功！", "success");
-            } catch (e) {
-                showToast("儲存課堂時間失敗，請檢查網路", "error");
-            }
-        });
 
         // 儲存最新的教室經緯度設定
         dom.btnSaveCoords.addEventListener('click', async () => {
@@ -3013,7 +3135,8 @@
                 });
                 showToast("考勤位置參數配置儲存成功！", "success");
             } catch (e) {
-                showToast("雲端儲存失敗", "error");
+                console.error("儲存設定失敗，完整錯誤如下：", e);
+                showToast(`雲端儲存失敗：${e.code || e.message || '未知錯誤'}`, "error");
             }
         });
 
@@ -3065,7 +3188,7 @@
                     return;
                 }
 
-                // 若通過重複檢查，正常綁定選取
+                // 正常綁定選取
                 state.selectedStudent = s;
                 dom.studentSearchInput.value = `${s.name} (${s.id.toUpperCase()})`;
                 dom.searchResultsDropdown.classList.add('hidden');
@@ -3073,6 +3196,10 @@
                 dom.studentCardIcon.setAttribute('class', "w-5 h-5 text-indigo-400");
                 dom.studentCardSub.textContent = s.dept;
                 dom.studentCardTitle.innerHTML = `${s.name} <span class="text-xs opacity-75">(${s.id.toUpperCase()})</span>`;
+
+                // 紀錄至瀏覽器本地 Preference，以供下次開啟網頁時進行智慧考勤對比選取
+                localStorage.setItem('classroom_last_student_id', s.id);
+                localStorage.setItem('classroom_last_class_id', state.activeClassId);
 
                 if (s.deviceId && s.deviceId !== myDeviceUUID && state.isAdminMode) {
                     dom.btnAdminResetDevice.classList.remove('hidden');
@@ -3143,94 +3270,110 @@
             toastTimeout = setTimeout(() => dom.toastMessage.classList.add('hidden'), 5000);
         }
 
-        let settingsUnsubscribe = null;
-        function bindClassSettingsListener(classId) {
-            if (settingsUnsubscribe) settingsUnsubscribe();
+        // 綁定特定班級的雲端參數配置快取
+        function applyActiveSettings() {
+            const key = 'class_' + state.activeClassId;
+            const data = state.allSettings[key];
+            if (data) {
+                state.targetLat = data.targetLat || 24.991999;
+                state.targetLon = data.targetLon || 121.230375;
+                state.targetRadius = data.targetRadius || 2500;
+                state.week1StartDate = data.week1StartDate || "2026-02-16";
+                state.lateThreshold = data.lateThreshold !== undefined ? data.lateThreshold : 15; 
+                
+                state.classDayOfWeek = data.classDayOfWeek !== undefined ? data.classDayOfWeek : 3;
+                state.startSessionIdx = data.startSessionIdx !== undefined ? data.startSessionIdx : 1;
+                state.endSessionIdx = data.endSessionIdx !== undefined ? data.endSessionIdx : 3;
 
-            const settingsDocRef = getPublicDocRef('settings', 'class_' + classId);
-            settingsUnsubscribe = onSnapshot(settingsDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    
-                    state.targetLat = data.targetLat || 24.991999;
-                    state.targetLon = data.targetLon || 121.230375;
-                    state.targetRadius = data.targetRadius || 2500;
-                    state.week1StartDate = data.week1StartDate || "2026-02-16";
-                    state.lateThreshold = data.lateThreshold !== undefined ? data.lateThreshold : 15; 
-                    
-                    state.classDayOfWeek = data.classDayOfWeek !== undefined ? data.classDayOfWeek : 3;
-                    state.startSessionIdx = data.startSessionIdx !== undefined ? data.startSessionIdx : 1;
-                    state.endSessionIdx = data.endSessionIdx !== undefined ? data.endSessionIdx : 3;
+                state.sessionTopics = data.sessionTopics || {};
 
-                    state.sessionTopics = data.sessionTopics || {};
+                const newlyCalculatedWeek = calculateCurrentWeek(state.week1StartDate);
+                const computedWeekChanged = newlyCalculatedWeek !== state.currentCalculatedWeek;
+                state.currentCalculatedWeek = newlyCalculatedWeek;
 
-                    state.currentCalculatedWeek = calculateCurrentWeek(state.week1StartDate);
-
-                    dom.inputTargetLat.value = state.targetLat;
-                    dom.inputTargetLon.value = state.targetLon;
-                    dom.inputTargetRadius.value = state.targetRadius;
-                    dom.inputWeek1Start.value = state.week1StartDate;
-                    dom.inputLateThreshold.value = state.lateThreshold; 
-                    
-                    dom.selectClassDay.value = state.classDayOfWeek;
-                    populateDynamicPeriodDropdowns();
-                    resolvePeriodsAndWindows();
-
-                    // 安全限制：確保當前選擇的節數過濾器不超出本班級的最大節次
-                    state.matrixActiveSessionFilter = Math.min(state.matrixActiveSessionFilter, state.classSessions);
-                    if (state.matrixActiveSessionFilter < 1) state.matrixActiveSessionFilter = 1;
-
-                    dom.badgeComputedWeek.textContent = `第 ${state.currentCalculatedWeek} 週 (自動判斷)`;
-                    dom.radiusDisplayText.textContent = `教室打卡半徑：${state.targetRadius} 米內`;
-
-                    // 動態解析學生的上課時間看板說明
-                    const activeClass = state.classes.find(c => c.id === state.activeClassId);
-                    const list = SESSIONS_DATA[state.dayType];
-                    const startIdx = Math.min(state.startSessionIdx, list.length - 1);
-                    const endIdx = Math.max(startIdx, Math.min(state.endSessionIdx, list.length - 1));
-                    
-                    const weekdayChinese = ["", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"];
-                    const periodDesc = (list[startIdx] && list[endIdx]) 
-                        ? `${weekdayChinese[state.classDayOfWeek]} ${list[startIdx].name}~${list[endIdx].name} (${list[startIdx].start}~${list[endIdx].end})` 
-                        : "時段未設定";
-
-                    if (activeClass && dom.labelCourseSchedule) {
-                        dom.labelCourseSchedule.textContent = `${activeClass.name} | 今日上課時段：${periodDesc}`;
-                    }
-
-                    if (mapImmersive && classroomMarker && classroomCircle) {
-                        const newPos = [state.targetLat, state.targetLon];
-                        classroomMarker.setLatLng(newPos);
-                        classroomCircle.setLatLng(newPos);
-                        classroomCircle.setRadius(state.targetRadius);
-                    }
-                    
-                    renderSessionFilterPills();
-                    renderAdminTopicsPanel();
-                    recomputeWeekRosterStatuses(); // 此處非同步設定載入成功後，立刻重新計算並繪製點名簿，避免節次欄位不正確
-                    updateSystemCalculation();
-                } else {
-                    // 如果該班級無專屬 settings，則建立預設設定
-                    setDoc(settingsDocRef, {
-                        targetLat: 24.991999,
-                        targetLon: 121.230375,
-                        targetRadius: 2500,
-                        week1StartDate: "2026-02-16",
-                        lateThreshold: 15,
-                        classDayOfWeek: 3,
-                        startSessionIdx: 1,
-                        endSessionIdx: 3,
-                        sessionTopics: {}
-                    });
+                // 修正：第一週起始日期變更/儲存後，若自動判斷週次因此改變，
+                // 需同步更新「週點名簿」目前檢視的週次與下拉選單，讓考勤矩陣即時反映最新週次
+                if (computedWeekChanged) {
+                    state.selectedTeacherViewWeek = newlyCalculatedWeek;
+                    if (dom.selectWeek) dom.selectWeek.value = newlyCalculatedWeek;
+                    if (dom.matrixSelectWeek) dom.matrixSelectWeek.value = newlyCalculatedWeek;
                 }
-            });
+
+                dom.inputTargetLat.value = state.targetLat;
+                dom.inputTargetLon.value = state.targetLon;
+                dom.inputTargetRadius.value = state.targetRadius;
+                dom.inputWeek1Start.value = state.week1StartDate;
+                dom.inputLateThreshold.value = state.lateThreshold; 
+                
+                dom.selectClassDay.value = state.classDayOfWeek;
+                populateDynamicPeriodDropdowns();
+                resolvePeriodsAndWindows();
+
+                // 安全限制：確保當前選擇的節數過濾器不超出本班級的最大節次
+                state.matrixActiveSessionFilter = Math.min(state.matrixActiveSessionFilter, state.classSessions);
+                if (state.matrixActiveSessionFilter < 1) state.matrixActiveSessionFilter = 1;
+
+                dom.badgeComputedWeek.textContent = `第 ${state.currentCalculatedWeek} 週 (自動判斷)`;
+                dom.radiusDisplayText.textContent = `教室打卡半徑：${state.targetRadius} 米內`;
+
+                // 動態解析學生的上課時間看板說明
+                const activeClass = state.classes.find(c => c.id === state.activeClassId);
+                const list = SESSIONS_DATA[state.dayType];
+                const startIdx = Math.min(state.startSessionIdx, list.length - 1);
+                const endIdx = Math.max(startIdx, Math.min(state.endSessionIdx, list.length - 1));
+                
+                const weekdayChinese = ["", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"];
+                const periodDesc = (list[startIdx] && list[endIdx]) 
+                    ? `${weekdayChinese[state.classDayOfWeek]} ${list[startIdx].name}~${list[endIdx].name} (${list[startIdx].start}~${list[endIdx].end})` 
+                    : "時段未設定";
+
+                if (activeClass && dom.labelCourseSchedule) {
+                    dom.labelCourseSchedule.textContent = `${activeClass.name} | 今日上課時段：${periodDesc}`;
+                }
+
+                if (mapImmersive && classroomMarker && classroomCircle) {
+                    const newPos = [state.targetLat, state.targetLon];
+                    classroomMarker.setLatLng(newPos);
+                    classroomCircle.setLatLng(newPos);
+                    classroomCircle.setRadius(state.targetRadius);
+                }
+                
+                renderSessionFilterPills();
+                renderAdminTopicsPanel();
+                recomputeWeekRosterStatuses(); 
+                updateSystemCalculation();
+            } else {
+                // 如果該班級無專屬 settings，則建立預設設定
+                const settingsDocRef = getPublicDocRef('settings', key);
+                setDoc(settingsDocRef, {
+                    targetLat: 24.991999,
+                    targetLon: 121.230375,
+                    targetRadius: 2500,
+                    week1StartDate: "2026-02-16",
+                    lateThreshold: 15,
+                    classDayOfWeek: 3,
+                    startSessionIdx: 1,
+                    endSessionIdx: 3,
+                    sessionTopics: {}
+                });
+            }
         }
 
         // Firestore 實時資料庫監聽與設定同步
         function setupFirestoreListeners() {
             if (!user) return;
 
-            // 1. 監聽全班級列表
+            // 1. 監聽所有班級的設定快取 (解決跨班級星期比對核心)
+            const settingsCollectionRef = getPublicCollectionRef('settings');
+            onSnapshot(settingsCollectionRef, (snapshot) => {
+                snapshot.forEach(docSnap => {
+                    state.allSettings[docSnap.id] = docSnap.data();
+                });
+                applyActiveSettings();
+                triggerSmartAutoSelect();
+            });
+
+            // 2. 監聽全班級列表
             const classesRef = getPublicCollectionRef('classes');
             onSnapshot(classesRef, async (snapshot) => {
                 const tempClasses = [];
@@ -3257,10 +3400,11 @@
                 dom.matrixClassSelect.value = state.activeClassId;
                 dom.analyticsClassSelect.value = state.activeClassId;
 
-                bindClassSettingsListener(state.activeClassId);
+                applyActiveSettings();
+                triggerSmartAutoSelect();
             });
 
-            // 2. 監聽學生花名冊
+            // 3. 監聽學生花名冊
             const rosterRef = getPublicCollectionRef('roster');
             onSnapshot(rosterRef, (snapshot) => {
                 const tempRoster = [];
@@ -3270,9 +3414,10 @@
                 
                 populateDeptFilterOptions();
                 recomputeWeekRosterStatuses();
+                triggerSmartAutoSelect();
             });
 
-            // 3. 監聽打卡歷程
+            // 4. 監聽打卡歷程
             const historyRef = getPublicCollectionRef('history');
             onSnapshot(historyRef, (snapshot) => {
                 const tempHistory = [];
