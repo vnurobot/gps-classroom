@@ -1827,25 +1827,33 @@
             dom.matrixSelectWeek.addEventListener('change', handleWeekChange);
         }
 
-        function calculateCurrentWeek(startDateStr) {
-            if (!startDateStr) return 18;
+        // 通用版本：計算「指定日期」對照「第一週起始日期」算出來是第幾週
+        // 用途：calculateCurrentWeek 是拿「今天」來算目前週次；
+        // 重算分數功能則需要拿「打卡當下的實際日期」來算，
+        // 這樣就算老師事後改過第一週起始日期，也能重新對齊出正確的週數
+        function calculateWeekForDate(targetDateStr, startDateStr) {
+            if (!startDateStr || !targetDateStr) return 18;
             try {
                 const week1Date = new Date(startDateStr);
-                const today = new Date();
-                
+                const targetDate = new Date(targetDateStr);
+
                 week1Date.setHours(0,0,0,0);
-                today.setHours(0,0,0,0);
-                
-                const timeDiff = today.getTime() - week1Date.getTime();
-                if (timeDiff < 0) return 1; 
-                
+                targetDate.setHours(0,0,0,0);
+
+                const timeDiff = targetDate.getTime() - week1Date.getTime();
+                if (timeDiff < 0) return 1;
+
                 const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
                 const weekDiff = Math.floor(dayDiff / 7) + 1;
-                
+
                 return Math.max(1, Math.min(18, weekDiff));
             } catch (error) {
                 return 18;
             }
+        }
+
+        function calculateCurrentWeek(startDateStr) {
+            return calculateWeekForDate(new Date().toISOString().split('T')[0], startDateStr);
         }
 
         function isTimeInWindow(timeStr, startWindow, endWindow) {
@@ -2989,9 +2997,14 @@
         dom.matrixFilterDept.addEventListener('change', (e) => { state.matrixFilterDept = e.target.value; renderMatrixTable(); });
         dom.matrixFilterStatus.addEventListener('change', (e) => { state.matrixFilterStatus = e.target.value; renderMatrixTable(); });
 
-        // 一鍵批次點名勾選
         // 依 history 集合中記錄的「實際打卡時間」，重新計算每位學生每一節的加權出席分數
-        // 適用情境：舊資料只有 true/false（滿分/零分），或設定曾經調整過，想依真實打卡時間重算分數
+        // 適用情境：
+        //   1. 舊資料只有 true/false（滿分/零分），想套用新的加權/階梯式規則重算
+        //   2. 老師事後調整過「第一週起始日期」，導致過去打卡當下算出的週數
+        //      跟現在的週數定義對不上（矩陣顯示未到，但實際上有打卡）
+        // 因此這裡不直接信任 history 裡當初凍結存下的 week 欄位，
+        // 而是用「打卡當下的實際日期(dateKey)」對照「目前設定」的第一週起始日期重新換算週數，
+        // 確保跟目前矩陣畫面看到的週數定義一致
         // 注意：計算時套用的是「目前」的上課星期/節次/曠課判定時間等設定，
         // 若學期中途曾調整過上課節次或門檻設定，較早週次的重算結果可能與當時的實際情況有落差
         async function recalculateScoresFromHistory() {
@@ -2999,7 +3012,7 @@
                 showToast("請先以教師身份登入，才能重新計算分數", "error");
                 return;
             }
-            if (!confirm("即將依照系統記錄的實際打卡時間，重新計算目前班級所有學生的出席分數（會覆蓋目前已儲存的加權分數，僅套用於有對應打卡紀錄的週次）。此操作無法復原，確定要繼續嗎？")) {
+            if (!confirm("即將依照系統記錄的實際打卡時間與日期，對照『目前』的第一週起始日期設定，重新計算目前班級所有學生的出席分數（會覆蓋目前已儲存的加權分數，僅套用於有對應打卡紀錄的週次）。此操作無法復原，確定要繼續嗎？")) {
                 return;
             }
 
@@ -3016,11 +3029,14 @@
                 currentRoster.forEach(s => {
                     const studentHistory = classHistory.filter(h => h.studentId && h.studentId.toLowerCase() === s.id.toLowerCase());
 
-                    // 依週分組，同一週若打卡多次，取最早的一筆作為「實際到達時間」
+                    // 依「重新換算後的週數」分組，同一週若打卡多次，取最早的一筆作為「實際到達時間」
                     const earliestByWeek = {};
                     studentHistory.forEach(h => {
-                        if (!earliestByWeek[h.week] || h.timestamp < earliestByWeek[h.week].timestamp) {
-                            earliestByWeek[h.week] = h;
+                        if (!h.dateKey) return;
+                        // 關鍵：用實際日期對照「目前」的第一週起始日期重新換算週數，不使用 history 裡凍結的 week 欄位
+                        const recalculatedWeek = calculateWeekForDate(h.dateKey, state.week1StartDate);
+                        if (!earliestByWeek[recalculatedWeek] || h.timestamp < earliestByWeek[recalculatedWeek].timestamp) {
+                            earliestByWeek[recalculatedWeek] = h;
                         }
                     });
 
