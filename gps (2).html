@@ -893,6 +893,13 @@
                                 <label class="text-slate-400 block mb-1">遲到判定時間 (分鐘)</label>
                                 <input type="number" id="input-late-threshold" value="15" min="1" max="90" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
                             </div>
+                            <div>
+                                <label class="text-slate-400 block mb-1">曠課判定時間 (分鐘)</label>
+                                <input type="number" id="input-absent-threshold" value="30" min="1" max="180" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-500 -mt-2">超過「曠課判定時間」才打卡，當節課會自動判定未到；下一節課開始後打卡，仍會恢復正常出席計算。</p>
+                        <div class="grid grid-cols-2 gap-2">
                             <div class="flex flex-col justify-end">
                                 <span class="text-[10px] text-slate-500 mb-1">上課總節數指標</span>
                                 <div id="calculated-sessions-badge" class="w-full bg-slate-900/40 border border-slate-800 rounded-lg py-2.5 text-center text-indigo-400 font-bold">3 節課</div>
@@ -938,7 +945,7 @@
                                     <input type="time" id="input-signin-start" value="08:20" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded px-2 py-1 text-slate-400 focus:outline-none">
                                 </div>
                                 <div>
-                                    <span class="text-[10px] text-slate-400">簽到截止 (第一堂結束即遲到)</span>
+                                    <span class="text-[10px] text-slate-400">簽到截止 (上課開始 + 遲到判定時間內算準時)</span>
                                     <input type="time" id="input-signin-end" value="09:10" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded px-2 py-1 text-slate-400 focus:outline-none">
                                 </div>
                             </div>
@@ -988,6 +995,10 @@
                             <button id="btn-show-import-modal" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-lg text-white transition flex items-center gap-1 min-h-[32px]">
                                 <i data-lucide="file-spreadsheet" class="w-4.5 h-4.5"></i> 批次匯入名單
                             </button>
+                            <!-- 依實際打卡時間重新計算加權分數 -->
+                            <button id="btn-recalc-scores" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-xs font-bold rounded-lg text-white transition flex items-center gap-1 min-h-[32px]">
+                                <i data-lucide="refresh-ccw" class="w-4.5 h-4.5"></i> 依打卡時間重算分數
+                            </button>
                             <select id="select-week" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white">
                                 <!-- 週次 -->
                             </select>
@@ -1006,12 +1017,11 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-800/80 text-[11px] md:text-xs text-slate-400 uppercase">
-                                    <th class="py-2.5 px-4">科系</th>
-                                    <th class="py-2.5 px-4">學號</th>
-                                    <th class="py-2.5 px-4">姓名</th>
-                                    <th class="py-2.5 px-4">今日狀態</th>
-                                    <th class="py-2.5 px-4">已鎖定硬體特徵碼</th>
-                                    <th class="py-2.5 px-4 text-center">操作</th>
+                                    <th class="py-2.5 px-3">學生資訊</th>
+                                    <th class="py-2.5 px-3">今日狀態 / 打卡時間</th>
+                                    <th class="py-2.5 px-3 text-center">有效出席節數</th>
+                                    <th class="py-2.5 px-3">硬體鎖定</th>
+                                    <th class="py-2.5 px-3 text-center">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-roster-table-body" class="text-xs md:text-sm text-slate-300 divide-y divide-slate-800">
@@ -1147,6 +1157,7 @@
             startSessionIdx: 1, 
             endSessionIdx: 3,   
             lateThreshold: 15,  
+            absentThreshold: 30, // 曠課判定時間（分鐘），超過此時間打卡當節自動判定未到
             
             week1StartDate: "2026-02-16", 
             currentCalculatedWeek: 18,    
@@ -1271,6 +1282,7 @@
             inputTargetRadius: document.getElementById('input-target-radius'),
             inputWeek1Start: document.getElementById('input-week1-start'),
             inputLateThreshold: document.getElementById('input-late-threshold'),
+            inputAbsentThreshold: document.getElementById('input-absent-threshold'),
             
             selectClassDay: document.getElementById('select-class-day'),
             selectStartSession: document.getElementById('select-start-session'),
@@ -1294,6 +1306,7 @@
             btnExport: document.getElementById('btn-export'),
             btnClear: document.getElementById('btn-clear'),
             btnShowImportModal: document.getElementById('btn-show-import-modal'),
+            btnRecalcScores: document.getElementById('btn-recalc-scores'),
             btnExportAttendance: document.getElementById('btn-export-attendance'),
             rosterImportModal: document.getElementById('roster-import-modal'),
             btnCloseImport: document.getElementById('btn-close-import'),
@@ -1367,6 +1380,39 @@
             return h * 60 + m;
         }
 
+        // 統一解析「單一節次出席紀錄」的權重分數，相容舊資料格式：
+        // - 舊資料為布林值：true → 權重 1（滿分），false/undefined → 權重 0
+        // - 新資料為 0~1 之間的數字：直接作為權重（打卡越快分數越高）
+        function getSessionWeight(value) {
+            if (value === true) return 1;
+            if (typeof value === 'number' && value > 0) return Math.min(1, value);
+            return 0;
+        }
+
+        // 判斷某節次是否算「有出席」（權重 > 0），供勾選狀態、篩選等布林情境使用
+        function isSessionPresent(value) {
+            return getSessionWeight(value) > 0;
+        }
+
+        // 依「遲到分鐘數」對照出「有效出席節數」權重，階梯式對照表：
+        //   準時／遲到 1~5 分鐘   → 1.0 節
+        //   遲到 6~10 分鐘        → 0.9 節
+        //   遲到 11~20 分鐘       → 0.8 節
+        //   遲到 21~30 分鐘       → 0.7 節
+        //   遲到 31~40 分鐘       → 0.6 節
+        //   遲到 41~50 分鐘       → 0.5 節
+        //   超過 50 分鐘（但尚未達曠課判定時間）→ 0.4 節
+        //   缺席／曠課（超過曠課判定時間）      → 0 節（由呼叫端另外判斷，不在此函式範圍內）
+        function getWeightByMinutesLate(minutesLate) {
+            if (minutesLate <= 5) return 1.0;
+            if (minutesLate <= 10) return 0.9;
+            if (minutesLate <= 20) return 0.8;
+            if (minutesLate <= 30) return 0.7;
+            if (minutesLate <= 40) return 0.6;
+            if (minutesLate <= 50) return 0.5;
+            return 0.4;
+        }
+
         function computeAttendanceForArrivalTime(timeStr) {
             const list = SESSIONS_DATA[state.dayType];
             if (!list) return { sessionAtt: {}, currentSessionIdx: 1, isTooLate: false };
@@ -1424,21 +1470,31 @@
             const sessionAtt = {};
             const weekKey = `W${state.currentCalculatedWeek}`;
             
+            // 基準線：目前所在節次之前的節次一律未到(權重0)；目前與之後的節次先當作滿分抵達(權重1)
             for (let s = 1; s <= state.classSessions; s++) {
-                if (s < currentSessionIdx) {
-                    sessionAtt[`${weekKey}_S${s}`] = false;
-                } else {
-                    sessionAtt[`${weekKey}_S${s}`] = true;
-                }
+                sessionAtt[`${weekKey}_S${s}`] = (s >= currentSessionIdx) ? 1 : 0;
             }
 
-            // 檢查第一節課是否遲到（若抵達時間在第一節課內，但超過了設定的遲到判定閾值）
-            if (currentSessionIdx === 1) {
-                const lateTimeStr = addMinutes(firstPeriod.start, state.lateThreshold);
-                if (currentMin > toMins(lateTimeStr)) {
-                    sessionAtt[`${weekKey}_S1`] = false;
-                    for (let s = 2; s <= state.classSessions; s++) {
-                        sessionAtt[`${weekKey}_S${s}`] = true;
+            // 打卡速度計分：依「遲到分鐘數」對照階梯式出席節數表（見 getWeightByMinutesLate）：
+            //   準時／遲到 1~5分鐘=1.0、6~10分鐘=0.9、11~20分鐘=0.8、21~30分鐘=0.7、
+            //   31~40分鐘=0.6、41~50分鐘=0.5、超過50分鐘=0.4
+            //   一旦超過「曠課判定時間(absentThreshold)」→ 本節歸零(曠課)，
+            //   改由下一節開始恢復滿分權重 1.0（若已無下一節，則此後皆為 0）
+            // 注意：遲到判定時間(lateThreshold) 只影響「準時/遲到」的標籤顯示，
+            // 曠課判定時間(absentThreshold) 才是本節是否歸零(曠課)的依據，兩者為獨立設定
+            if (!isTooLate) {
+                const currentPeriod = list[startIdx + currentSessionIdx - 1];
+                if (currentPeriod) {
+                    const periodStartMin = toMins(currentPeriod.start);
+                    const minutesLate = Math.max(0, currentMin - periodStartMin);
+
+                    if (minutesLate > state.absentThreshold) {
+                        // 超過曠課判定時間：本節曠課歸零，下一節起恢復滿分
+                        for (let s = 1; s <= state.classSessions; s++) {
+                            sessionAtt[`${weekKey}_S${s}`] = (s > currentSessionIdx) ? 1 : 0;
+                        }
+                    } else {
+                        sessionAtt[`${weekKey}_S${currentSessionIdx}`] = getWeightByMinutesLate(minutesLate);
                     }
                 }
             }
@@ -1462,7 +1518,7 @@
             state.classSessions = (endIdx - startIdx) + 1;
 
             state.signInStart = startPeriod.start;
-            state.signInEnd = startPeriod.end;
+            state.signInEnd = addMinutes(startPeriod.start, state.lateThreshold);
 
             state.signOutStart = subtractMinutes(endPeriod.end, 15);
             state.signOutEnd = addMinutes(endPeriod.end, 15);
@@ -1525,6 +1581,12 @@
 
         dom.selectEndSession.addEventListener('change', (e) => {
             state.endSessionIdx = parseInt(e.target.value);
+            resolvePeriodsAndWindows();
+        });
+
+        // 遲到判定時間變更時，即時刷新「簽到截止」等自動匹配時段預覽（不需等儲存後重新整理）
+        dom.inputLateThreshold.addEventListener('input', (e) => {
+            state.lateThreshold = parseInt(e.target.value) || 0;
             resolvePeriodsAndWindows();
         });
 
@@ -2343,6 +2405,7 @@
                     targetRadius: 2500,
                     week1StartDate: "2026-02-16",
                     lateThreshold: 15,
+                    absentThreshold: 30,
                     classDayOfWeek: 3,
                     startSessionIdx: 1,
                     endSessionIdx: 3,
@@ -2625,15 +2688,11 @@
                         showToast("已超過打卡截止時間，禁止打卡！", "error");
                         return;
                     }
-                    if (currentSessionIdx > 1) {
+                    // 準時／遲到判定：以「上課開始時間 + 遲到判定時間(分鐘)」為唯一分界點
+                    // 例如上課時間 8:20、遲到判定時間設定 20 分鐘，則 8:40（含）前打卡皆算準時
+                    const lateTimeStr = addMinutes(state.signInStart, state.lateThreshold);
+                    if (toMins(currentHM) > toMins(lateTimeStr)) {
                         finalType = '遲到';
-                    } else {
-                        const lateTimeStr = addMinutes(state.signInStart, state.lateThreshold);
-                        const [curH, curM] = currentHM.split(':').map(Number);
-                        const [lateH, lateM] = lateTimeStr.split(':').map(Number);
-                        if (curH * 60 + curM > lateH * 60 + lateM) {
-                            finalType = '遲到';
-                        }
                     }
                 }
 
@@ -2777,22 +2836,48 @@
                     devText = `<span class="text-slate-600 italic text-[11px] md:text-xs">未鎖定</span>`;
                 }
 
+                // 有效出席節數：依「遲到分鐘數」階梯式對照表加總每節的出席節數權重（見 getWeightByMinutesLate）
+                // 直接顯示加總後的節數（例如 24.7 節），而非換算成 100 分制的分數
+                let presentCount = 0;
+                if (s.sessionAttendance) {
+                    Object.keys(s.sessionAttendance).forEach(k => { presentCount += getSessionWeight(s.sessionAttendance[k]); });
+                }
+                const totalPossible = 18 * state.classSessions;
+                const attendanceRatio = totalPossible > 0 ? (presentCount / totalPossible) : 0;
+                const scoreColor = attendanceRatio >= 0.8 ? 'text-emerald-400' : (attendanceRatio >= 0.6 ? 'text-amber-400' : 'text-rose-400');
+                const sessionCountDisplay = (Math.round(presentCount * 10) / 10).toFixed(1);
+
                 tableHtml += `
                     <tr class="hover:bg-slate-800/25 transition">
-                        <td class="py-2.5 px-4 md:text-sm lg:text-base">${s.dept}</td>
-                        <td class="py-2.5 px-4 font-bold text-white md:text-sm lg:text-base">${s.id.toUpperCase()}</td>
-                        <td class="py-2.5 px-4 md:text-sm lg:text-base">${s.name}</td>
-                        <td class="py-2.5 px-4 text-indigo-400 font-bold md:text-sm lg:text-base">${s.status}</td>
-                        <td class="py-2.5 px-4">${devText}</td>
-                        <td class="py-2.5 px-4 text-center">
-                            <button onclick="dropStudent('${s.id}')" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1 mx-auto">
+                        <td class="py-2.5 px-3">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs bg-indigo-600/20 text-indigo-400 shadow-inner shrink-0">
+                                    ${s.name ? s.name.charAt(0) : '?'}
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="font-bold text-white text-xs md:text-sm truncate">${s.name}</div>
+                                    <div class="text-[10px] md:text-xs text-slate-500 font-mono truncate">${s.id.toUpperCase()} · ${s.dept}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <div class="text-indigo-400 font-bold text-xs md:text-sm">${s.status}</div>
+                            <div class="text-[10px] md:text-xs text-slate-500 font-mono">${s.checkTime || '--'}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                            <span class="font-mono font-bold text-xs md:text-sm ${scoreColor}">${sessionCountDisplay}</span>
+                            <span class="text-[10px] text-slate-500"> / ${totalPossible} 節</span>
+                        </td>
+                        <td class="py-2.5 px-3">${devText}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button onclick="dropStudent('${s.id}')" class="px-2 py-1 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1 mx-auto">
                                 <i data-lucide="user-minus" class="w-3.5 h-3.5"></i> 退選
                             </button>
                         </td>
                     </tr>
                 `;
             });
-            dom.adminRosterTableBody.innerHTML = tableHtml || `<tr><td colspan="6" class="py-4 text-center">無名單資料</td></tr>`;
+            dom.adminRosterTableBody.innerHTML = tableHtml || `<tr><td colspan="5" class="py-4 text-center">無名單資料</td></tr>`;
             lucide.createIcons();
         }
 
@@ -2814,14 +2899,14 @@
             const filtered = currentRoster.filter(s => {
                 const matchSearch = s.id.toLowerCase().includes(searchVal) || s.name.toLowerCase().includes(searchVal);
                 const matchDept = (deptVal === "ALL") || (s.dept === deptVal);
-                const isChecked = s.sessionAttendance && s.sessionAttendance[`W${currentWeek}_S${activeSession}`] === true;
+                const isChecked = s.sessionAttendance && isSessionPresent(s.sessionAttendance[`W${currentWeek}_S${activeSession}`]);
                 const matchStatus = (statusVal === "ALL") || (statusVal === "PRESENT" && isChecked) || (statusVal === "ABSENT" && !isChecked);
                 return matchSearch && matchDept && matchStatus;
             });
 
             document.querySelectorAll('.matrix-total-filtered').forEach(el => el.textContent = filtered.length);
 
-            const checkedCount = filtered.filter(s => s.sessionAttendance && s.sessionAttendance[`W${currentWeek}_S${activeSession}`] === true).length;
+            const checkedCount = filtered.filter(s => s.sessionAttendance && isSessionPresent(s.sessionAttendance[`W${currentWeek}_S${activeSession}`])).length;
             const absentCount = filtered.length - checkedCount;
             const attendRate = filtered.length > 0 ? Math.round((checkedCount / filtered.length) * 100) : 0;
 
@@ -2857,7 +2942,7 @@
                 const totalPossible = 18 * state.classSessions;
                 let presentCount = 0;
                 if (s.sessionAttendance) {
-                    Object.keys(s.sessionAttendance).forEach(k => { if (s.sessionAttendance[k] === true) presentCount++; });
+                    Object.keys(s.sessionAttendance).forEach(k => { presentCount += getSessionWeight(s.sessionAttendance[k]); });
                 }
                 const termRate = totalPossible > 0 ? Math.round((presentCount / totalPossible) * 100) : 0;
 
@@ -2879,13 +2964,17 @@
                 `;
 
                 for (let sessionIdx = 1; sessionIdx <= state.classSessions; sessionIdx++) {
-                    const isChecked = s.sessionAttendance && s.sessionAttendance[`W${currentWeek}_S${sessionIdx}`] === true;
+                    const rawVal = s.sessionAttendance && s.sessionAttendance[`W${currentWeek}_S${sessionIdx}`];
+                    const cellWeight = getSessionWeight(rawVal);
+                    const isChecked = cellWeight > 0;
                     const isHighlight = sessionIdx === activeSession;
+                    const showWeightLabel = isChecked && cellWeight < 1;
                     rowHtml += `
                         <td class="py-3.5 px-4 text-center ${isHighlight ? 'bg-indigo-500/5 border-x border-slate-850' : ''}">
                             <input type="checkbox" ${isChecked ? 'checked' : ''} 
                                 class="w-5 h-5 md:w-7 md:h-7 rounded text-indigo-600 focus:ring-indigo-500 border-slate-700 bg-slate-900 cursor-pointer transition transform md:hover:scale-110"
                                 onchange="toggleStudentSessionCheck('${s.id}', ${currentWeek}, ${sessionIdx}, this.checked)">
+                            ${showWeightLabel ? `<div class="text-[9px] text-amber-400 font-mono mt-0.5">${cellWeight.toFixed(2)}</div>` : ''}
                         </td>
                     `;
                 }
@@ -2901,6 +2990,78 @@
         dom.matrixFilterStatus.addEventListener('change', (e) => { state.matrixFilterStatus = e.target.value; renderMatrixTable(); });
 
         // 一鍵批次點名勾選
+        // 依 history 集合中記錄的「實際打卡時間」，重新計算每位學生每一節的加權出席分數
+        // 適用情境：舊資料只有 true/false（滿分/零分），或設定曾經調整過，想依真實打卡時間重算分數
+        // 注意：計算時套用的是「目前」的上課星期/節次/曠課判定時間等設定，
+        // 若學期中途曾調整過上課節次或門檻設定，較早週次的重算結果可能與當時的實際情況有落差
+        async function recalculateScoresFromHistory() {
+            if (!state.isAdminMode || !user) {
+                showToast("請先以教師身份登入，才能重新計算分數", "error");
+                return;
+            }
+            if (!confirm("即將依照系統記錄的實際打卡時間，重新計算目前班級所有學生的出席分數（會覆蓋目前已儲存的加權分數，僅套用於有對應打卡紀錄的週次）。此操作無法復原，確定要繼續嗎？")) {
+                return;
+            }
+
+            try {
+                showToast("正在依打卡時間重新計算分數，請稍候...", "info");
+
+                const currentRoster = state.roster.filter(s => s.classId === state.activeClassId);
+                const classHistory = state.history.filter(h => h.classId === state.activeClassId && (h.type === '簽到' || h.type === '遲到'));
+
+                const batch = writeBatch(db);
+                let updatedStudentCount = 0;
+                const savedWeek = state.currentCalculatedWeek; // 之後要還原，避免影響畫面上其他正在使用的即時狀態
+
+                currentRoster.forEach(s => {
+                    const studentHistory = classHistory.filter(h => h.studentId && h.studentId.toLowerCase() === s.id.toLowerCase());
+
+                    // 依週分組，同一週若打卡多次，取最早的一筆作為「實際到達時間」
+                    const earliestByWeek = {};
+                    studentHistory.forEach(h => {
+                        if (!earliestByWeek[h.week] || h.timestamp < earliestByWeek[h.week].timestamp) {
+                            earliestByWeek[h.week] = h;
+                        }
+                    });
+
+                    const newSessionAtt = { ...(s.sessionAttendance || {}) };
+                    let changed = false;
+
+                    Object.keys(earliestByWeek).forEach(weekNum => {
+                        const record = earliestByWeek[weekNum];
+                        const timeMatch = record.time && record.time.match(/(\d{2}:\d{2}):\d{2}\s*$/);
+                        if (!timeMatch) return;
+                        const arrivalHM = timeMatch[1];
+
+                        state.currentCalculatedWeek = parseInt(weekNum);
+                        const { sessionAtt } = computeAttendanceForArrivalTime(arrivalHM);
+
+                        Object.keys(sessionAtt).forEach(key => {
+                            if (newSessionAtt[key] !== sessionAtt[key]) changed = true;
+                            newSessionAtt[key] = sessionAtt[key];
+                        });
+                    });
+
+                    if (changed) {
+                        batch.update(getPublicDocRef('roster', `${state.activeClassId}_${s.id.toLowerCase()}`), { sessionAttendance: newSessionAtt });
+                        updatedStudentCount++;
+                    }
+                });
+
+                state.currentCalculatedWeek = savedWeek;
+
+                if (updatedStudentCount > 0) {
+                    await batch.commit();
+                }
+                showToast(`重新計算完成！共更新 ${updatedStudentCount} 位學生的出席分數`, "success");
+            } catch (e) {
+                console.error("依打卡時間重新計算分數失敗，完整錯誤如下：", e);
+                showToast(`重新計算失敗：${e.code || e.message || '未知錯誤'}`, "error");
+            }
+        }
+
+        dom.btnRecalcScores.addEventListener('click', recalculateScoresFromHistory);
+
         async function executeMatrixBatchCheck(targetSessionIdx, isChecked, isAllSessions = false) {
             if (!state.isAdminMode || !user) {
                 showToast("非管理者，無法批次設定", "error");
@@ -2943,8 +3104,9 @@
             currentRoster.forEach(s => {
                 let row = `"${s.dept}","${s.id}","${s.name}"`;
                 for (let sessionIdx = 1; sessionIdx <= state.classSessions; sessionIdx++) {
-                    const isChecked = s.sessionAttendance && s.sessionAttendance[`W${currentWeek}_S${sessionIdx}`] === true;
-                    row += `,${isChecked ? '出席' : '缺席'}`;
+                    const rawVal = s.sessionAttendance && s.sessionAttendance[`W${currentWeek}_S${sessionIdx}`];
+                    const weight = getSessionWeight(rawVal);
+                    row += `,${weight > 0 ? `出席(${weight.toFixed(2)})` : '缺席'}`;
                 }
                 csvContent += row + "\n";
             });
@@ -2973,7 +3135,7 @@
                 const totalPossible = 18 * state.classSessions;
                 let presentCount = 0;
                 if (s.sessionAttendance) {
-                    Object.keys(s.sessionAttendance).forEach(k => { if (s.sessionAttendance[k] === true) presentCount++; });
+                    Object.keys(s.sessionAttendance).forEach(k => { presentCount += getSessionWeight(s.sessionAttendance[k]); });
                 }
                 deptStats[dept].total += totalPossible;
                 deptStats[dept].present += presentCount;
@@ -3002,7 +3164,7 @@
                 const totalPossible = 18 * state.classSessions;
                 let presentCount = 0;
                 if (s.sessionAttendance) {
-                    Object.keys(s.sessionAttendance).forEach(k => { if (s.sessionAttendance[k] === true) presentCount++; });
+                    Object.keys(s.sessionAttendance).forEach(k => { presentCount += getSessionWeight(s.sessionAttendance[k]); });
                 }
                 const termRate = totalPossible > 0 ? Math.round((presentCount / totalPossible) * 100) : 0;
                 if (termRate < 80) {
@@ -3033,6 +3195,7 @@
                 dom.inputTargetRadius.readOnly = true;
                 dom.inputWeek1Start.readOnly = true;
                 dom.inputLateThreshold.readOnly = true; 
+                dom.inputAbsentThreshold.readOnly = true;
                 
                 dom.selectClassDay.disabled = true;
                 dom.selectStartSession.disabled = true;
@@ -3095,6 +3258,7 @@
                 dom.inputTargetRadius.readOnly = false;
                 dom.inputWeek1Start.readOnly = false;
                 dom.inputLateThreshold.readOnly = false; 
+                dom.inputAbsentThreshold.readOnly = false;
 
                 dom.selectClassDay.disabled = false;
                 dom.selectStartSession.disabled = false;
@@ -3127,6 +3291,7 @@
                     targetRadius: parseInt(dom.inputTargetRadius.value),
                     week1StartDate: dom.inputWeek1Start.value,
                     lateThreshold: parseInt(dom.inputLateThreshold.value),
+                    absentThreshold: parseInt(dom.inputAbsentThreshold.value),
                     
                     classDayOfWeek: parseInt(dom.selectClassDay.value),
                     startSessionIdx: parseInt(dom.selectStartSession.value),
@@ -3280,6 +3445,7 @@
                 state.targetRadius = data.targetRadius || 2500;
                 state.week1StartDate = data.week1StartDate || "2026-02-16";
                 state.lateThreshold = data.lateThreshold !== undefined ? data.lateThreshold : 15; 
+                state.absentThreshold = data.absentThreshold !== undefined ? data.absentThreshold : 30; 
                 
                 state.classDayOfWeek = data.classDayOfWeek !== undefined ? data.classDayOfWeek : 3;
                 state.startSessionIdx = data.startSessionIdx !== undefined ? data.startSessionIdx : 1;
@@ -3304,6 +3470,7 @@
                 dom.inputTargetRadius.value = state.targetRadius;
                 dom.inputWeek1Start.value = state.week1StartDate;
                 dom.inputLateThreshold.value = state.lateThreshold; 
+                dom.inputAbsentThreshold.value = state.absentThreshold; 
                 
                 dom.selectClassDay.value = state.classDayOfWeek;
                 populateDynamicPeriodDropdowns();
@@ -3351,6 +3518,7 @@
                     targetRadius: 2500,
                     week1StartDate: "2026-02-16",
                     lateThreshold: 15,
+                    absentThreshold: 30,
                     classDayOfWeek: 3,
                     startSessionIdx: 1,
                     endSessionIdx: 3,
@@ -3535,23 +3703,44 @@
 
             const lines = rawText.split('\n');
             const newRoster = [];
+            // 建立目前班級「既有學生」的查找表 (以學號小寫為 key)，供匯入時比對是否為既有學生
+            const existingRosterMap = {};
+            state.roster.filter(s => s.classId === state.activeClassId).forEach(s => {
+                existingRosterMap[s.id.toLowerCase()] = s;
+            });
+
             lines.forEach(line => {
                 const parts = line.split(',');
                 if (parts.length >= 3) {
-                    newRoster.push({
-                        classId: state.activeClassId, 
-                        dept: parts[0].trim(),
-                        id: parts[1].trim(),
-                        name: parts[2].trim(),
-                        status: '未簽到',
-                        checkTime: '--',
-                        distance: '--',
-                        lat: null,
-                        lon: null,
-                        deviceId: null,
-                        sessionAttendance: {}, 
-                        absentWeeks: {} 
-                    });
+                    const studentId = parts[1].trim();
+                    const existing = existingRosterMap[studentId.toLowerCase()];
+
+                    if (existing) {
+                        // 既有學生：保留原本的出席紀錄、打卡狀態與裝置綁定，只更新系別/姓名等基本資料
+                        newRoster.push({
+                            ...existing,
+                            classId: state.activeClassId,
+                            dept: parts[0].trim(),
+                            id: studentId,
+                            name: parts[2].trim()
+                        });
+                    } else {
+                        // 全新學生：才建立空白的出席紀錄
+                        newRoster.push({
+                            classId: state.activeClassId,
+                            dept: parts[0].trim(),
+                            id: studentId,
+                            name: parts[2].trim(),
+                            status: '未簽到',
+                            checkTime: '--',
+                            distance: '--',
+                            lat: null,
+                            lon: null,
+                            deviceId: null,
+                            sessionAttendance: {}, 
+                            absentWeeks: {} 
+                        });
+                    }
                 }
             });
 
@@ -3568,7 +3757,8 @@
                 dom.rosterImportModal.classList.add('hidden');
                 showToast("成功批次匯入學員名單！", "success");
             } catch (e) {
-                showToast("匯入失敗", "error");
+                console.error("批次匯入名單失敗，完整錯誤如下：", e);
+                showToast(`匯入失敗：${e.code || e.message || '未知錯誤'}`, "error");
             }
         });
     </script>
