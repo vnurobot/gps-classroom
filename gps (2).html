@@ -141,6 +141,69 @@
         </div>
     </div>
 
+    <!-- [學生須知彈窗] -->
+    <div id="student-notice-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden items-center justify-center z-[1100] p-4">
+        <div class="bg-slate-800 border border-slate-700 max-w-lg w-full rounded-2xl p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto">
+            <button id="btn-close-student-notice" class="absolute top-4 right-4 text-slate-400 hover:text-white transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-2 mb-1">
+                <i data-lucide="book-open-check" class="w-6 h-6 text-amber-400"></i>
+                <h3 class="text-lg font-bold text-white">學生點名須知</h3>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">適用班級：<span id="notice-class-name" class="text-slate-300 font-bold">--</span></p>
+
+            <div class="space-y-4 text-sm text-slate-300">
+                <div>
+                    <h4 class="text-white font-bold mb-1.5 flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4 text-indigo-400"></i> 打卡時段</h4>
+                    <ul class="text-xs leading-relaxed space-y-1 list-disc list-inside text-slate-400">
+                        <li>簽到開放：上課鈴響那一刻起即可打卡</li>
+                        <li>簽到截止：上課開始後 <span id="notice-late-threshold" class="text-amber-400 font-bold">--</span> 分鐘內都算「準時／遲到」，仍可正常打卡</li>
+                        <li>簽退開放：下課前 15 分鐘開始，下課後 15 分鐘截止</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-1.5 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i> 曠課判定</h4>
+                    <p class="text-xs leading-relaxed text-slate-400">
+                        超過該節開始時間 <span id="notice-absent-threshold" class="text-rose-400 font-bold">--</span> 分鐘才打卡，該節會直接判定「曠課」，不計出席節數；只要在此時間內，不論多晚打卡都算有出席（會依下方表格打折扣分）。下一節開始打卡則恢復正常計算。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-1.5 flex items-center gap-1.5"><i data-lucide="calculator" class="w-4 h-4 text-emerald-400"></i> 有效出席節數對照表（打卡越快、節數越高）</h4>
+                    <table class="w-full text-xs border-collapse">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-slate-700">
+                                <th class="text-left py-1.5 font-medium">出席狀況</th>
+                                <th class="text-right py-1.5 font-medium">有效出席節數</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-300">
+                            <tr class="border-b border-slate-800/60"><td class="py-1.5">準時／遲到 1～5 分鐘</td><td class="text-right font-mono font-bold text-emerald-400">1.0 節</td></tr>
+                            <tr class="border-b border-slate-800/60"><td class="py-1.5">遲到 6～10 分鐘</td><td class="text-right font-mono font-bold text-emerald-300">0.9 節</td></tr>
+                            <tr class="border-b border-slate-800/60"><td class="py-1.5">遲到 11～20 分鐘</td><td class="text-right font-mono font-bold text-amber-300">0.8 節</td></tr>
+                            <tr class="border-b border-slate-800/60"><td class="py-1.5">遲到 21～30 分鐘</td><td class="text-right font-mono font-bold text-amber-400">0.7 節</td></tr>
+                            <tr class="border-b border-slate-800/60"><td class="py-1.5">遲到 31～40 分鐘</td><td class="text-right font-mono font-bold text-amber-500">0.6 節</td></tr>
+                            <tr class="border-b border-slate-800/60"><td class="py-1.5">遲到 41～50 分鐘</td><td class="text-right font-mono font-bold text-orange-400">0.5 節</td></tr>
+                            <tr class="border-b border-slate-800/60"><td class="py-1.5">超過 50 分鐘（未達曠課門檻）</td><td class="text-right font-mono font-bold text-orange-500">0.4 節</td></tr>
+                            <tr><td class="py-1.5">缺席／曠課</td><td class="text-right font-mono font-bold text-rose-500">0 節</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-1.5 flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-slate-400"></i> 其他提醒</h4>
+                    <ul class="text-xs leading-relaxed space-y-1 list-disc list-inside text-slate-400">
+                        <li>每節課只認最早的一次打卡作為抵達時間，重複打卡不會提高分數</li>
+                        <li>出席分數以「累計節數」呈現，例如 24.7 / 36 節，不是 100 分制</li>
+                        <li>對打卡結果有疑問，請洽任課教師確認</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- [管理者登入彈窗] -->
     <div id="admin-login-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden items-center justify-center z-[1100] p-4">
         <div class="bg-slate-800 border border-slate-700 max-w-sm w-full rounded-2xl p-6 shadow-2xl relative">
@@ -192,8 +255,15 @@
             
             <textarea id="import-textarea" rows="8" placeholder="化材四系,bc0252001,劉國駿&#10;企管四系,bd0209012,朱沛如" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
             
+            <label class="flex items-start gap-2 mt-3 cursor-pointer select-none">
+                <input type="checkbox" id="import-mark-withdrawn" class="mt-0.5 w-4 h-4 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                <span class="text-xs text-slate-300">
+                    這是<strong class="text-white">完整名單</strong>：勾選後，原本在這個班級、但這次沒有出現在貼上內容裡的學生，會被自動標記為「已退選」（保留出席歷史紀錄，不會被刪除）
+                </span>
+            </label>
+            
             <div class="flex justify-between items-center mt-4">
-                <span class="text-[10px] text-amber-400 font-medium">※ 匯入新名單將覆蓋目前已選取班級的學生資料</span>
+                <span class="text-[10px] text-emerald-400 font-medium">✓ 只會新增/更新這裡貼上的學生，不在名單中的原有學生不會被刪除、出席紀錄也不受影響</span>
                 <div class="flex gap-2">
                     <button id="btn-cancel-import" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-xl text-xs transition">取消</button>
                     <button id="btn-execute-import" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition">確認匯入</button>
@@ -265,6 +335,12 @@
                     <button id="tab-btn-checkin" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-md transition-all">
                         <i data-lucide="smartphone" class="w-4 h-4"></i>
                         <span>📱 打卡工作台</span>
+                    </button>
+
+                    <!-- 學生須知：所有人皆可查看，不受 admin-only-section 保護 -->
+                    <button id="btn-open-student-notice" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all">
+                        <i data-lucide="book-open-check" class="w-4 h-4 text-amber-400"></i>
+                        <span>📖 學生須知</span>
                     </button>
                     
                     <!-- 以下所有進階功能皆受 admin-only-section 保護，學生端不顯示 -->
@@ -895,7 +971,7 @@
                             </div>
                             <div>
                                 <label class="text-slate-400 block mb-1">曠課判定時間 (分鐘)</label>
-                                <input type="number" id="input-absent-threshold" value="30" min="1" max="180" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
+                                <input type="number" id="input-absent-threshold" value="50" min="1" max="180" readonly class="w-full bg-slate-900/40 border border-slate-800 rounded-lg px-3 py-2 text-slate-400 focus:outline-none">
                             </div>
                         </div>
                         <p class="text-[10px] text-slate-500 -mt-2">超過「曠課判定時間」才打卡，當節課會自動判定未到；下一節課開始後打卡，仍會恢復正常出席計算。</p>
@@ -1157,7 +1233,7 @@
             startSessionIdx: 1, 
             endSessionIdx: 3,   
             lateThreshold: 15,  
-            absentThreshold: 30, // 曠課判定時間（分鐘），超過此時間打卡當節自動判定未到
+            absentThreshold: 50, // 曠課判定時間（分鐘），超過此時間打卡當節自動判定未到
             
             week1StartDate: "2026-02-16", 
             currentCalculatedWeek: 18,    
@@ -1267,6 +1343,12 @@
             btnCloseGpsModal: document.getElementById('btn-close-gps-modal'),
             gpsErrorDiagnostic: document.getElementById('gps-error-diagnostic'),
             btnToggleAdminMode: document.getElementById('btn-toggle-admin-mode'),
+            studentNoticeModal: document.getElementById('student-notice-modal'),
+            btnOpenStudentNotice: document.getElementById('btn-open-student-notice'),
+            btnCloseStudentNotice: document.getElementById('btn-close-student-notice'),
+            noticeClassName: document.getElementById('notice-class-name'),
+            noticeLateThreshold: document.getElementById('notice-late-threshold'),
+            noticeAbsentThreshold: document.getElementById('notice-absent-threshold'),
             adminLoginModal: document.getElementById('admin-login-modal'),
             btnCloseLogin: document.getElementById('btn-close-login'),
             adminUser: document.getElementById('admin-user'),
@@ -1311,6 +1393,7 @@
             rosterImportModal: document.getElementById('roster-import-modal'),
             btnCloseImport: document.getElementById('btn-close-import'),
             importTextarea: document.getElementById('import-textarea'),
+            importMarkWithdrawn: document.getElementById('import-mark-withdrawn'),
             btnCancelImport: document.getElementById('btn-cancel-import'),
             btnExecuteImport: document.getElementById('btn-execute-import'),
 
@@ -2063,7 +2146,7 @@
                 const activeSessions = [];
                 const weekKey = `W${state.currentCalculatedWeek}`;
                 for (let s = 1; s <= state.classSessions; s++) {
-                    if (sessionAtt[`${weekKey}_S${s}`] === true) {
+                    if (isSessionPresent(sessionAtt[`${weekKey}_S${s}`])) {
                         const period = list[startIdx + s - 1];
                         activeSessions.push(period ? period.name : `第 ${s} 節`);
                     }
@@ -2413,7 +2496,7 @@
                     targetRadius: 2500,
                     week1StartDate: "2026-02-16",
                     lateThreshold: 15,
-                    absentThreshold: 30,
+                    absentThreshold: 50,
                     classDayOfWeek: 3,
                     startSessionIdx: 1,
                     endSessionIdx: 3,
@@ -2730,7 +2813,7 @@
                     const list = SESSIONS_DATA[state.dayType];
                     const startIdx = Math.min(state.startSessionIdx, list.length - 1);
                     for (let s = 1; s <= state.classSessions; s++) {
-                        if (sessionAtt[`${weekKey}_S${s}`] === true) {
+                        if (isSessionPresent(sessionAtt[`${weekKey}_S${s}`])) {
                             const period = list[startIdx + s - 1];
                             activeSessions.push(period ? period.name : `第 ${s} 節`);
                         }
@@ -2749,7 +2832,10 @@
                     distance: record.distance,
                     lat: finalLat,
                     lon: finalLon,
-                    sessionAttendance: sessionAtt
+                    // 重要：sessionAttendance 是物件欄位，updateDoc 對整個物件是覆蓋而非合併，
+                    // 所以這裡務必先合併雲端最新的完整資料(latestStudentData.sessionAttendance)，
+                    // 再套用這次的更新(sessionAtt)，否則會把其他週次的出席紀錄整個清空
+                    sessionAttendance: { ...(latestStudentData.sessionAttendance || {}), ...sessionAtt }
                 };
                 
                 if (!boundDeviceId) {
@@ -2855,15 +2941,25 @@
                 const scoreColor = attendanceRatio >= 0.8 ? 'text-emerald-400' : (attendanceRatio >= 0.6 ? 'text-amber-400' : 'text-rose-400');
                 const sessionCountDisplay = (Math.round(presentCount * 10) / 10).toFixed(1);
 
+                const withdrawnRowClass = s.withdrawn ? 'opacity-50' : '';
+                const withdrawnBadge = s.withdrawn ? `<span class="ml-1.5 px-1.5 py-0.5 bg-rose-500/20 text-rose-400 text-[9px] font-bold rounded">已退選</span>` : '';
+                const actionButton = s.withdrawn
+                    ? `<button onclick="restoreStudent('${s.id}')" class="px-2 py-1 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1 mx-auto">
+                            <i data-lucide="user-check" class="w-3.5 h-3.5"></i> 取消退選
+                       </button>`
+                    : `<button onclick="dropStudent('${s.id}')" class="px-2 py-1 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1 mx-auto">
+                            <i data-lucide="user-minus" class="w-3.5 h-3.5"></i> 退選
+                       </button>`;
+
                 tableHtml += `
-                    <tr class="hover:bg-slate-800/25 transition">
+                    <tr class="hover:bg-slate-800/25 transition ${withdrawnRowClass}">
                         <td class="py-2.5 px-3">
                             <div class="flex items-center gap-2.5">
                                 <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs bg-indigo-600/20 text-indigo-400 shadow-inner shrink-0">
                                     ${s.name ? s.name.charAt(0) : '?'}
                                 </div>
                                 <div class="min-w-0">
-                                    <div class="font-bold text-white text-xs md:text-sm truncate">${s.name}</div>
+                                    <div class="font-bold text-white text-xs md:text-sm truncate">${s.name}${withdrawnBadge}</div>
                                     <div class="text-[10px] md:text-xs text-slate-500 font-mono truncate">${s.id.toUpperCase()} · ${s.dept}</div>
                                 </div>
                             </div>
@@ -2877,17 +2973,28 @@
                             <span class="text-[10px] text-slate-500"> / ${totalPossible} 節</span>
                         </td>
                         <td class="py-2.5 px-3">${devText}</td>
-                        <td class="py-2.5 px-3 text-center">
-                            <button onclick="dropStudent('${s.id}')" class="px-2 py-1 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1 mx-auto">
-                                <i data-lucide="user-minus" class="w-3.5 h-3.5"></i> 退選
-                            </button>
-                        </td>
+                        <td class="py-2.5 px-3 text-center">${actionButton}</td>
                     </tr>
                 `;
             });
             dom.adminRosterTableBody.innerHTML = tableHtml || `<tr><td colspan="5" class="py-4 text-center">無名單資料</td></tr>`;
             lucide.createIcons();
         }
+
+        // 取消已退選標記，讓學生復學（不影響其出席歷史紀錄）
+        window.restoreStudent = async function(studentId) {
+            if (!state.isAdminMode || !user) {
+                showToast("非管理者身分，無法執行此操作！", "error");
+                return;
+            }
+            try {
+                await updateDoc(getPublicDocRef('roster', `${state.activeClassId}_${studentId.toLowerCase()}`), { withdrawn: false });
+                showToast("已取消退選，學生恢復正常名冊狀態！", "success");
+            } catch (e) {
+                console.error("取消退選出錯，完整錯誤如下：", e);
+                showToast(`操作失敗：${e.code || e.message || '未知錯誤'}`, "error");
+            }
+        };
 
         // 渲染學堂點名通極致矩陣 (週點名簿) (以 Class 進行過濾) 
         function renderMatrixTable() {
@@ -3243,6 +3350,21 @@
 
         dom.btnCloseLogin.addEventListener('click', () => dom.adminLoginModal.classList.add('hidden'));
 
+        dom.btnOpenStudentNotice.addEventListener('click', () => {
+            // 開啟時動態帶入「目前班級」實際設定的遲到判定時間、曠課判定時間，確保跟老師目前的設定一致
+            const activeClass = state.classes.find(c => c.id === state.activeClassId);
+            dom.noticeClassName.textContent = activeClass ? activeClass.name : '目前班級';
+            dom.noticeLateThreshold.textContent = state.lateThreshold;
+            dom.noticeAbsentThreshold.textContent = state.absentThreshold;
+            dom.studentNoticeModal.classList.remove('hidden');
+            dom.studentNoticeModal.classList.add('flex');
+            lucide.createIcons();
+        });
+        dom.btnCloseStudentNotice.addEventListener('click', () => {
+            dom.studentNoticeModal.classList.add('hidden');
+            dom.studentNoticeModal.classList.remove('flex');
+        });
+
         dom.btnExecuteLogin.addEventListener('click', async () => {
             const username = dom.adminUser.value.trim();
             const password = dom.adminPass.value.trim();
@@ -3461,7 +3583,7 @@
                 state.targetRadius = data.targetRadius || 2500;
                 state.week1StartDate = data.week1StartDate || "2026-02-16";
                 state.lateThreshold = data.lateThreshold !== undefined ? data.lateThreshold : 15; 
-                state.absentThreshold = data.absentThreshold !== undefined ? data.absentThreshold : 30; 
+                state.absentThreshold = data.absentThreshold !== undefined ? data.absentThreshold : 50; 
                 
                 state.classDayOfWeek = data.classDayOfWeek !== undefined ? data.classDayOfWeek : 3;
                 state.startSessionIdx = data.startSessionIdx !== undefined ? data.startSessionIdx : 1;
@@ -3534,7 +3656,7 @@
                     targetRadius: 2500,
                     week1StartDate: "2026-02-16",
                     lateThreshold: 15,
-                    absentThreshold: 30,
+                    absentThreshold: 50,
                     classDayOfWeek: 3,
                     startSessionIdx: 1,
                     endSessionIdx: 3,
@@ -3657,7 +3779,7 @@
             }
         };
 
-        dom.btnShowImportModal.addEventListener('click', () => { dom.importTextarea.value = ''; dom.rosterImportModal.classList.remove('hidden'); });
+        dom.btnShowImportModal.addEventListener('click', () => { dom.importTextarea.value = ''; dom.importMarkWithdrawn.checked = false; dom.rosterImportModal.classList.remove('hidden'); });
         dom.btnCloseImport.addEventListener('click', () => dom.rosterImportModal.classList.add('hidden'));
         dom.btnCancelImport.addEventListener('click', () => dom.rosterImportModal.classList.add('hidden'));
 
@@ -3733,12 +3855,14 @@
 
                     if (existing) {
                         // 既有學生：保留原本的出席紀錄、打卡狀態與裝置綁定，只更新系別/姓名等基本資料
+                        // withdrawn 明確設為 false：若此學生先前曾被標記已退選、現在又重新出現在名單中，視為復學
                         newRoster.push({
                             ...existing,
                             classId: state.activeClassId,
                             dept: parts[0].trim(),
                             id: studentId,
-                            name: parts[2].trim()
+                            name: parts[2].trim(),
+                            withdrawn: false
                         });
                     } else {
                         // 全新學生：才建立空白的出席紀錄
@@ -3754,24 +3878,40 @@
                             lon: null,
                             deviceId: null,
                             sessionAttendance: {}, 
-                            absentWeeks: {} 
+                            absentWeeks: {},
+                            withdrawn: false
                         });
                     }
                 }
             });
 
+            // 若勾選「完整名單」：找出原本在此班級、但這次沒有出現在貼上內容裡的學生，標記為已退選
+            // （只標記，不刪除，保留出席歷史紀錄）
+            const withdrawnTargets = [];
+            if (dom.importMarkWithdrawn.checked) {
+                const importedIds = new Set(newRoster.map(s => s.id.toLowerCase()));
+                state.roster.filter(s => s.classId === state.activeClassId).forEach(s => {
+                    if (!importedIds.has(s.id.toLowerCase()) && !s.withdrawn) {
+                        withdrawnTargets.push(s);
+                    }
+                });
+            }
+
             try {
                 const batch = writeBatch(db);
-                state.roster.filter(s => s.classId === state.activeClassId).forEach(s => {
-                    batch.delete(getPublicDocRef('roster', `${state.activeClassId}_${s.id.toLowerCase()}`));
-                });
+                // 修正：不再刪除該班級全部學生後重建，改為只新增/更新這次貼上的學生，
+                // 避免只匯入部分名單（例如只新增一位同學）時，誤刪其他原本就在的學生與其出席紀錄
                 newRoster.forEach(s => {
                     batch.set(getPublicDocRef('roster', `${state.activeClassId}_${s.id.toLowerCase()}`), s);
+                });
+                withdrawnTargets.forEach(s => {
+                    batch.update(getPublicDocRef('roster', `${state.activeClassId}_${s.id.toLowerCase()}`), { withdrawn: true });
                 });
                 await batch.commit();
 
                 dom.rosterImportModal.classList.add('hidden');
-                showToast("成功批次匯入學員名單！", "success");
+                const withdrawnMsg = withdrawnTargets.length > 0 ? `，另有 ${withdrawnTargets.length} 位原有學生被標記為已退選` : '';
+                showToast(`成功匯入 ${newRoster.length} 位學員${withdrawnMsg}！`, "success");
             } catch (e) {
                 console.error("批次匯入名單失敗，完整錯誤如下：", e);
                 showToast(`匯入失敗：${e.code || e.message || '未知錯誤'}`, "error");
